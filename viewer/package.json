@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:site": "tsc --noEmit && VITE_DATA_BASE=./web/ vite build --outDir dist-site",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

@@ -5,11 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lumwana change detection viewer</title>
     <link rel="icon" href="data:," />
-    <script type="module" crossorigin src="./assets/index-Dx8h7pG6.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Cp3yRoDp.css">
+    <script type="module" crossorigin src="./assets/index-C9xon5C3.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BL5Af5Yo.css">
   </head>
   <body>
     <div id="app">
+      <nav id="topbar" aria-label="Views">
+        <div class="brand"><span class="brand-mark"></span><span>Lumwana change detection</span></div>
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab" role="tab" id="tab-assignment" aria-selected="true">Assignment</button>
+          <button type="button" class="tab" role="tab" id="tab-timeline" aria-selected="false" tabindex="-1">Timeline 2023&ndash;2026</button>
+          <button type="button" class="tab" role="tab" id="tab-agent" aria-selected="false" tabindex="-1">Analyst agent</button>
+        </div>
+      </nav>
+      <div id="body">
+      <div id="main-col">
       <main id="stage">
         <div id="map"></div>
         <div id="map-compare"></div>
@@ -22,7 +32,12 @@
         </div>
         <div id="status" role="status"></div>
       </main>
-      <aside id="panel"></aside>
+      <div id="dock" hidden></div>
+      </div>
+      <aside id="panel" role="tabpanel" aria-labelledby="tab-assignment"></aside>
+      <aside id="timeline-panel" class="side" role="tabpanel" aria-labelledby="tab-timeline" hidden></aside>
+      <aside id="chat-panel" class="side" role="tabpanel" aria-labelledby="tab-agent" hidden></aside>
+      </div>
     </div>
   </body>
 </html>

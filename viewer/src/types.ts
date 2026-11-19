@@ -55,3 +55,67 @@ export interface LayerState {
   visible: boolean;
   opacity: number;
 }
+
+/** One month of the monthly timeline. Paths in `rgb` / `change` are relative to the data base (docs/web/). */
+export interface MonthStats {
+  ndvi_mean: number | null;
+  nbr_mean: number | null;
+  mndwi_mean: number | null;
+  bsi_mean: number | null;
+  bare_ha: number | null;
+  water_ha: number | null;
+  footprint_ha: number | null;
+  changed_ha: number | null;
+  changed_ha_in_footprint: number | null;
+}
+
+export interface MonthEntry {
+  month: string;
+  status: "ok" | "insufficient";
+  n_items: number;
+  clear_fraction: number;
+  rgb: string | null;
+  change: string | null;
+  prev_month: string | null;
+  stats: MonthStats;
+}
+
+export interface MonthlyManifest {
+  bounds: Bounds;
+  months: MonthEntry[];
+}
+
+/** [west, south, east, north] */
+export type BBox = [number, number, number, number];
+
+export type AgentAction =
+  | { type: "fly_to"; bbox: BBox }
+  | { type: "highlight"; run_id: string; ids: number[] }
+  | { type: "show_run"; run_id: string }
+  | { type: "set_month"; month: string };
+
+export interface AgentChart {
+  type: "bar" | "line";
+  title?: string;
+  x: (string | number)[];
+  series: { name: string; y: (number | null)[] }[];
+}
+
+export interface AgentTable {
+  title?: string;
+  columns: string[];
+  rows: (string | number | boolean | null)[][];
+}
+
+export interface AgentToolCall {
+  name: string;
+  args?: unknown;
+}
+
+export interface AgentResponse {
+  answer: string;
+  actions: AgentAction[];
+  charts: AgentChart[];
+  tables: AgentTable[];
+  tool_calls: AgentToolCall[];
+}

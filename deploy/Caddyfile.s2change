@@ -1,0 +1,30 @@
+# s2change.dzaky.ai.id: viewer (static) + analyst API (FastAPI on 127.0.0.1:8310).
+# Append to /etc/caddy/Caddyfile, then: sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
+s2change.dzaky.ai.id {
+    encode gzip
+
+    handle /api/* {
+        reverse_proxy 127.0.0.1:8310
+        request_body {
+            max_size 64KB
+        }
+    }
+
+    # Web assets (overlays, GeoJSON, monthly frames) served straight from the repo.
+    handle_path /web/* {
+        root * /home/ubuntu/s2change/docs/web
+        file_server
+    }
+
+    handle {
+        root * /home/ubuntu/s2change/viewer/dist-site
+        try_files {path} /index.html
+        file_server
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+}

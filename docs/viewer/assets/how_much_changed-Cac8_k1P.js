@@ -1,0 +1,7 @@
+var e={answer:`**1,345 ha** of the Lumwana scene changed between 2023-08-12 and 2023-09-02 (538 polygons), about **7%** of the area of interest.
+
+- **70%** (945 ha) falls inside the disturbed mine footprint, mostly pit-wall and waste-dump activity (brightening).
+- Darkening (231 polygons) is concentrated outside the footprint and is more likely vegetation, moisture or shadow than excavation.
+- A global IR-MAD or Euclidean baseline reports ~10,600 ha because whole detector stripes shift in brightness. The stripe-aware robust CVA removes that artefact.
+
+See the chart for the split by direction.`,actions:[{type:`show_run`,run_id:`assignment`}],charts:[{type:`bar`,title:`Polygons by change direction`,x:[`brightening`,`darkening`,`spectral shift`],series:[{name:`polygons`,y:[269,231,38]}]},{type:`bar`,title:`Changed area by method (ha)`,x:[`Robust CVA`,`IR-MAD`,`Euclidean`],series:[{name:`ha`,y:[1345,10623,11078]}]}],tables:[{title:`Changed area, inside vs outside the mine footprint`,columns:[`Region`,`Polygons`,`Area (ha)`,`Share`],rows:[[`Inside footprint`,391,945.2,`70%`],[`Outside footprint`,147,400,`30%`],[`Total`,538,1345.2,`100%`]]}],tool_calls:[{name:`run_summary`,args:{run_id:`assignment`}},{name:`area_by_region`,args:{run_id:`assignment`,group_by:`in_disturbed_area`}}]};export{e as default};

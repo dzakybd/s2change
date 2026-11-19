@@ -1,0 +1,122 @@
+{
+  "answer": "The five largest changes in the mine footprint are mostly **brightening** polygons (one darkening, one spectral shift), together **~312 ha**. The largest (#1, 88 ha) sits on the central waste-dump slope, where exposed material raises reflectance.\n\nI highlighted them on the map and zoomed to their extent.",
+  "actions": [
+    {
+      "type": "fly_to",
+      "bbox": [
+        25.8689,
+        -12.2566,
+        25.9438,
+        -12.2109
+      ]
+    },
+    {
+      "type": "highlight",
+      "run_id": "assignment",
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "Area of the 5 largest in-footprint changes (ha)",
+      "x": [
+        "#1",
+        "#2",
+        "#3",
+        "#4",
+        "#5"
+      ],
+      "series": [
+        {
+          "name": "area ha",
+          "y": [
+            88.1,
+            68.6,
+            60.5,
+            51.1,
+            43.3
+          ]
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "title": "Top 5 changes in the mine footprint",
+      "columns": [
+        "Rank",
+        "Polygon id",
+        "Area (ha)",
+        "Confidence",
+        "Direction"
+      ],
+      "rows": [
+        [
+          1,
+          1,
+          88.1,
+          0.34,
+          "brightening"
+        ],
+        [
+          2,
+          2,
+          68.6,
+          0.41,
+          "brightening"
+        ],
+        [
+          3,
+          3,
+          60.5,
+          0.39,
+          "darkening"
+        ],
+        [
+          4,
+          4,
+          51.1,
+          0.43,
+          "brightening"
+        ],
+        [
+          5,
+          5,
+          43.3,
+          0.29,
+          "spectral shift"
+        ]
+      ]
+    }
+  ],
+  "tool_calls": [
+    {
+      "name": "query_changes",
+      "args": {
+        "run_id": "assignment",
+        "in_disturbed_area": true,
+        "order_by": "area_m2 desc",
+        "limit": 5
+      }
+    },
+    {
+      "name": "map_actions",
+      "args": {
+        "highlight": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      }
+    }
+  ]
+}

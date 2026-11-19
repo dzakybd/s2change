@@ -67,6 +67,8 @@ export class MapPair {
   private readonly maps: readonly maplibregl.Map[];
   private rasters = new Map<RasterKey, LayerState>();
   private swipe = false;
+  private changesOn = true;
+  private assignmentHidden = false;
   private hovered: number | null = null;
 
   constructor(private readonly opts: MapPairOptions) {
@@ -169,7 +171,10 @@ export class MapPair {
       if (!s) continue;
       let main = s;
       let compare = s;
-      if (this.swipe && RGB_KEYS.includes(key)) {
+      if (this.assignmentHidden) {
+        main = { ...s, visible: false };
+        compare = main;
+      } else if (this.swipe && RGB_KEYS.includes(key)) {
         main = { visible: key === "after_normalized", opacity: 1 };
         compare = { visible: key === "before", opacity: 1 };
       }
@@ -184,7 +189,20 @@ export class MapPair {
   }
 
   setChangesVisible(visible: boolean): void {
-    for (const m of this.maps) for (const id of ["changes-fill", "changes-line"]) m.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    this.changesOn = visible;
+    this.applyChanges();
+  }
+
+  /** The timeline tab hides the assignment rasters and polygons so its own frames are the only imagery. */
+  setAssignmentHidden(hidden: boolean): void {
+    this.assignmentHidden = hidden;
+    this.applyRasters();
+    this.applyChanges();
+  }
+
+  private applyChanges(): void {
+    const v = this.changesOn && !this.assignmentHidden ? "visible" : "none";
+    for (const m of this.maps) for (const id of ["changes-fill", "changes-line"]) m.setLayoutProperty(id, "visibility", v);
   }
 
   setFilters(f: Filters): void {
