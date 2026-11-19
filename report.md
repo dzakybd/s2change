@@ -113,9 +113,29 @@ Caveats I would raise myself:
 - **MNDWI also shows the mosaic seam** (vertical step in the dMNDWI panel). `water_change` is a candidate list, not a verdict.
 - **23 polygons (52 ha) straddle a source-scene seam.** They are flagged in `change_context.seam_mix` and should be treated as suspect.
 
+## 3.2 Multi-year context: monthly composites, Jan 2023 – Oct 2026 (optional `python -m s2cd.timeline`)
+
+One scene pair cannot tell persistent mining from seasonal change. So I built 46 monthly composites from Planetary Computer: SCL cloud/shadow masking, then a per-pixel median. 39 months have at least 90 % clear coverage; the 7 that don't are mostly Dec–Jan and are kept as gaps, not filled. The same zone-aware CVA then runs between consecutive good months.
+
+![timeline](docs/figures/08_timeline_kpis.png)
+
+- **The mine footprint grows.** The footprint is bare surface (BSI > 0.1, NDVI < 0.12, not water), closed, with patches over 1 ha. It also swings 20–40 % with the dry season, so I compare the same month across years:
+
+| Month | 2023 | 2024 | 2025 | 2026 |
+|---|---:|---:|---:|---:|
+| February | 3,687 ha | 4,174 ha | 4,136 ha | 4,508 ha |
+| October | 4,588 ha | 5,444 ha | 5,803 ha | 6,392 ha |
+
+  October to October, that is +1,800 ha in three years (≈ +13 % per year). This is the KPI a mine-monitoring product should report. It also puts the assignment pair in context: Aug–Sep 2023 sits on the normal dry-season rise, and I see no step change there.
+- **Water** (MNDWI > 0) bottoms out each Oct–Nov and recovers in Jan–Feb. The 2024-03 low (647 ha) is a one-month anomaly that I have not investigated.
+- **The month-to-month "changed area" is mostly phenology.** It peaks at the Mar–May green-up, at up to 7,000 ha. Even inside the footprint it is a magnitude index, not a count of mining events. This is the main reason a production system should model seasonality, for example by comparing against the same month of the previous year or fitting a harmonic baseline, rather than thresholding consecutive months.
+- **Caveats:** month areas count only observed pixels (no gap filling). Wet-season composites with 2–3 clear looks per pixel keep a few patches of cloud shadow. The footprint thresholds are heuristic and documented in `timeline.Rules`.
+
+Timelapse: `docs/web/monthly/timelapse.mp4`; interactive in the viewer's *Timeline* tab.
+
 ## 4. Limitations and next steps
 
-- **Three visible bands and two dates** cannot separate burning from wetting, or turbidity from depth. Even a third date would separate persistent change from transient change.
+- **Three visible bands and two dates** cannot separate burning from wetting, or turbidity from depth. The enrichment and the timeline add SWIR/NIR and many dates as a check, but the core answer uses only what the brief provided.
 - **No reference data:** confidence is a magnitude score, not accuracy. Next step: label a stratified random sample (about 100 polygons, plus about 100 points in the no-change stratum) on VHR imagery and report precision, recall and area-adjusted accuracy (Olofsson et al. 2014). `solafune_tools.metrics` already has the IoU and F1 utilities needed.
 - **Shadows:** pit walls are sun-angle dependent. Pairing scenes with similar solar geometry (or using a DEM shadow mask) would remove some bench "changes".
 - **For production monitoring**, which is what ShigenAI-style products need:

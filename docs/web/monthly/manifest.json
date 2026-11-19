@@ -1,0 +1,934 @@
+{
+ "bounds": [
+  [
+   -12.320287299499615,
+   25.79001102217236
+  ],
+  [
+   -12.17529130101085,
+   25.944378082147733
+  ]
+ ],
+ "months": [
+  {
+   "month": "2023-01",
+   "status": "insufficient",
+   "n_items": 1,
+   "clear_fraction": 0.2774,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2023-02",
+   "status": "ok",
+   "n_items": 4,
+   "clear_fraction": 0.9984,
+   "rgb": "monthly/2023-02_rgb.webp",
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": 0.572,
+    "nbr_mean": 0.3673,
+    "mndwi_mean": -0.4461,
+    "bsi_mean": -0.0937,
+    "bare_ha": 3220.53,
+    "water_ha": 1308.39,
+    "footprint_ha": 3686.87,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2023-03",
+   "status": "ok",
+   "n_items": 4,
+   "clear_fraction": 0.9012,
+   "rgb": "monthly/2023-03_rgb.webp",
+   "change": "monthly/2023-03_change.webp",
+   "prev_month": "2023-02",
+   "stats": {
+    "ndvi_mean": 0.5371,
+    "nbr_mean": 0.3407,
+    "mndwi_mean": -0.4256,
+    "bsi_mean": -0.0797,
+    "bare_ha": 3203.23,
+    "water_ha": 1151.22,
+    "footprint_ha": 3679.48,
+    "changed_ha": 5496.58,
+    "changed_ha_in_footprint": 2512.95
+   }
+  },
+  {
+   "month": "2023-04",
+   "status": "ok",
+   "n_items": 8,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-04_rgb.webp",
+   "change": "monthly/2023-04_change.webp",
+   "prev_month": "2023-03",
+   "stats": {
+    "ndvi_mean": 0.5298,
+    "nbr_mean": 0.319,
+    "mndwi_mean": -0.4463,
+    "bsi_mean": -0.0514,
+    "bare_ha": 3236.89,
+    "water_ha": 1274.28,
+    "footprint_ha": 3710.82,
+    "changed_ha": 6914.19,
+    "changed_ha_in_footprint": 2770.03
+   }
+  },
+  {
+   "month": "2023-05",
+   "status": "ok",
+   "n_items": 11,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-05_rgb.webp",
+   "change": "monthly/2023-05_change.webp",
+   "prev_month": "2023-04",
+   "stats": {
+    "ndvi_mean": 0.499,
+    "nbr_mean": 0.2694,
+    "mndwi_mean": -0.4816,
+    "bsi_mean": -0.0016,
+    "bare_ha": 3572.7,
+    "water_ha": 1181.14,
+    "footprint_ha": 4007.62,
+    "changed_ha": 4460.88,
+    "changed_ha_in_footprint": 1714.86
+   }
+  },
+  {
+   "month": "2023-06",
+   "status": "ok",
+   "n_items": 12,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-06_rgb.webp",
+   "change": "monthly/2023-06_change.webp",
+   "prev_month": "2023-05",
+   "stats": {
+    "ndvi_mean": 0.4264,
+    "nbr_mean": 0.224,
+    "mndwi_mean": -0.4472,
+    "bsi_mean": 0.0328,
+    "bare_ha": 3700.49,
+    "water_ha": 1158.58,
+    "footprint_ha": 4131.33,
+    "changed_ha": 4038.65,
+    "changed_ha_in_footprint": 2664.21
+   }
+  },
+  {
+   "month": "2023-07",
+   "status": "ok",
+   "n_items": 13,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-07_rgb.webp",
+   "change": "monthly/2023-07_change.webp",
+   "prev_month": "2023-06",
+   "stats": {
+    "ndvi_mean": 0.3727,
+    "nbr_mean": 0.1818,
+    "mndwi_mean": -0.4237,
+    "bsi_mean": 0.0526,
+    "bare_ha": 3833.64,
+    "water_ha": 1150.38,
+    "footprint_ha": 4293.06,
+    "changed_ha": 3775.16,
+    "changed_ha_in_footprint": 2235.5
+   }
+  },
+  {
+   "month": "2023-08",
+   "status": "ok",
+   "n_items": 11,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-08_rgb.webp",
+   "change": "monthly/2023-08_change.webp",
+   "prev_month": "2023-07",
+   "stats": {
+    "ndvi_mean": 0.317,
+    "nbr_mean": 0.1333,
+    "mndwi_mean": -0.4008,
+    "bsi_mean": 0.0761,
+    "bare_ha": 3925.2,
+    "water_ha": 1136.37,
+    "footprint_ha": 4393.05,
+    "changed_ha": 1864.61,
+    "changed_ha_in_footprint": 1140.58
+   }
+  },
+  {
+   "month": "2023-09",
+   "status": "ok",
+   "n_items": 11,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-09_rgb.webp",
+   "change": "monthly/2023-09_change.webp",
+   "prev_month": "2023-08",
+   "stats": {
+    "ndvi_mean": 0.3096,
+    "nbr_mean": 0.1118,
+    "mndwi_mean": -0.3991,
+    "bsi_mean": 0.0748,
+    "bare_ha": 3985.65,
+    "water_ha": 1114.75,
+    "footprint_ha": 4486.96,
+    "changed_ha": 690.54,
+    "changed_ha_in_footprint": 527.56
+   }
+  },
+  {
+   "month": "2023-10",
+   "status": "ok",
+   "n_items": 8,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2023-10_rgb.webp",
+   "change": "monthly/2023-10_change.webp",
+   "prev_month": "2023-09",
+   "stats": {
+    "ndvi_mean": 0.4405,
+    "nbr_mean": 0.1785,
+    "mndwi_mean": -0.4752,
+    "bsi_mean": 0.0357,
+    "bare_ha": 4138.47,
+    "water_ha": 899.68,
+    "footprint_ha": 4588.45,
+    "changed_ha": 1818.51,
+    "changed_ha_in_footprint": 1081.44
+   }
+  },
+  {
+   "month": "2023-11",
+   "status": "ok",
+   "n_items": 5,
+   "clear_fraction": 0.9728,
+   "rgb": "monthly/2023-11_rgb.webp",
+   "change": "monthly/2023-11_change.webp",
+   "prev_month": "2023-10",
+   "stats": {
+    "ndvi_mean": 0.5436,
+    "nbr_mean": 0.3223,
+    "mndwi_mean": -0.4431,
+    "bsi_mean": -0.0706,
+    "bare_ha": 3775.28,
+    "water_ha": 774.25,
+    "footprint_ha": 4191.85,
+    "changed_ha": 2394.98,
+    "changed_ha_in_footprint": 1348.74
+   }
+  },
+  {
+   "month": "2023-12",
+   "status": "insufficient",
+   "n_items": 5,
+   "clear_fraction": 0.6339,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2024-01",
+   "status": "insufficient",
+   "n_items": 5,
+   "clear_fraction": 0.7597,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2024-02",
+   "status": "ok",
+   "n_items": 7,
+   "clear_fraction": 0.9938,
+   "rgb": "monthly/2024-02_rgb.webp",
+   "change": "monthly/2024-02_change.webp",
+   "prev_month": "2023-11",
+   "stats": {
+    "ndvi_mean": 0.5522,
+    "nbr_mean": 0.3343,
+    "mndwi_mean": -0.4473,
+    "bsi_mean": -0.0723,
+    "bare_ha": 3736.91,
+    "water_ha": 1091.33,
+    "footprint_ha": 4174.02,
+    "changed_ha": 5648.49,
+    "changed_ha_in_footprint": 3121.35
+   }
+  },
+  {
+   "month": "2024-03",
+   "status": "ok",
+   "n_items": 10,
+   "clear_fraction": 0.9943,
+   "rgb": "monthly/2024-03_rgb.webp",
+   "change": "monthly/2024-03_change.webp",
+   "prev_month": "2024-02",
+   "stats": {
+    "ndvi_mean": 0.5093,
+    "nbr_mean": 0.2981,
+    "mndwi_mean": -0.4229,
+    "bsi_mean": -0.0514,
+    "bare_ha": 3577.5,
+    "water_ha": 646.59,
+    "footprint_ha": 4128.67,
+    "changed_ha": 4969.41,
+    "changed_ha_in_footprint": 1756.69
+   }
+  },
+  {
+   "month": "2024-04",
+   "status": "ok",
+   "n_items": 10,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-04_rgb.webp",
+   "change": "monthly/2024-04_change.webp",
+   "prev_month": "2024-03",
+   "stats": {
+    "ndvi_mean": 0.5377,
+    "nbr_mean": 0.3005,
+    "mndwi_mean": -0.473,
+    "bsi_mean": -0.0372,
+    "bare_ha": 3768.23,
+    "water_ha": 1040.6,
+    "footprint_ha": 4208.53,
+    "changed_ha": 4596.37,
+    "changed_ha_in_footprint": 1477.96
+   }
+  },
+  {
+   "month": "2024-05",
+   "status": "ok",
+   "n_items": 12,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-05_rgb.webp",
+   "change": "monthly/2024-05_change.webp",
+   "prev_month": "2024-04",
+   "stats": {
+    "ndvi_mean": 0.4801,
+    "nbr_mean": 0.2499,
+    "mndwi_mean": -0.4747,
+    "bsi_mean": 0.0123,
+    "bare_ha": 4040.82,
+    "water_ha": 1009.03,
+    "footprint_ha": 4450.84,
+    "changed_ha": 5984.61,
+    "changed_ha_in_footprint": 3524.61
+   }
+  },
+  {
+   "month": "2024-06",
+   "status": "ok",
+   "n_items": 12,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-06_rgb.webp",
+   "change": "monthly/2024-06_change.webp",
+   "prev_month": "2024-05",
+   "stats": {
+    "ndvi_mean": 0.4087,
+    "nbr_mean": 0.1955,
+    "mndwi_mean": -0.4555,
+    "bsi_mean": 0.0489,
+    "bare_ha": 4196.87,
+    "water_ha": 1007.05,
+    "footprint_ha": 4629.47,
+    "changed_ha": 4686.86,
+    "changed_ha_in_footprint": 2846.5
+   }
+  },
+  {
+   "month": "2024-07",
+   "status": "ok",
+   "n_items": 12,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-07_rgb.webp",
+   "change": "monthly/2024-07_change.webp",
+   "prev_month": "2024-06",
+   "stats": {
+    "ndvi_mean": 0.3364,
+    "nbr_mean": 0.1452,
+    "mndwi_mean": -0.4132,
+    "bsi_mean": 0.0704,
+    "bare_ha": 4245.14,
+    "water_ha": 1005.81,
+    "footprint_ha": 4734.29,
+    "changed_ha": 2396.07,
+    "changed_ha_in_footprint": 1556.53
+   }
+  },
+  {
+   "month": "2024-08",
+   "status": "ok",
+   "n_items": 11,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-08_rgb.webp",
+   "change": "monthly/2024-08_change.webp",
+   "prev_month": "2024-07",
+   "stats": {
+    "ndvi_mean": 0.3041,
+    "nbr_mean": 0.089,
+    "mndwi_mean": -0.419,
+    "bsi_mean": 0.0903,
+    "bare_ha": 4557.1,
+    "water_ha": 981.08,
+    "footprint_ha": 5057.5,
+    "changed_ha": 1285.42,
+    "changed_ha_in_footprint": 1134.16
+   }
+  },
+  {
+   "month": "2024-09",
+   "status": "ok",
+   "n_items": 9,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-09_rgb.webp",
+   "change": "monthly/2024-09_change.webp",
+   "prev_month": "2024-08",
+   "stats": {
+    "ndvi_mean": 0.33,
+    "nbr_mean": 0.127,
+    "mndwi_mean": -0.4045,
+    "bsi_mean": 0.06,
+    "bare_ha": 4785.48,
+    "water_ha": 936.01,
+    "footprint_ha": 5302.23,
+    "changed_ha": 845.13,
+    "changed_ha_in_footprint": 712.24
+   }
+  },
+  {
+   "month": "2024-10",
+   "status": "ok",
+   "n_items": 10,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2024-10_rgb.webp",
+   "change": "monthly/2024-10_change.webp",
+   "prev_month": "2024-09",
+   "stats": {
+    "ndvi_mean": 0.4147,
+    "nbr_mean": 0.1726,
+    "mndwi_mean": -0.4582,
+    "bsi_mean": 0.0363,
+    "bare_ha": 4894.41,
+    "water_ha": 753.27,
+    "footprint_ha": 5443.96,
+    "changed_ha": 1997.29,
+    "changed_ha_in_footprint": 1276.14
+   }
+  },
+  {
+   "month": "2024-11",
+   "status": "insufficient",
+   "n_items": 6,
+   "clear_fraction": 0.7289,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2024-12",
+   "status": "ok",
+   "n_items": 6,
+   "clear_fraction": 0.9421,
+   "rgb": "monthly/2024-12_rgb.webp",
+   "change": "monthly/2024-12_change.webp",
+   "prev_month": "2024-10",
+   "stats": {
+    "ndvi_mean": 0.5209,
+    "nbr_mean": 0.3067,
+    "mndwi_mean": -0.4237,
+    "bsi_mean": -0.0696,
+    "bare_ha": 4105.84,
+    "water_ha": 750.38,
+    "footprint_ha": 4576.54,
+    "changed_ha": 4142.16,
+    "changed_ha_in_footprint": 2610.02
+   }
+  },
+  {
+   "month": "2025-01",
+   "status": "insufficient",
+   "n_items": 3,
+   "clear_fraction": 0.3323,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2025-02",
+   "status": "ok",
+   "n_items": 5,
+   "clear_fraction": 0.9991,
+   "rgb": "monthly/2025-02_rgb.webp",
+   "change": "monthly/2025-02_change.webp",
+   "prev_month": "2024-12",
+   "stats": {
+    "ndvi_mean": 0.5472,
+    "nbr_mean": 0.356,
+    "mndwi_mean": -0.4306,
+    "bsi_mean": -0.0851,
+    "bare_ha": 3624.89,
+    "water_ha": 1107.83,
+    "footprint_ha": 4135.87,
+    "changed_ha": 4575.41,
+    "changed_ha_in_footprint": 1919.47
+   }
+  },
+  {
+   "month": "2025-03",
+   "status": "ok",
+   "n_items": 5,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2025-03_rgb.webp",
+   "change": "monthly/2025-03_change.webp",
+   "prev_month": "2025-02",
+   "stats": {
+    "ndvi_mean": 0.5565,
+    "nbr_mean": 0.3322,
+    "mndwi_mean": -0.4594,
+    "bsi_mean": -0.0678,
+    "bare_ha": 3745.59,
+    "water_ha": 1084.53,
+    "footprint_ha": 4198.11,
+    "changed_ha": 5116.22,
+    "changed_ha_in_footprint": 1693.33
+   }
+  },
+  {
+   "month": "2025-04",
+   "status": "ok",
+   "n_items": 11,
+   "clear_fraction": 0.9997,
+   "rgb": "monthly/2025-04_rgb.webp",
+   "change": "monthly/2025-04_change.webp",
+   "prev_month": "2025-03",
+   "stats": {
+    "ndvi_mean": 0.5299,
+    "nbr_mean": 0.3104,
+    "mndwi_mean": -0.4582,
+    "bsi_mean": -0.0407,
+    "bare_ha": 3805.84,
+    "water_ha": 1076.16,
+    "footprint_ha": 4282.0,
+    "changed_ha": 3754.06,
+    "changed_ha_in_footprint": 1956.13
+   }
+  },
+  {
+   "month": "2025-05",
+   "status": "ok",
+   "n_items": 18,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2025-05_rgb.webp",
+   "change": "monthly/2025-05_change.webp",
+   "prev_month": "2025-04",
+   "stats": {
+    "ndvi_mean": 0.4974,
+    "nbr_mean": 0.2612,
+    "mndwi_mean": -0.4824,
+    "bsi_mean": 0.005,
+    "bare_ha": 4066.49,
+    "water_ha": 1065.98,
+    "footprint_ha": 4492.27,
+    "changed_ha": 3319.24,
+    "changed_ha_in_footprint": 2405.58
+   }
+  },
+  {
+   "month": "2025-06",
+   "status": "ok",
+   "n_items": 18,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2025-06_rgb.webp",
+   "change": "monthly/2025-06_change.webp",
+   "prev_month": "2025-05",
+   "stats": {
+    "ndvi_mean": 0.4366,
+    "nbr_mean": 0.2081,
+    "mndwi_mean": -0.467,
+    "bsi_mean": 0.0434,
+    "bare_ha": 4246.71,
+    "water_ha": 1041.36,
+    "footprint_ha": 4690.76,
+    "changed_ha": 5305.55,
+    "changed_ha_in_footprint": 3521.17
+   }
+  },
+  {
+   "month": "2025-07",
+   "status": "ok",
+   "n_items": 18,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2025-07_rgb.webp",
+   "change": "monthly/2025-07_change.webp",
+   "prev_month": "2025-06",
+   "stats": {
+    "ndvi_mean": 0.3682,
+    "nbr_mean": 0.1533,
+    "mndwi_mean": -0.445,
+    "bsi_mean": 0.0734,
+    "bare_ha": 4417.57,
+    "water_ha": 1008.82,
+    "footprint_ha": 4914.79,
+    "changed_ha": 3430.81,
+    "changed_ha_in_footprint": 1992.43
+   }
+  },
+  {
+   "month": "2025-08",
+   "status": "ok",
+   "n_items": 18,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2025-08_rgb.webp",
+   "change": "monthly/2025-08_change.webp",
+   "prev_month": "2025-07",
+   "stats": {
+    "ndvi_mean": 0.3003,
+    "nbr_mean": 0.1051,
+    "mndwi_mean": -0.4059,
+    "bsi_mean": 0.0908,
+    "bare_ha": 4721.76,
+    "water_ha": 990.4,
+    "footprint_ha": 5300.49,
+    "changed_ha": 1692.16,
+    "changed_ha_in_footprint": 1429.96
+   }
+  },
+  {
+   "month": "2025-09",
+   "status": "ok",
+   "n_items": 18,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2025-09_rgb.webp",
+   "change": "monthly/2025-09_change.webp",
+   "prev_month": "2025-08",
+   "stats": {
+    "ndvi_mean": 0.2978,
+    "nbr_mean": 0.0752,
+    "mndwi_mean": -0.4156,
+    "bsi_mean": 0.0987,
+    "bare_ha": 4904.03,
+    "water_ha": 930.52,
+    "footprint_ha": 5481.15,
+    "changed_ha": 1257.38,
+    "changed_ha_in_footprint": 1014.25
+   }
+  },
+  {
+   "month": "2025-10",
+   "status": "ok",
+   "n_items": 16,
+   "clear_fraction": 0.9998,
+   "rgb": "monthly/2025-10_rgb.webp",
+   "change": "monthly/2025-10_change.webp",
+   "prev_month": "2025-09",
+   "stats": {
+    "ndvi_mean": 0.3888,
+    "nbr_mean": 0.1508,
+    "mndwi_mean": -0.4501,
+    "bsi_mean": 0.0528,
+    "bare_ha": 5147.7,
+    "water_ha": 772.67,
+    "footprint_ha": 5803.23,
+    "changed_ha": 1514.2,
+    "changed_ha_in_footprint": 1328.46
+   }
+  },
+  {
+   "month": "2025-11",
+   "status": "ok",
+   "n_items": 11,
+   "clear_fraction": 0.9997,
+   "rgb": "monthly/2025-11_rgb.webp",
+   "change": "monthly/2025-11_change.webp",
+   "prev_month": "2025-10",
+   "stats": {
+    "ndvi_mean": 0.48,
+    "nbr_mean": 0.248,
+    "mndwi_mean": -0.4476,
+    "bsi_mean": -0.0181,
+    "bare_ha": 4753.2,
+    "water_ha": 871.29,
+    "footprint_ha": 5360.41,
+    "changed_ha": 2976.95,
+    "changed_ha_in_footprint": 2421.58
+   }
+  },
+  {
+   "month": "2025-12",
+   "status": "insufficient",
+   "n_items": 7,
+   "clear_fraction": 0.8972,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2026-01",
+   "status": "ok",
+   "n_items": 5,
+   "clear_fraction": 0.9269,
+   "rgb": "monthly/2026-01_rgb.webp",
+   "change": "monthly/2026-01_change.webp",
+   "prev_month": "2025-11",
+   "stats": {
+    "ndvi_mean": 0.5276,
+    "nbr_mean": 0.3404,
+    "mndwi_mean": -0.4094,
+    "bsi_mean": -0.0891,
+    "bare_ha": 3544.78,
+    "water_ha": 831.12,
+    "footprint_ha": 4021.2,
+    "changed_ha": 5031.68,
+    "changed_ha_in_footprint": 2341.22
+   }
+  },
+  {
+   "month": "2026-02",
+   "status": "ok",
+   "n_items": 8,
+   "clear_fraction": 0.9856,
+   "rgb": "monthly/2026-02_rgb.webp",
+   "change": "monthly/2026-02_change.webp",
+   "prev_month": "2026-01",
+   "stats": {
+    "ndvi_mean": 0.5422,
+    "nbr_mean": 0.3513,
+    "mndwi_mean": -0.434,
+    "bsi_mean": -0.0805,
+    "bare_ha": 3993.41,
+    "water_ha": 1095.02,
+    "footprint_ha": 4507.53,
+    "changed_ha": 3852.5,
+    "changed_ha_in_footprint": 1699.11
+   }
+  },
+  {
+   "month": "2026-03",
+   "status": "insufficient",
+   "n_items": 5,
+   "clear_fraction": 0.7022,
+   "rgb": null,
+   "change": null,
+   "prev_month": null,
+   "stats": {
+    "ndvi_mean": null,
+    "nbr_mean": null,
+    "mndwi_mean": null,
+    "bsi_mean": null,
+    "bare_ha": null,
+    "water_ha": null,
+    "footprint_ha": null,
+    "changed_ha": null,
+    "changed_ha_in_footprint": null
+   }
+  },
+  {
+   "month": "2026-04",
+   "status": "ok",
+   "n_items": 16,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-04_rgb.webp",
+   "change": "monthly/2026-04_change.webp",
+   "prev_month": "2026-02",
+   "stats": {
+    "ndvi_mean": 0.5003,
+    "nbr_mean": 0.2546,
+    "mndwi_mean": -0.4719,
+    "bsi_mean": -0.0075,
+    "bare_ha": 4465.52,
+    "water_ha": 1058.74,
+    "footprint_ha": 5036.88,
+    "changed_ha": 2842.82,
+    "changed_ha_in_footprint": 1807.45
+   }
+  },
+  {
+   "month": "2026-05",
+   "status": "ok",
+   "n_items": 16,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-05_rgb.webp",
+   "change": "monthly/2026-05_change.webp",
+   "prev_month": "2026-04",
+   "stats": {
+    "ndvi_mean": 0.4651,
+    "nbr_mean": 0.2252,
+    "mndwi_mean": -0.4749,
+    "bsi_mean": 0.026,
+    "bare_ha": 4742.01,
+    "water_ha": 1040.15,
+    "footprint_ha": 5280.28,
+    "changed_ha": 4246.4,
+    "changed_ha_in_footprint": 3318.85
+   }
+  },
+  {
+   "month": "2026-06",
+   "status": "ok",
+   "n_items": 17,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-06_rgb.webp",
+   "change": "monthly/2026-06_change.webp",
+   "prev_month": "2026-05",
+   "stats": {
+    "ndvi_mean": 0.4098,
+    "nbr_mean": 0.1953,
+    "mndwi_mean": -0.4534,
+    "bsi_mean": 0.0461,
+    "bare_ha": 4969.37,
+    "water_ha": 1047.59,
+    "footprint_ha": 5517.53,
+    "changed_ha": 4231.86,
+    "changed_ha_in_footprint": 2884.47
+   }
+  },
+  {
+   "month": "2026-07",
+   "status": "ok",
+   "n_items": 18,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-07_rgb.webp",
+   "change": "monthly/2026-07_change.webp",
+   "prev_month": "2026-06",
+   "stats": {
+    "ndvi_mean": 0.334,
+    "nbr_mean": 0.1481,
+    "mndwi_mean": -0.4111,
+    "bsi_mean": 0.0678,
+    "bare_ha": 5176.18,
+    "water_ha": 1049.94,
+    "footprint_ha": 5732.53,
+    "changed_ha": 2869.23,
+    "changed_ha_in_footprint": 2056.45
+   }
+  },
+  {
+   "month": "2026-08",
+   "status": "ok",
+   "n_items": 19,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-08_rgb.webp",
+   "change": "monthly/2026-08_change.webp",
+   "prev_month": "2026-07",
+   "stats": {
+    "ndvi_mean": 0.3034,
+    "nbr_mean": 0.0952,
+    "mndwi_mean": -0.4287,
+    "bsi_mean": 0.1053,
+    "bare_ha": 5354.79,
+    "water_ha": 1017.47,
+    "footprint_ha": 5919.94,
+    "changed_ha": 1918.55,
+    "changed_ha_in_footprint": 1537.11
+   }
+  },
+  {
+   "month": "2026-09",
+   "status": "ok",
+   "n_items": 16,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-09_rgb.webp",
+   "change": "monthly/2026-09_change.webp",
+   "prev_month": "2026-08",
+   "stats": {
+    "ndvi_mean": 0.3189,
+    "nbr_mean": 0.0895,
+    "mndwi_mean": -0.4254,
+    "bsi_mean": 0.0918,
+    "bare_ha": 5461.86,
+    "water_ha": 997.34,
+    "footprint_ha": 6038.72,
+    "changed_ha": 2203.06,
+    "changed_ha_in_footprint": 1783.77
+   }
+  },
+  {
+   "month": "2026-10",
+   "status": "ok",
+   "n_items": 15,
+   "clear_fraction": 1.0,
+   "rgb": "monthly/2026-10_rgb.webp",
+   "change": "monthly/2026-10_change.webp",
+   "prev_month": "2026-09",
+   "stats": {
+    "ndvi_mean": 0.4037,
+    "nbr_mean": 0.1529,
+    "mndwi_mean": -0.4566,
+    "bsi_mean": 0.0491,
+    "bare_ha": 5774.0,
+    "water_ha": 757.79,
+    "footprint_ha": 6392.06,
+    "changed_ha": 1999.25,
+    "changed_ha_in_footprint": 1282.6
+   }
+  }
+ ]
+}
