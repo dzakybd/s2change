@@ -24,10 +24,13 @@ uv sync --all-extras
 docker compose up -d db                     # or docker-compose; PostGIS on :5432
 cp app/.env.example .env                    # fill GEMINI_API_KEY and the passwords
 set -a; source .env; set +a                 # or export the variables yourself
+uv run s2cd fetch-artifacts                 # data/timeline/timeline.sqlite is kept out of git
 uv run --all-extras python -m app.publish   # loads data/*.sqlite, creates s2cd_reader; safe to rerun
 uv run --all-extras uvicorn app.main:app --port 8000
 uv run --all-extras python -m app.evals     # needs the API running; writes app/evals/results.{md,json}
 ```
+
+Production data lives in Supabase PostGIS. Publish runs from a workstation with the owner URL (pooler, session mode, port 5432); the VPS only gets the read-only `s2cd_reader` URL. On Supabase, `schema_app.sql` also revokes the auto-exposed REST roles (`anon`, `authenticated`) and grants the reader `USAGE` on the `extensions` schema where PostGIS lives.
 
 `publish` runs `sql/schema_postgis.sql` then `sql/schema_app.sql` (adds `change_context`, `timeline_months`, `change_features.likely_cause` and the read-only role), replaces the runs found in each SQLite file, then sets the reader password. `data/timeline/timeline.sqlite` is optional: without it `/api/timeline` returns `[]` and the agent says there is no timeline. Only the documented `timeline_months` columns are loaded.
 

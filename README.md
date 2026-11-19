@@ -34,7 +34,8 @@ Everything the brief requires runs offline from the provided `inputs/` with one 
 | Provenance + SWIR/NIR enrichment (source scenes, dNBR/dMNDWI, `likely_cause`) | `uv sync --extra stac && uv run s2cd enrich` |
 | Monthly timeline Jan 2023 – Oct 2026 (footprint, water, change per month, timelapse) | `uv run --extra stac python -m s2cd.timeline` |
 | Analyst agent (FastAPI + deepagents + Gemini over PostGIS, read-only, with evals) | [`app/README.md`](app/README.md) |
-| Live demo: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) | `deploy/` |
+| Large outputs kept out of git (enrichment rasters, timeline DB, ~140 MB) | `uv run s2cd fetch-artifacts` (public Supabase Storage, SHA-256 checked) |
+| Live demo: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) (viewer + API on a VPS, data in Supabase PostGIS) | `deploy/` |
 
 ---
 

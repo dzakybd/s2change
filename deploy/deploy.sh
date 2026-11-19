@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Server-side deploy for s2change.dzaky.ai.id (run on the VPS from the repo root).
-# Pull, sync Python deps, publish the committed results into local PostGIS, build the viewer,
-# (re)start the API under PM2. Secrets live in ./.env (never committed).
+# Pull, sync Python deps, build the viewer, (re)start the API under PM2.
+# The database is Supabase PostGIS; results are published from a workstation with the owner
+# credentials (`python -m app.publish`), so this server only holds the read-only s2cd_reader URL.
+# Secrets live in ./.env (never committed).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,9 +21,6 @@ git fetch origin && git reset --hard origin/main
 
 log "uv sync (app extra)"
 uv sync --frozen --no-dev --extra app
-
-log "publish results into PostGIS (idempotent)"
-uv run --no-sync python -m app.publish
 
 log "build viewer"
 (cd viewer && npm ci --no-audit --no-fund && npm run build:site)

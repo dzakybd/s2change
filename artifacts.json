@@ -1,0 +1,26 @@
+[
+  {
+    "path": "data/processed/enrichment/index_changes.tif",
+    "url": "https://jeakyfssgfnbfhaewweg.supabase.co/storage/v1/object/public/s2change-artifacts/processed/enrichment/index_changes.tif",
+    "bytes": 35303099,
+    "sha256": "e76aabdf8777539fbc845866f25ff5fa6b2fb9527abe8dd031d63b64b68b566b"
+  },
+  {
+    "path": "data/processed/enrichment/indices_20230812.tif",
+    "url": "https://jeakyfssgfnbfhaewweg.supabase.co/storage/v1/object/public/s2change-artifacts/processed/enrichment/indices_20230812.tif",
+    "bytes": 33496187,
+    "sha256": "82e3a0c2b78d81da282f9196403427d924da9f550c8b195f4869fda729b6dee1"
+  },
+  {
+    "path": "data/processed/enrichment/indices_20230902.tif",
+    "url": "https://jeakyfssgfnbfhaewweg.supabase.co/storage/v1/object/public/s2change-artifacts/processed/enrichment/indices_20230902.tif",
+    "bytes": 33488552,
+    "sha256": "90d4a9e6d625629b7ebf9c26171d0266190f79a4ceec8af824e42ac16f77e36f"
+  },
+  {
+    "path": "data/timeline/timeline.sqlite",
+    "url": "https://jeakyfssgfnbfhaewweg.supabase.co/storage/v1/object/public/s2change-artifacts/timeline/timeline.sqlite",
+    "bytes": 38940672,
+    "sha256": "65a4affe94ad889a974c1d0f774abed402d8440439e4cb7cbac809a1de26b588"
+  }
+]

@@ -47,3 +47,21 @@ DO $$ BEGIN EXECUTE format('GRANT CONNECT ON DATABASE %I TO s2cd_reader', curren
 GRANT SELECT ON change_runs, change_features, change_context, timeline_months, change_features_wgs84 TO s2cd_reader;
 ALTER ROLE s2cd_reader SET statement_timeout = '5s';
 ALTER ROLE s2cd_reader SET default_transaction_read_only = on;
+
+-- Supabase only (no-op on plain PostGIS): PostGIS lives in schema "extensions", and every
+-- public table is reachable through the auto-generated REST API via the anon/authenticated
+-- roles. The analyst API reads through s2cd_reader; nothing else should touch these tables.
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_namespace WHERE nspname = 'extensions') THEN
+        GRANT USAGE ON SCHEMA extensions TO s2cd_reader;
+        ALTER ROLE s2cd_reader SET search_path = public, extensions;
+    END IF;
+    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+        REVOKE ALL ON change_runs, change_features, change_context, timeline_months, change_features_wgs84 FROM anon, authenticated;
+        REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+    END IF;
+END
+$$;

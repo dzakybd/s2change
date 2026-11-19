@@ -71,3 +71,12 @@ def enrich(
             {"area_by_likely_cause": summary["area_by_likely_cause"], "aot": summary["aot_by_zone"]["overall_mean"]}, indent=2
         )
     )
+
+
+@app.command("fetch-artifacts")
+def fetch_artifacts() -> None:
+    """Download the large optional outputs (enrichment rasters, timeline DB) listed in artifacts.json."""
+    from . import artifacts
+
+    for line in artifacts.fetch():
+        typer.echo(line)

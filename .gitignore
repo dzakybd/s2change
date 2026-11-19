@@ -10,3 +10,8 @@ viewer/dist/
 data/cache/
 .env
 data/timeline/composites/
+
+# Large optional outputs live in Supabase Storage (see artifacts.json; `uv run s2cd fetch-artifacts`)
+data/processed/enrichment/index_changes.tif
+data/processed/enrichment/indices_*.tif
+data/timeline/timeline.sqlite
