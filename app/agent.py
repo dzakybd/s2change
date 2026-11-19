@@ -47,15 +47,38 @@ Data caveats to state when relevant
 - Timeline months without clear imagery have no values."""
 
 
-def _model() -> ChatGoogleGenerativeAI:
-    name = os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
-    extra = {"temperature": 0.0} if name.startswith("gemini-2") else {}  # Gemini 3+: leave the provider default
+def model_name() -> str:
+    if os.environ.get("LLM_PROVIDER", "google") == "openrouter":
+        return os.environ.get("AGENT_OPENROUTER_MODEL", f"google/{DEFAULT_MODEL}")
+    return os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
+
+
+def _model():
+    """Gemini directly (LLM_PROVIDER=google, default) or the same model through OpenRouter (LLM_PROVIDER=openrouter).
+
+    OpenRouter exists for hosts where Google's API refuses the server's region (FAILED_PRECONDITION: user location).
+    """
+    name = model_name()
+    extra = {"temperature": 0.0} if "gemini-2" in name else {}  # Gemini 3+: leave the provider default
+    if os.environ.get("LLM_PROVIDER", "google") == "openrouter":
+        from langchain_openai import ChatOpenAI
+
+        return ChatOpenAI(
+            model=name,
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.environ["OPENROUTER_API_KEY"],
+            max_retries=2,
+            timeout=60,
+            default_headers={"HTTP-Referer": "https://s2change.dzaky.ai.id", "X-Title": "s2change analyst"},
+            **extra,
+        )
     return ChatGoogleGenerativeAI(model=name, max_retries=2, timeout=60, **extra)
 
 
 @lru_cache(maxsize=1)
 def get_agent():
-    register_harness_profile("google_genai", HarnessProfile(excluded_tools=BUILTIN_TOOLS))
+    for provider in ("google_genai", "openai"):  # hide deepagents' built-in tools whichever provider is active
+        register_harness_profile(provider, HarnessProfile(excluded_tools=BUILTIN_TOOLS))
     return create_deep_agent(model=_model(), tools=ALL_TOOLS, system_prompt=SYSTEM_PROMPT)
 
 

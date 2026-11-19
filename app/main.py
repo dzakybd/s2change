@@ -75,7 +75,7 @@ async def db_down(request: Request, exc: OperationalError):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "db": db.ping(), "model": os.environ.get("GEMINI_MODEL", agent.DEFAULT_MODEL)}
+    return {"ok": True, "db": db.ping(), "model": agent.model_name()}
 
 
 @app.get("/api/runs")

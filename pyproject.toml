@@ -37,6 +37,7 @@ app = [
     "fastapi>=0.165.0",
     "httpx>=0.28.1",
     "langchain-google-genai>=4.5.1",
+    "langchain-openai>=1.8.3",
     "python-dotenv>=1.2.4",
     "slowapi>=0.1.10",
     "sqlglot>=30.33.0",
