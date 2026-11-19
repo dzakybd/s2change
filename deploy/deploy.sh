@@ -30,9 +30,9 @@ log "restart $APP"
 if pm2 describe "$APP" >/dev/null 2>&1; then
   pm2 restart "$APP" --update-env
 else
-  pm2 start "$REPO/.venv/bin/uvicorn" --name "$APP" --cwd "$REPO" -- \
+  pm2 start "$REPO/.venv/bin/uvicorn" --name "$APP" --cwd "$REPO" --interpreter none -- \
     app.main:app --host 127.0.0.1 --port "$PORT" --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
   pm2 save
 fi
-sleep 3
+for _ in $(seq 1 20); do curl -fsS -m 3 "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1 && break; sleep 3; done
 curl -fsS "http://127.0.0.1:$PORT/api/health" && echo && log "deploy OK"
