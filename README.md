@@ -2,6 +2,10 @@
 
 A small geospatial analytics pipeline: it loads two Sentinel-2 scenes, detects change, stores the change polygons in a spatial database (SpatiaLite file or PostGIS) and visualizes and interprets the result.
 
+```bash
+uv sync && uv run s2cd run    # ~40 s, offline: stacks, change maps, SQLite DB, figures, maps
+```
+
 **The finding that shapes the pipeline:** neither provided "date" is a single acquisition. I traced both back through STAC, pixel for pixel (100 % identical DN on 2.65 M pixels): each is a **mosaic of two Sentinel-2 scenes from different orbits**. The "before" mosaic combines 07-01 and 07-04, and the "after" mosaic combines 08-25 and 09-02. They are seamed along a slanted swath edge, and the after date is hazier. The pipeline detects these radiometric zones blind from the data, and they match the true seams at 99–100 %. It then normalizes each zone and scores change with a per-zone statistical noise model.
 
 The provided Euclidean baseline flags **94 %** of one zone as "changed" and 11,078 ha in total. This method finds **1,345 ha**, at a similar 3–6 % in every zone, concentrated on the tailings facility, the waste dumps and the pits.

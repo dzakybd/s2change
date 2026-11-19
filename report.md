@@ -4,6 +4,14 @@
 **Nominal dates:** 2023-08-12 (T1) → 2023-09-02 (T2). As section 0 shows, each "date" is really a two-scene mosaic, and the effective intervals are 52–60 days in the dry season.
 **Data:** Sentinel-2 L2A, B02/B03/B04, 10 m, EPSG:32735.
 
+## TL;DR
+
+- **Data:** each provided "date" is a mosaic of two Sentinel-2 scenes (verified pixel-exact against STAC), so radiometry steps along slanted seams and the effective gap is 52–60 days, not 21.
+- **Method:** detect the seam zones from the data, normalize each zone on pseudo-invariant pixels, then score change with a robust change vector analysis (Mahalanobis d² under a χ² noise model). Thresholds are false-alarm rates (1e-3 / 1e-5), not tuned constants.
+- **Result:** 1,345 ha in 538 polygons, against 11,078 ha for the provided Euclidean baseline, which mostly maps the seams and haze. 70 % of the change lies in the mine footprint: the tailings facility, waste dumps and pit benches.
+- **Interpretation:** mostly operational mining (tailings deposition, dumping, excavation). Change outside the mine is seasonal wetland/water dynamics, plus a little burning. No footprint expansion is visible at the 0.2 ha scale in this pair.
+- **Not proven:** there is no reference data, so confidence is a magnitude score, not an accuracy (section 4).
+
 ## 0. Data finding: each "date" is a mosaic of two acquisitions
 
 ![zones](docs/figures/02_stripe_zones.png)
@@ -81,7 +89,7 @@ Spatial pattern:
 
 ## 3. Interpretation
 
-| Pattern | Most likely explanation | Confidence | How to confirm |
+| Pattern | Most likely explanation | My confidence (judgement, no ground truth) | How to confirm |
 |---|---|---|---|
 | Patchy bright/dark mosaic on the tailings facility | **Operational tailings deposition**: spigotting moves the wet beach around, and dry beaches bleach | High | Deposition records; multi-date sequence (beaches cycle) |
 | Brightening arc on the TSF embankment | **Vegetation stripped from the embankment face** (enrichment: `vegetation_loss`, NDVI −0.30, dNBR +0.22 on the 51 ha arc), consistent with preparing a raise or crest works | Medium | VHR imagery; dam-raise schedule |
@@ -93,7 +101,22 @@ Spatial pattern:
 
 In short, mining operations drive most of the real change between early July and late August / early September 2023. The change sits on the tailings facility, the waste dumps and the pit benches, all inside the disturbed footprint. Most change outside the footprint is seasonal (fire, dambos, water) rather than an expansion of the mine. I see **no evidence of new land clearing or footprint expansion** at the 0.2 ha scale in this period. The largest brightening outside the footprint is only 41 ha in total, made of scattered small patches.
 
-### 3.1 Checking the interpretation with SWIR/NIR (optional `s2cd enrich`)
+## 4. Limitations and next steps
+
+- **Three visible bands and two dates** cannot separate burning from wetting, or turbidity from depth. The enrichment and the timeline add SWIR/NIR and many dates as a check, but the core answer uses only what the brief provided.
+- **No reference data:** confidence is a magnitude score, not accuracy. Next step: label a stratified random sample (about 100 polygons, plus about 100 points in the no-change stratum) on VHR imagery and report precision, recall and area-adjusted accuracy (Olofsson et al. 2014). `solafune_tools.metrics` already has the IoU and F1 utilities needed.
+- **Shadows:** pit walls are sun-angle dependent. Pairing scenes with similar solar geometry (or using a DEM shadow mask) would remove some bench "changes".
+- **For production monitoring**, which is what ShigenAI-style products need:
+  - Run on every clear Sentinel-2 L2A scene from Planetary Computer, with an SCL mask.
+  - Never compare mosaics blindly. Carry per-pixel source-scene provenance (as `s2cd enrich` reconstructs it) and compare scene to scene, or use per-pixel composites with recorded dates. Keep the data-driven zone check as a QA gate.
+  - Add Sentinel-1 coherence so cloudy-season monitoring keeps working.
+  - Store results per scene pair in PostGIS (the schema is already run- and date-keyed) and serve them through a tile/feature API to the viewer.
+
+## Appendix: optional extensions beyond the brief
+
+These use extra Planetary Computer data (SWIR/NIR, SCL, more dates) to check the interpretation above. The required answer in sections 1–3 uses only the three provided bands.
+
+### A. Checking the interpretation with SWIR/NIR (`s2cd enrich`)
 
 The assignment gives only visible bands. To test the readings above, I pulled B08, B11, B12, SCL and AOT for the *same source scenes, pixel by pixel* (section 0) from Planetary Computer. From these I computed dNDVI, dNBR and dMNDWI, and assigned every polygon a `likely_cause` with transparent rules (first match wins, thresholds in `enrichment_summary.json`):
 
@@ -113,7 +136,7 @@ Caveats I would raise myself:
 - **MNDWI also shows the mosaic seam** (vertical step in the dMNDWI panel). `water_change` is a candidate list, not a verdict.
 - **23 polygons (52 ha) straddle a source-scene seam.** They are flagged in `change_context.seam_mix` and should be treated as suspect.
 
-## 3.2 Multi-year context: monthly composites, Jan 2023 – Oct 2026 (optional `python -m s2cd.timeline`)
+### B. Multi-year context: monthly composites, Jan 2023 – Oct 2026 (`python -m s2cd.timeline`)
 
 One scene pair cannot tell persistent mining from seasonal change. So I built 46 monthly composites from Planetary Computer: SCL cloud/shadow masking, then a per-pixel median. 39 months have at least 90 % clear coverage; the 7 that don't are mostly Dec–Jan and are kept as gaps, not filled. The same zone-aware CVA then runs between consecutive good months.
 
@@ -132,14 +155,3 @@ One scene pair cannot tell persistent mining from seasonal change. So I built 46
 - **Caveats:** month areas count only observed pixels (no gap filling). Wet-season composites with 2–3 clear looks per pixel keep a few patches of cloud shadow. The footprint thresholds are heuristic and documented in `timeline.Rules`.
 
 Timelapse: `docs/web/monthly/timelapse.mp4`; interactive in the viewer's *Timeline* tab.
-
-## 4. Limitations and next steps
-
-- **Three visible bands and two dates** cannot separate burning from wetting, or turbidity from depth. The enrichment and the timeline add SWIR/NIR and many dates as a check, but the core answer uses only what the brief provided.
-- **No reference data:** confidence is a magnitude score, not accuracy. Next step: label a stratified random sample (about 100 polygons, plus about 100 points in the no-change stratum) on VHR imagery and report precision, recall and area-adjusted accuracy (Olofsson et al. 2014). `solafune_tools.metrics` already has the IoU and F1 utilities needed.
-- **Shadows:** pit walls are sun-angle dependent. Pairing scenes with similar solar geometry (or using a DEM shadow mask) would remove some bench "changes".
-- **For production monitoring**, which is what ShigenAI-style products need:
-  - Run on every clear Sentinel-2 L2A scene from Planetary Computer, with an SCL mask.
-  - Never compare mosaics blindly. Carry per-pixel source-scene provenance (as `s2cd enrich` reconstructs it) and compare scene to scene, or use per-pixel composites with recorded dates. Keep the data-driven zone check as a QA gate.
-  - Add Sentinel-1 coherence so cloudy-season monitoring keeps working.
-  - Store results per scene pair in PostGIS (the schema is already run- and date-keyed) and serve them through a tile/feature API to the viewer.
