@@ -1,0 +1,21 @@
+# Paths are relative to the repository root.
+before: inputs/data/sentinel2_20230812
+after: inputs/data/sentinel2_20230902
+aoi: inputs/aoi.geojson
+out_dir: data/processed
+sqlite_path: data/change_detection.sqlite
+figures_dir: docs/figures
+bands: [B02, B03, B04]
+run_irmad: true
+
+# Binary change rule (robust CVA). FAR = per-pixel false-alarm rate under the chi2(3) noise model.
+rule:
+  far_low: 1.0e-3        # region growing threshold
+  far_high: 1.0e-5       # every region must contain at least one pixel this significant
+  seam_buffer_px: 2      # ignore pixels within 2 px of a detector-stripe boundary
+  opening_radius_px: 1
+  mmu_px: 20             # minimum mapping unit: 20 px = 0.2 ha
+  fill_holes_px: 20
+
+# Overrides for radiometry.detect_stripe_zones (defaults are fine for this scene).
+stripe: {}

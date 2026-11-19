@@ -1,0 +1,186 @@
+{
+  "grid": {
+    "crs": "EPSG:32735",
+    "width": 1673,
+    "height": 1597,
+    "pixel_m": 10.0
+  },
+  "valid_fraction": 0.9902,
+  "boa_offset": {
+    "sentinel2_20230812": 1000.0,
+    "sentinel2_20230902": 1000.0
+  },
+  "stripes": {
+    "angle_deg": 12.6,
+    "explained_variance": 0.557,
+    "breakpoints_px": [
+      310.5,
+      814.5,
+      886.5
+    ],
+    "zone_blue_offset": [
+      0.0442,
+      0.0413,
+      0.0254,
+      0.0187
+    ]
+  },
+  "calibration": [
+    {
+      "zone": 0,
+      "band": "B02",
+      "slope": 1.6912584580536185,
+      "intercept": -0.10085541754961014,
+      "n_pixels": 219350,
+      "invariant_fraction": 0.8802826532938226
+    },
+    {
+      "zone": 0,
+      "band": "B03",
+      "slope": 1.5815080767968774,
+      "intercept": -0.08625183999538422,
+      "n_pixels": 219350,
+      "invariant_fraction": 0.8802826532938226
+    },
+    {
+      "zone": 0,
+      "band": "B04",
+      "slope": 1.4192075298225324,
+      "intercept": -0.07768689095973969,
+      "n_pixels": 219350,
+      "invariant_fraction": 0.8802826532938226
+    },
+    {
+      "zone": 1,
+      "band": "B02",
+      "slope": 1.84765324174118,
+      "intercept": -0.11486247926950455,
+      "n_pixels": 816689,
+      "invariant_fraction": 0.8811261079799042
+    },
+    {
+      "zone": 1,
+      "band": "B03",
+      "slope": 1.6427014973147298,
+      "intercept": -0.0941932201385498,
+      "n_pixels": 816689,
+      "invariant_fraction": 0.8811261079799042
+    },
+    {
+      "zone": 1,
+      "band": "B04",
+      "slope": 1.5052304057204366,
+      "intercept": -0.08680099993944168,
+      "n_pixels": 816689,
+      "invariant_fraction": 0.8811261079799042
+    },
+    {
+      "zone": 2,
+      "band": "B02",
+      "slope": 1.27574912575618,
+      "intercept": -0.04495332017540932,
+      "n_pixels": 117305,
+      "invariant_fraction": 0.8845062017816803
+    },
+    {
+      "zone": 2,
+      "band": "B03",
+      "slope": 1.214674182285069,
+      "intercept": -0.04505670815706253,
+      "n_pixels": 117305,
+      "invariant_fraction": 0.8845062017816803
+    },
+    {
+      "zone": 2,
+      "band": "B04",
+      "slope": 1.094659806347716,
+      "intercept": -0.03833965212106705,
+      "n_pixels": 117305,
+      "invariant_fraction": 0.8845062017816803
+    },
+    {
+      "zone": 3,
+      "band": "B02",
+      "slope": 1.3238997476283259,
+      "intercept": -0.04020651802420616,
+      "n_pixels": 1492368,
+      "invariant_fraction": 0.8367688130541528
+    },
+    {
+      "zone": 3,
+      "band": "B03",
+      "slope": 1.2457837477260112,
+      "intercept": -0.040798917412757874,
+      "n_pixels": 1492368,
+      "invariant_fraction": 0.8367688130541528
+    },
+    {
+      "zone": 3,
+      "band": "B04",
+      "slope": 1.1910545132729857,
+      "intercept": -0.04293598234653473,
+      "n_pixels": 1492368,
+      "invariant_fraction": 0.8367688130541528
+    }
+  ],
+  "pif_fraction": 0.856,
+  "noise_sigma_reflectance": 0.00779,
+  "thresholds": {
+    "baseline_otsu": 0.041,
+    "cva_d2_low": 16.27,
+    "cva_d2_high": 25.9
+  },
+  "changed_area_ha": {
+    "euclidean_baseline": 11077.82,
+    "robust_cva": 1345.2,
+    "irmad": 10622.7
+  },
+  "changed_fraction_by_zone": {
+    "euclidean_baseline": [
+      0.9426,
+      0.7491,
+      0.4071,
+      0.1618
+    ],
+    "robust_cva": [
+      0.0297,
+      0.0374,
+      0.0266,
+      0.0632
+    ],
+    "irmad": [
+      0.342,
+      0.3185,
+      0.3618,
+      0.4588
+    ]
+  },
+  "irmad_rho_by_zone": {
+    "0": [
+      0.9151966975678653,
+      0.8797641427547399,
+      0.7581526539245195
+    ],
+    "1": [
+      0.9942953196981908,
+      0.9739528263011454,
+      0.8660018209240782
+    ],
+    "2": [
+      0.9984549808539335,
+      0.9962511578933231,
+      0.9187495093979352
+    ],
+    "3": [
+      0.9971820687644458,
+      0.98091724265565,
+      0.9137575899961379
+    ]
+  },
+  "n_features": {
+    "robust_cva": 538,
+    "euclidean_baseline": 1518
+  },
+  "agreement_cva_vs_baseline_iou": 0.055,
+  "runtime_s": 27.5
+}
