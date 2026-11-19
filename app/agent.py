@@ -44,7 +44,10 @@ Data caveats to state when relevant
 - confidence is a 0-1 magnitude score of the spectral change, not a calibrated accuracy or probability; there is no reference data.
 - likely_cause is a rule-based guess from spectral indices and the scene classification (one run only); in_disturbed_area is a heuristic \
   mine footprint; neither is ground truth. Cloud/shadow/haze polygons are probably not land change.
-- Timeline months without clear imagery have no values."""
+- Timeline months without clear imagery have no values.
+- The monthly footprint swings 20-40 % with the seasons (dry-season peaks, wet-season green-up lows). For growth, compare the same \
+  month across years (e.g. October 2023 vs October 2026), not first vs last month. Wet-season dips are seasonal vegetation, not cloud; \
+  cloudy months are simply missing."""
 
 
 def model_name() -> str:

@@ -23,7 +23,7 @@ export interface Panel {
 const METHOD_LABELS: Record<string, string> = {
   robust_cva: "Robust CVA (shown)",
   euclidean_baseline: "Euclidean baseline",
-  irmad: "Global IR-MAD",
+  irmad: "Zone-wise IR-MAD",
 };
 
 const RGB_KEYS: readonly RasterKey[] = ["before", "after", "after_normalized"];
@@ -79,15 +79,16 @@ export function buildPanel(root: HTMLElement, data: Data, initial: PanelInitial,
 
     <section>
       <h2>Method</h2>
-      <p>The later scene shows detector-stripe brightness steps, so it is first normalized to the earlier one
-      <em>per stripe zone</em> using stable pixels only. Change vector analysis then scores each pixel's
-      spectral change against a per-zone robust noise model, and the confident pixels are vectorized into polygons.</p>
+      <p>Each provided "date" is a mosaic of two Sentinel-2 scenes from different orbits (verified pixel-exact via STAC),
+      so radiometry steps at the seams. The later image is normalized to the earlier one <em>per zone</em> using stable
+      pixels only. Change vector analysis then scores each pixel's spectral change against a per-zone robust noise model,
+      and the confident pixels are vectorized into polygons.</p>
     </section>
 
     <section>
       <h2>Changed area by method</h2>
       ${methodRows}
-      <p class="note">Global methods mistake whole stripes for change; the stripe-aware result is far smaller.</p>
+      <p class="note">The baseline reads mosaic seams and haze as change; IR-MAD over-detects with only three visible bands.</p>
     </section>
 
     <section>
