@@ -1,16 +1,16 @@
-"""Radiometric handling: DN -> reflectance, detector-stripe zoning, relative normalization.
+"""Radiometric handling: DN -> reflectance, radiometric zoning, relative normalization.
 
-Why stripe zones exist
-----------------------
-Sentinel-2 MSI images the swath with 12 staggered detectors whose footprints are slanted
-parallelograms. Odd and even detectors look through the atmosphere at slightly different
-viewing angles, so under haze or smoke the path radiance differs between neighbouring
-footprints. The image then shows straight, parallel brightness steps. In this AOI the
-2023-09-02 scene has them clearly; the 2023-08-12 scene does not. A single global
-radiometric relation between dates is therefore wrong, and every change method that assumes one
-(image difference, Euclidean distance, global IR-MAD) paints whole stripes as "change".
+Why zones exist
+---------------
+Image "dates" are often mosaics. In this AOI each provided date combines two Sentinel-2 scenes
+from adjacent orbits, seamed along a slanted swath edge (verified pixel-exact against Planetary
+Computer STAC by ``s2cd enrich``). Detector-footprint striping under haze produces the same
+geometry. Either way the before/after radiometric relation changes in straight, parallel steps,
+so a single global relation is wrong, and every method that assumes one (image difference,
+Euclidean distance, global IR-MAD) paints whole zones as "change". The ``stripe`` names below
+refer to this geometry, whatever causes it.
 
-We model the date-to-date radiometric relation as piecewise constant across stripes:
+We model the date-to-date radiometric relation as piecewise constant across zones:
 1. compute the per-pixel blue-band reflectance difference between dates (haze adds path
    radiance, which is additive and strongest in blue),
 2. find the stripe orientation that best explains it (straight lines, angle search),

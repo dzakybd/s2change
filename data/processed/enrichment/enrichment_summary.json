@@ -374,9 +374,7 @@
     "rule": "seam_mix > 0.05"
   },
   "timeline": {
-    "n_acquisitions": 61,
-    "csv": "data/processed/enrichment/timeline.csv",
-    "resolution_m": 80
+    "skipped": "disabled with --no-timeline"
   },
   "files": [
     "data/processed/enrichment/indices_20230812.tif",
