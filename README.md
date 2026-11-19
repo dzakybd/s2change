@@ -12,6 +12,26 @@ The provided Euclidean baseline flags **94 %** of one zone as "changed" and 11,0
 
 **Read next:** [`report.md`](report.md) (method, results, interpretation) · [interactive map](docs/change_map.html) · [TypeScript viewer](docs/viewer/index.html)
 
+## How this maps to the brief
+
+Everything the brief requires runs offline from the provided `inputs/` with one command (`uv run s2cd run`). The extensions in the second table are optional and separate.
+
+| Brief | Where |
+|---|---|
+| **Part 1:** load B02/B03/B04 for both dates, verify CRS/transform/dimensions, stack | `src/s2cd/io.py` (`check_consistency` raises on any mismatch) → `data/processed/sentinel2_2023MMDD_stack.tif` |
+| **Part 2:** apply the example algorithm *and* your own | Example run unchanged: `change_map_baseline.tif`, `change_binary_baseline.tif`. Mine (zone-aware normalization + robust CVA): `change_map.tif`, `change_binary.tif` |
+| **Part 3:** vectorize, store in SQLite/SpatiaLite or PostGIS, `id, date_before, date_after, area_m2, confidence, geometry` | `data/change_detection.sqlite` (SpatiaLite, `MULTIPOLYGON` EPSG:32735 with R*Tree index). PostGIS: `sql/schema_postgis.sql`, `make db-up && make run-postgis` |
+| **Part 4:** visualize the AOI + change raster/polygons (interactive is a plus) | `docs/figures/*.png`, `docs/change_map.html` (Folium), `docs/viewer/` (MapLibre) |
+| **Part 5:** `report.md` with Method / Results / Interpretation | [`report.md`](report.md) sections 1–3. Section 0 covers the data finding and section 4 the limitations |
+| README: how to run, approach, assumptions | This file |
+
+| Beyond the brief (optional) | Command |
+|---|---|
+| Provenance + SWIR/NIR enrichment (source scenes, dNBR/dMNDWI, `likely_cause`) | `uv sync --extra stac && uv run s2cd enrich` |
+| Monthly timeline Jan 2023 – Oct 2026 (footprint, water, change per month, timelapse) | `uv run --extra stac python -m s2cd.timeline` |
+| Analyst agent (FastAPI + deepagents + Gemini over PostGIS, read-only, with evals) | [`app/README.md`](app/README.md) |
+| Live demo: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) | `deploy/` |
+
 ---
 
 ## Quick start
@@ -88,7 +108,8 @@ flowchart LR
 
 - The inputs are L2A surface reflectance with the +1000 offset. The code infers the offset from the data rather than hard-coding it.
 - The two dates are co-registered at the sub-pixel level. Residual edge effects are handled by the opening and the MMU, not modelled.
-- Most of the AOI did not change in three weeks. This is what makes PIF selection and the per-zone noise model valid.
+- Most of the AOI did not change between the two mosaics (52–60 days apart in practice). This is what makes PIF selection and the per-zone noise model valid.
+- `date_before` / `date_after` in the database are the **nominal** dates from the folder names, as the brief's table expects. The true per-pixel acquisition dates are in `change_context.source_before` / `source_after` after `s2cd enrich`, and in report section 0.
 - "Confidence" is a 0–1 magnitude score: the polygon mean of `clip(log10(d² / d²_low) / 2, 0, 1)`. It reaches 1 at 100× the detection threshold. It is not a calibrated accuracy, because there is no reference data. `mean_p_change` and `strong_fraction` are stored alongside it.
 
 ## Repository layout
