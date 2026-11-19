@@ -109,12 +109,13 @@ def load_scene(folder: Path, bands: tuple[str, ...] = ("B02", "B03", "B04")) -> 
             nodatas.add(ds.nodata if ds.nodata is not None else 0)
     if len(nodatas) != 1:
         raise ValueError(f"{folder}: bands disagree on nodata {nodatas}")
+    grid = check_consistency(grids)  # before stacking, so a mismatch gets the descriptive error
     return Scene(
         name=folder.name,
         acquired=parse_date(folder),
         bands=bands,
         dn=np.stack(arrays),
-        grid=check_consistency(grids),
+        grid=grid,
         nodata=float(nodatas.pop()),
     )
 

@@ -43,3 +43,31 @@ def run(
         paths.append(viz.folium_map(products, web, Path("docs/change_map.html")))
         logging.getLogger("s2cd").info("Wrote %d figures/maps", len(paths))
     typer.echo(json.dumps(products.summary["changed_area_ha"], indent=2))
+
+
+@app.command()
+def enrich(
+    config: Annotated[Path, typer.Option(help="YAML config (paths); the same file as for `run`.")] = Path("configs/default.yaml"),
+    timeline: Annotated[bool, typer.Option(help="Also build the June-October AOI timeline (many small reads).")] = True,
+    lookback_days: Annotated[
+        int, typer.Option(help="Search STAC items this many days before each nominal date (inputs are mosaics).")
+    ] = 75,
+    refresh: Annotated[bool, typer.Option(help="Ignore cached windows under data/cache/stac.")] = False,
+) -> None:
+    """Optional: validate/interpret the changes with extra bands from Planetary Computer (needs `--extra stac` and network)."""
+    from . import pipeline, stac_context
+
+    cfg = pipeline.Config.from_yaml(config) if config.exists() else pipeline.Config()
+    try:
+        summary = stac_context.enrich(
+            cfg.before, cfg.after, cfg.aoi, cfg.out_dir, cfg.sqlite_path, cfg.figures_dir,
+            lookback_days=lookback_days, with_timeline=timeline, refresh=refresh,
+        )  # fmt: skip
+    except (ImportError, FileNotFoundError) as e:
+        typer.echo(f"{e}\n(`s2cd run` must have been run first; enrichment needs `uv run --extra stac`.)", err=True)
+        raise typer.Exit(2) from e
+    typer.echo(
+        json.dumps(
+            {"area_by_likely_cause": summary["area_by_likely_cause"], "aot": summary["aot_by_zone"]["overall_mean"]}, indent=2
+        )
+    )

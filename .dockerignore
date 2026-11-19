@@ -1,0 +1,16 @@
+.git
+.venv
+.ruff_cache
+.pytest_cache
+__pycache__
+*.pyc
+.DS_Store
+.env
+.github
+tests
+viewer/node_modules
+viewer/dist
+data
+docs
+inputs/data
+inputs/__pycache__

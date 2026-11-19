@@ -27,8 +27,20 @@ dependencies = [
 
 [project.optional-dependencies]
 stac = [
+    "imageio[ffmpeg]>=2.38.2",
+    "odc-stac>=0.5.3",
     "planetary-computer>=1.0.0",
     "pystac-client>=0.9.1",
+]
+app = [
+    "deepagents>=0.7.40",
+    "fastapi>=0.165.0",
+    "httpx>=0.28.1",
+    "langchain-google-genai>=4.5.1",
+    "python-dotenv>=1.2.4",
+    "slowapi>=0.1.10",
+    "sqlglot>=30.33.0",
+    "uvicorn[standard]>=0.54.0",
 ]
 
 [project.scripts]
