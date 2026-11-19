@@ -16,8 +16,13 @@ cd "$REPO"
 [ -f .env ] || { echo "missing $REPO/.env (see app/.env.example)"; exit 1; }
 chmod 600 .env
 
-log "git pull"
-git fetch origin && git reset --hard origin/main
+# Pull first, then re-exec so the rest of the run uses the freshly pulled copy of this script
+# (bash reads scripts incrementally; a reset mid-run would otherwise execute the old version).
+if [ -z "${S2CD_DEPLOY_REEXEC:-}" ]; then
+  log "git pull"
+  git fetch origin && git reset --hard origin/main
+  S2CD_DEPLOY_REEXEC=1 exec bash "$REPO/deploy/deploy.sh" "$@"
+fi
 
 log "uv sync (app extra)"
 uv sync --frozen --no-dev --extra app
