@@ -90,9 +90,10 @@ cases:
     question: How did the mine footprint evolve in 2024?
     requires_timeline: true
     truth:
-      jan: "SELECT footprint_ha FROM timeline_months WHERE month = '2024-01'"
-      dec: "SELECT footprint_ha FROM timeline_months WHERE month = '2024-12'"
-    numbers: [jan, dec]
+      # first/last *clear* months of 2024 (2024-01 is cloudy, so it has no value)
+      first: "SELECT footprint_ha FROM timeline_months WHERE month LIKE '2024-%' AND status = 'ok' ORDER BY month LIMIT 1"
+      last: "SELECT footprint_ha FROM timeline_months WHERE month LIKE '2024-%' AND status = 'ok' ORDER BY month DESC LIMIT 1"
+    numbers: [first, last]
     tools_any: [timeline_stats, readonly_sql]
 
   - id: caveat_gap
