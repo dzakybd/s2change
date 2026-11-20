@@ -31,7 +31,7 @@ The app is the single place to inspect the solution, so evaluators never need a 
 | Method & path | Returns |
 |---|---|
 | `GET /api/compare/dates` | `[{date, aoi_cloud, ready}]`: the date catalogue (`python -m s2cd.catalog`), one clear scene per month after the provided pair, downloaded and cloud-checked in advance. `ready`: the pair from `provided-before` is precomputed |
-| `POST /api/compare {before, after}` | `{job_id, status}`. `before`/`after` is `"provided-before"`, `"provided-after"` or a catalogue date `YYYY-MM-DD`; nothing is downloaded at request time. Results are cached per pair; one job runs at a time |
+| `POST /api/compare {before, after}` | `{job_id, status, message, result?}` (a cached pair comes back `done` with its result). `before`/`after` is `"provided-before"`, `"provided-after"` or a catalogue date `YYYY-MM-DD`; nothing is downloaded at request time. Results are cached per pair; one job runs at a time |
 | `GET /api/compare/{job_id}` | `{status: queued\|running\|done\|error, message, result?}`. `result = {pair, summary: {changed_ha, by_change_type, by_facility}, changes_url, overlays: {before, after, intensity: {url, bounds}}}` |
 | `GET /api/compare/files/{pair}/{file}` | Cached GeoJSON/WebP for a finished comparison |
 

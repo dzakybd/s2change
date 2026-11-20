@@ -204,7 +204,7 @@ def compare_start(request: Request, body: CompareRequest):
         raise bad_request(e) from None
     except compare_jobs.Refused as e:
         raise HTTPException(429, str(e)) from None
-    return {"job_id": job.job_id, "status": job.status}
+    return job.public()  # a cached pair is "done" at once, so the result must come with it
 
 
 @app.get("/api/compare/files/{pair}/{file}")
