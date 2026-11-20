@@ -67,6 +67,13 @@ export class DatePicker {
     await this.run();
   }
 
+  /** Back to the provided pair (what "Use provided pair" does). */
+  reset(): void {
+    this.before = PROVIDED_BEFORE;
+    this.after = PROVIDED_AFTER;
+    this.opts.onDataset(this.opts.provided);
+  }
+
   setDataset(ds: Dataset): void {
     this.current = ds;
     this.renderChip();
@@ -182,9 +189,7 @@ export class DatePicker {
       this.render();
       void this.loadDates(this.api);
     } else if (act === "reset") {
-      this.before = PROVIDED_BEFORE;
-      this.after = PROVIDED_AFTER;
-      this.opts.onDataset(this.opts.provided);
+      this.reset();
       this.close();
     }
   }

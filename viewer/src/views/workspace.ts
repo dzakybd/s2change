@@ -402,7 +402,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       showFacility(facilityId) {
         const f = facilities.features.find((x) => x.properties.facility_id === facilityId);
         if (!f) return `No facility ${facilityId}.`;
-        if (!ds.nominal) return "Facilities are shown for the provided pair only; reset the dates first.";
+        if (ds.id !== provided.id) picker.reset(); // facility numbers belong to the provided pair
         setLayer("facilities");
         syncHash();
         fit([f as Feature], 15);
