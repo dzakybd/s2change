@@ -26,7 +26,7 @@ from s2cd import compare
 load_dotenv()
 log = logging.getLogger("s2cd.app")
 MAX_CHARS, KEEP_MESSAGES = 2000, 10
-MAX_DATE_RANGE_DAYS = 400
+MAX_DATE_RANGE_DAYS = 2000  # the picker asks for 2023-01-01..today; metadata only, cached
 
 
 def client_ip(request: Request) -> str:

@@ -5,8 +5,7 @@
 Writes, under docs/web/ (served at /web/ by the live site and by GitHub Pages):
 
 * overview.json: headline numbers (data/processed/run_summary.json), the facility register
-  (data/change_detection.sqlite), the sensitivity grid (data/processed/sensitivity.csv) and the accuracy
-  assessment (data/processed/validation/accuracy.json, or {"status": "pending"} until it exists);
+  (data/change_detection.sqlite), and the sensitivity grid (data/processed/sensitivity.csv);
 * report/report.md and report/figures/*.png: report.md with its images copied from docs/figures and the links
   rewritten so the document renders from docs/web/report/.
 
@@ -91,7 +90,6 @@ def overview() -> dict:
     sens = sensitivity()
     default = next((s for s in sens if s["is_default"]), None)
     changed = run["changed_area_ha"]
-    accuracy = _read_json(PROCESSED / "validation" / "accuracy.json")
     return {
         "generated": datetime.now(UTC).isoformat(timespec="seconds"),
         "pair": {
@@ -120,7 +118,6 @@ def overview() -> dict:
         "change_type_ha": run["change_type_ha"],
         "facilities": facilities(),
         "sensitivity": sens,
-        "accuracy": accuracy if accuracy is not None else {"status": "pending"},
     }
 
 
@@ -177,7 +174,7 @@ def main() -> None:
     data = overview()
     (WEB / "overview.json").write_text(json.dumps(data, indent=2, allow_nan=False) + "\n")
     figs = report()
-    print(f"docs/web/overview.json: {len(data['facilities'])} facilities, accuracy {data['accuracy'].get('status', 'ready')}")
+    print(f"docs/web/overview.json: {len(data['facilities'])} facilities")
     print(f"docs/web/report/report.md: {len(figs)} figures copied")
 
 

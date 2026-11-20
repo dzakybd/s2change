@@ -2,7 +2,7 @@
 
 Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two dates**, as the brief provides. The pipeline finds the change, types it ("tailings deposition", "waste dumping"…), stores it in PostGIS and explains it.
 
-**Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report, the downloads and an accuracy-assessment page. No setup is needed.
+**Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report and the downloads. No setup is needed.
 
 ![app](docs/figures/app_map_oblique_desktop.png)
 
@@ -13,7 +13,7 @@ Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two d
 - **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (194 ha), the waste dumps and pit edges (129 ha of dumping), and pit benches. There is no clearing beyond the mine footprint at the 0.2 ha scale.
 - **Robust:** the result holds across 16 threshold settings (210–682 ha, 61–77 % inside the mine).
 
-Full write-up: **[report.md](report.md)**: method, results, interpretation with RGB-only confounders, sensitivity, accuracy assessment.
+Full write-up: **[report.md](report.md)**: method, results, interpretation with RGB-only confounders, sensitivity, limitations.
 
 ## How this maps to the brief
 
@@ -23,7 +23,7 @@ Full write-up: **[report.md](report.md)**: method, results, interpretation with 
 | **2 · Change detection:** the example algorithm *and* your own | Example, unchanged: `change_map_baseline.tif`, `change_binary_baseline.tif`. Mine: `change_map.tif` (log10 d²), `change_significance.tif` (−log10 p), `change_binary.tif` |
 | **3 · Features in a geospatial DB** (`id, date_before, date_after, area_m2, confidence, geometry`) | `data/change_detection.sqlite` (SpatiaLite) and **PostGIS on Supabase**: `change_features` + `change_runs` + `facilities` + `facility_changes`, MultiPolygon EPSG:32735, GiST index, validity check. Query it live in the app's **Database** tab |
 | **4 · Visualization:** AOI + change raster/polygons, interactive a plus | The app: swipe, change types, facility register, intensity, oblique view, draw-an-area stats, other-date comparison. Static figures in `docs/figures/` |
-| **5 · `report.md`:** Method / Results / Interpretation | [report.md](report.md) sections 1–3; the data finding, sensitivity and accuracy sit around them |
+| **5 · `report.md`:** Method / Results / Interpretation | [report.md](report.md) sections 1–3; the data finding, sensitivity and limitations sit around them |
 
 ## Run it
 
@@ -31,7 +31,6 @@ Full write-up: **[report.md](report.md)**: method, results, interpretation with 
 uv sync && uv run s2cd run      # ~30 s, offline: stacks, change maps, polygons, SQLite DB, figures
 uv run s2cd provenance          # optional, online: STAC source scenes + seam map (B02-B04 only)
 uv run python -m s2cd.sensitivity   # threshold sweep
-uv run python -m s2cd.validation assess   # accuracy, after labelling in the app's Label tab
 ```
 
 PostGIS locally: `make db-up && make run-postgis` (docker compose, PostGIS 16). Production publishing: `python -m app.publish` (see `app/README.md`).
@@ -58,7 +57,7 @@ flowchart LR
 - The dates are nominal. The true acquisitions are stored in the run metadata.
 - Most of the AOI is unchanged, so stable pixels can be found per zone.
 - Facility regions are analyst-defined (human-in-the-loop), but their outlines come from the imagery.
-- "Confidence" is a change-magnitude score, not an accuracy. The accuracy is in report section 5.
+- "Confidence" is a change-magnitude score, not an accuracy. There is no reference data, so accuracy is not assessed (report section 5).
 
 ## Repository
 
@@ -74,7 +73,7 @@ src/s2cd/
   register.py            facility register: outlines from imagery, change per facility
   interpret.py           change type + brief category + explanation per polygon
   scenes.py, compare.py  other dates for the app's date picker
-  sensitivity.py, validation.py
+  sensitivity.py
   pipeline.py, cli.py, viz.py, db.py, site.py
 configs/                 thresholds (default.yaml), facility register
 sql/                     PostGIS schema + example queries

@@ -119,8 +119,6 @@ export interface Overview {
     share_in_register_mine_classes: number;
     is_default: boolean;
   }[];
-  /** `{status: "pending"}` until data/processed/validation/accuracy.json exists; otherwise that file verbatim. */
-  accuracy: Record<string, unknown>;
 }
 
 export type AgentAction =

@@ -1,18 +1,17 @@
 # s2change web app
 
 One place to evaluate the whole take-home: a Vite + strict TypeScript + MapLibre GL app with seven hash-routed tabs
-(`#/overview`, `#/map`, `#/database`, `#/report`, `#/analyst`, `#/downloads`, `#/label`). Live at
+(`#/overview`, `#/map`, `#/database`, `#/report`, `#/analyst`, `#/downloads`). Live at
 https://s2change.dzaky.ai.id, also buildable for GitHub Pages.
 
 | Tab | What it does | Needs the API? |
 |---|---|---|
-| Overview | Headline findings, brief-to-tab checklist, validation numbers, method diagram, sensitivity table (`web/overview.json`) | no |
+| Overview | Headline findings, brief-to-tab checklist, method diagram, sensitivity table (`web/overview.json`) | no |
 | Map | Before/after swipe, layer menu (change types, true colour, intensity, binary, facility register, redness), polygon inspector with the reason for each label, AOI tool, oblique view (optional extrusion by confidence), other-date comparison | only for other dates and PostGIS AOI stats; AOI falls back to the polygons in the browser |
 | Database | Schema browser, example queries, SQL editor (Cmd/Ctrl+Enter), results table, CSV/GeoJSON download, "show on map" | yes (live-only; static hosts get an explanation) |
 | Report | `web/report/report.md` rendered with a table of contents and numbered figures | no |
 | Analyst | Chat with charts, tables, map actions and a tool-call trace, plus "Generate monitoring brief" | yes |
 | Downloads | Rasters, stacks, SpatiaLite, GeoJSON, docs (GitHub raw links) | no |
-| Label | Blind labelling of `web/validation/sample.json` (keys 1/2/3, arrows), saved in localStorage, `labels.json` download | no |
 
 ```bash
 npm install
@@ -33,7 +32,6 @@ uv run python -m s2cd.site   # docs/web/overview.json, docs/web/report/report.md
 - Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&oblique=1&bearing=30&extrude=1&swipe=0`.
   `#/map?before=2023-06-14&after=2023-09-02` runs the other-date comparison when the API is reachable.
   Layers: `types` (default), `after`, `before`, `after_raw`, `intensity`, `binary`, `facilities`, `redness`.
-- `/label.html` redirects to `#/label`.
 - `?mock` serves every API call from `fixtures/` (`fixtures/agent/*.json` for the chat, `fixtures/api/*.json` for the
   database, dates, comparison job and brief). `?mock=429` / `?mock=error` simulate chat failures.
 - `?api=<url>` points at another backend, e.g. `?api=http://127.0.0.1:8000`.
@@ -49,10 +47,10 @@ date picker, the AOI geometry and the swipe. `src/api.ts` is the typed client fo
 fixture backend. `src/rich.ts` renders sanitised Markdown (marked + DOMPurify) for the report and the brief.
 
 Motion is deliberately small: ease-out on enter, 150-220 ms, a 0.97 press scale, no animation on keyboard actions
-(labelling, menus), and `prefers-reduced-motion` collapses everything to opacity.
+(menus), and `prefers-reduced-motion` collapses everything to opacity.
 
 Notes
 - Swipe uses two synced maps; the "before" map is clipped with CSS `clip-path` above the "after" map and vector layers are mirrored.
 - maplibre-gl 6 locates its web worker next to its entry module, so `src/map/stage.ts` points `setWorkerUrl` at the bundled worker asset.
 - The Esri World Imagery basemap needs internet access; see Esri's terms for production use.
-- `public/` holds the favicon (SVG + 32 px PNG), the Apple touch icon, `og.png` (1200x630) and `label.html`.
+- `public/` holds the favicon (SVG + 32 px PNG), the Apple touch icon and `og.png` (1200x630).

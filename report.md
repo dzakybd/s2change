@@ -15,7 +15,7 @@
   - Pit-floor and bench activity: 26 ha.
   - Seasonal vegetation or burning outside the mine: 36 ha.
   - No new clearing beyond the mine footprint at the 0.2 ha scale.
-- **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The accuracy assessment by stratified random sampling is in section 5.
+- **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The false-alarm rate is measured; omission and per-class accuracy are not, because there is no reference data (section 5).
 
 ## 0. The data finding: each "date" is a mosaic
 
@@ -120,13 +120,9 @@ I re-ran the binary rule over per-pixel false-alarm rates from 1e-2 to 1e-5 and 
 
 The conclusions do not depend on one threshold choice.
 
-## 5. Accuracy assessment
+## 5. Limitations and next steps
 
-*Design:* stratified random sampling (Olofsson et al. 2014). The strata are the four combinations of our map and the baseline (both change / ours only / baseline only / neither). There are 30 points per stratum, labelled blind from before/after RGB chips in the app (Label tab). Estimates are weighted by stratum area: overall accuracy, user's and producer's accuracy for "change", and the error-adjusted change area with a 95 % CI, **for both maps**.
-
-*Results:* to be filled from `data/processed/validation/accuracy.json` once labelling is complete.
-
-## 6. Limitations and next steps
+- **No accuracy assessment.** There is no reference data. The false-alarm rate is calibrated and measured on held-out stable pixels, but missed change and the correctness of the change types are not. The next step is a stratified random sample labelled on very-high-resolution imagery (Olofsson et al. 2014), with strata from this map and the baseline so both get scored.
 
 - **RGB only.** No vegetation-health, burn-severity or mineral indices. Water, shadow and dark wet soil can be confused, so the water rule requires both dates. The thresholds in `rgb.py` are tuned to this AOI.
 - **Two mosaicked dates.** Sun and view geometry differ between orbits (BRDF). Normalization removes a per-zone linear difference but not cover-specific angular effects. Measured co-registration error is small: ≤ 0.05 px mean shift per zone, ≤ 0.25 px in any window.

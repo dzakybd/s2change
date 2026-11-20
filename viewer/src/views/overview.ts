@@ -67,25 +67,6 @@ function brief(): string {
   ).join("")}</ol>`;
 }
 
-const pretty = (k: string) => k.replaceAll("_", " ").replace(/\busers\b/, "user's").replace(/\bproducers\b/, "producer's");
-
-function flatten(v: unknown, path: string[] = [], out: [string, number][] = []): [string, number][] {
-  if (typeof v === "number" && Number.isFinite(v)) out.push([path.join(" · "), v]);
-  else if (v && typeof v === "object" && !Array.isArray(v) && path.length < 3) for (const [k, x] of Object.entries(v)) flatten(x, [...path, pretty(k)], out);
-  return out;
-}
-
-function validation(o: Overview): string {
-  const acc = o.accuracy;
-  const pending = acc["status"] === "pending" || Object.keys(acc).length === 0;
-  if (pending) {
-    return `<div class="card val pending"><div><div class="pill"><span class="spinner"></span> Accuracy assessment in progress</div><h3>Is the map right? A blind sample will say.</h3><p>There is no reference data, so accuracy comes from a stratified random sample of 120 points (Olofsson et al. 2014) labelled by eye from before/after chips. Strata are hidden while labelling. When the labels are in, overall, user's and producer's accuracy and an error-adjusted area appear here.</p><a class="btn primary" href="${hrefFor("label")}">Open the labelling tool</a></div></div>`;
-  }
-  const rows = flatten(acc).filter(([k]) => /acc|prec|recall|f1|kappa|iou|area|^n\b|samples|labels/i.test(k)).slice(0, 8);
-  const fmt = (k: string, v: number) => (v >= 0 && v <= 1 && !/area|^n\b/i.test(k) ? fmtPct(v, 1) : v >= 1000 ? fmtInt(v) : String(Math.round(v * 100) / 100));
-  return `<div class="card val"><div class="pill">Accuracy assessment</div><div class="val-tiles">${rows.map(([k, v]) => `<div><b class="num">${fmt(k, v)}</b><span>${esc(k)}</span></div>`).join("")}</div><p class="note">Stratified random sample, labelled blind from before/after chips. <a href="${hrefFor("label")}">Open the labelling tool</a>.</p></div>`;
-}
-
 const STEPS: [string, string, string][] = [
   ["Provenance", "Match pixels to", "STAC scenes"],
   ["Zones", "Seams become", "radiometric zones"],
@@ -177,7 +158,7 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
         <div class="hero-brand">${logoSvg(44, "hero")}<span class="eyebrow">Sentinel-2 · B02 B03 B04 · 10 m</span></div>
         <h1>What changed at an open-pit copper mine in Zambia?</h1>
         <p class="lede">s2change finds, types and explains change between two Sentinel-2 dates using only the visible bands, then lets you query it. Default pair: <b class="num">${esc(o.pair.before)} → ${esc(o.pair.after)}</b>, nominal dates (each is a mosaic of two scenes).</p>
-        <div class="cta"><a class="btn primary" href="${hrefFor("map")}">Open the map</a><a class="btn" href="${hrefFor("report")}">Read the report</a><a class="btn ghost" href="${hrefFor("label")}">Accuracy assessment</a></div>
+        <div class="cta"><a class="btn primary" href="${hrefFor("map")}">Open the map</a><a class="btn" href="${hrefFor("report")}">Read the report</a></div>
         <dl class="hero-stats"><div><dt>Changed</dt><dd class="num">${fmtInt(h.changed_ha)} ha</dd></div><div><dt>Polygons</dt><dd class="num">${fmtInt(h.n_polygons)}</dd></div><div><dt>Run time</dt><dd class="num">${Math.round(h.runtime_s)} s</dd></div></dl>
       </div>
       <a class="hero-art card" href="${hrefFor("map")}" aria-label="Open the map"><div class="art" id="art"><span class="spinner"></span></div><span class="art-cap">${fmtInt(h.n_polygons)} change polygons, coloured by type</span></a>
@@ -188,8 +169,6 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
     <section aria-labelledby="h-types"><h2 id="h-types">What changed</h2><div class="card types">${typesBar(o)}</div></section>
 
     <section aria-labelledby="h-brief"><h2 id="h-brief">The brief, and where to see it</h2>${brief()}</section>
-
-    <section aria-labelledby="h-val"><h2 id="h-val">Validation</h2>${validation(o)}</section>
 
     <section aria-labelledby="h-method" id="method"><h2 id="h-method">Method at a glance</h2><div class="card method">${methodSvg(false)}${methodSvg(true)}<p class="note">Thresholds are false-alarm rates under a measured noise model, so they do not depend on tuned constants. Full reasoning, with the dead ends, is in the <a href="${hrefFor("report")}">report</a>.</p></div></section>
 

@@ -46,5 +46,4 @@ The app is the single place to inspect the solution, so evaluators never need a 
 These live under `docs/web/` and are served at `/web/`:
 - `manifest.json`: raster overlays and their bounds;
 - `change_features.geojson`, `facilities.geojson`, `aoi.geojson`;
-- the WebP overlays;
-- `validation/sample.json` and `validation/labels.json` (accuracy assessment).
+- the WebP overlays.

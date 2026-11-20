@@ -54,16 +54,6 @@
 .b-links .chip { text-decoration: none; min-height: 28px; font-size: var(--fs-xs); font-weight: 600; }
 .b-links svg { opacity: 0.7; }
 
-/* validation */
-.val { padding: var(--s-5); }
-.val h3 { font-size: var(--fs-md); margin: var(--s-3) 0 var(--s-2); }
-.val p { max-width: 70ch; font-size: var(--fs-sm); }
-.val.pending { background: linear-gradient(135deg, rgb(240 163 94 / 0.07), var(--surface) 55%); }
-.val-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s-3); margin-top: var(--s-4); }
-.val-tiles > div { padding: var(--s-3); border-radius: var(--r-sm); background: rgb(255 255 255 / 0.04); display: grid; }
-.val-tiles b { font-size: var(--fs-lg); letter-spacing: -0.02em; }
-.val-tiles span { font-size: var(--fs-xs); color: var(--text-3); text-transform: capitalize; }
-
 /* method */
 .method { padding: var(--s-5); }
 .method svg { display: block; width: 100%; height: auto; font-family: var(--font); }

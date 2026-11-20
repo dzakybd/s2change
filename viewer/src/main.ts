@@ -12,7 +12,6 @@ const TITLES: Record<RouteName, string> = {
   report: "Report · s2change",
   analyst: "Analyst · s2change",
   downloads: "Downloads · s2change",
-  label: "Accuracy assessment · s2change",
 };
 
 /** Views load on demand; the map (MapLibre) and the markdown libraries stay out of the first paint. */
@@ -23,7 +22,6 @@ const LOADERS: Record<RouteName, { group: string; load: () => Promise<(ctx: AppC
   database: { group: "database", load: async () => (await import("./views/database")).createDatabase },
   report: { group: "report", load: async () => (await import("./views/report")).createReport },
   downloads: { group: "downloads", load: async () => (await import("./views/downloads")).createDownloads },
-  label: { group: "label", load: async () => (await import("./views/label")).createLabel },
 };
 
 const main = document.getElementById("main") as HTMLElement;
