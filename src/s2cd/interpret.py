@@ -232,7 +232,9 @@ def plain_area(m2: float) -> str:
 
 def _location(geom, fac_id, outlines: gpd.GeoDataFrame | None) -> str:
     """'on the east side of the X' inside (or touching) a facility, else 'N km <direction> of the nearest facility'."""
-    if outlines is None or not len(outlines):
+    if outlines is not None:  # an outline can be empty for a date (e.g. no water on both dates): it has no position
+        outlines = outlines[~outlines.geometry.is_empty]
+    if outlines is None or not len(outlines) or geom.is_empty:
         return ""
     names = dict(zip(outlines.facility_id, outlines["name"], strict=True))
     c = geom.centroid
