@@ -6,7 +6,7 @@
 .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .toc a { display: block; padding: 5px 10px; margin-left: -10px; border-radius: 6px; color: var(--text-3); text-decoration: none; line-height: 1.35; transition: color 140ms ease, background-color 140ms ease; }
 .toc .sub a { padding-left: 22px; font-size: var(--fs-xs); }
-.toc a.on { color: var(--accent-2); background: rgb(240 163 94 / 0.09); }
+.toc a.on { color: var(--accent-ink); background: rgb(232 131 58 / 0.09); }
 @media (hover: hover) and (pointer: fine) { .toc a:hover { color: var(--text); } }
 .rp-meta { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); font-size: var(--fs-sm); }
 .rp-meta .chip { text-decoration: none; min-height: 28px; font-size: var(--fs-xs); }
@@ -23,12 +23,12 @@
 .prose ul, .prose ol { margin: 0 0 var(--s-4); padding-left: 1.4em; }
 .prose li { margin: 5px 0; padding-left: 4px; }
 .prose li::marker { color: var(--text-3); }
-.prose code { font-size: 0.86em; padding: 2px 6px; border-radius: 5px; background: rgb(255 255 255 / 0.07); color: #e9d9c8; }
+.prose code { font-size: 0.86em; padding: 2px 6px; border-radius: 5px; background: rgb(15 23 42 / 0.07); color: var(--text); }
 .prose pre { margin: 0 0 var(--s-4); padding: var(--s-4); overflow-x: auto; border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); font-size: 0.82rem; line-height: 1.6; }
 .prose pre code { padding: 0; background: none; color: var(--text-2); }
-.prose blockquote { margin: 0 0 var(--s-4); padding: var(--s-2) var(--s-4); border-radius: var(--r-sm); background: rgb(240 163 94 / 0.06); box-shadow: 3px 0 0 var(--accent) inset; }
+.prose blockquote { margin: 0 0 var(--s-4); padding: var(--s-2) var(--s-4); border-radius: var(--r-sm); background: rgb(232 131 58 / 0.06); box-shadow: 3px 0 0 var(--accent) inset; }
 .prose blockquote p:last-child { margin: 0; }
-.prose hr { border: 0; height: 1px; background: rgb(255 255 255 / 0.08); margin: var(--s-7) 0; }
+.prose hr { border: 0; height: 1px; background: rgb(15 23 42 / 0.08); margin: var(--s-7) 0; }
 .prose .table-wrap { margin: 0 0 var(--s-5); }
 .prose table { font-size: var(--fs-sm); }
 .prose th, .prose td { white-space: normal; min-width: 90px; }

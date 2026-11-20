@@ -162,9 +162,9 @@ def brief(run_id: str | None = None) -> str:
 
     lines = [f"# Monitoring brief: {info['date_before']} to {info['date_after']} (nominal dates)", ""]
     lines += ["## Headline", ""]
-    headline = f"**{total:,.0f} ha changed across {n} polygons** ({info['method']})."
+    headline = f"**{total / 100:,.2f} km² changed across {n} polygons** ({info['method']})."
     if top:
-        headline += f" The largest interpreted signal is {_label(top['change_type'])} ({top['area_ha']:,.0f} ha)."
+        headline += f" The largest interpreted signal is {_label(top['change_type'])} ({top['area_ha'] / 100:,.2f} km²)."
     if facilities and total:
         headline += (
             f" {in_facilities / total:.0%} of the changed area lies inside the facility register "
@@ -175,19 +175,19 @@ def brief(run_id: str | None = None) -> str:
     lines += ["## Top facilities", ""]
     if facilities:
         rows = [
-            [f["name"], f["class"], f"{f['changed_ha']:,.1f}", f"{f['changed_share']:.1%}", _main_type(f["change_types"])]
+            [f["name"], f["class"], f"{f['changed_ha'] / 100:,.2f}", f"{f['changed_share']:.1%}", _main_type(f["change_types"])]
             for f in facilities[:5]
         ]
-        lines += _table(["Facility", "Class", "Changed (ha)", "Share of facility", "Main change"], rows)
+        lines += _table(["Facility", "Class", "Changed (km²)", "Share of facility", "Main change"], rows)
     else:
         no_facilities = "Facility numbers are computed for the default comparison (robust CVA) only."
         lines += [no_facilities if register else "No facility register is loaded for this database."]
     lines += ["", "## Change types", ""]
     rows = [
-        [_label(t["change_type"]), t["brief_category"] or "-", t["n_polygons"], f"{t['area_ha']:,.1f}"]
+        [_label(t["change_type"]), t["brief_category"] or "-", t["n_polygons"], f"{t['area_ha'] / 100:,.3f}"]
         for t in types["change_types"]
     ]
-    lines += _table(["Change type", "Brief category", "Polygons", "Hectares"], rows)
+    lines += _table(["Change type", "Brief category", "Polygons", "Area (km²)"], rows)
 
     lines += ["", "## Caveats", ""]
     lines += [
@@ -226,7 +226,7 @@ def _follow_ups(run: str) -> list[str]:
     if largest:
         p = largest[0]
         out.append(
-            f"Check the largest polygon #{p['id']} ({p['ha']:.1f} ha, {_label(p['change_type'])}) at "
+            f"Check the largest polygon #{p['id']} ({p['ha'] / 100:.3f} km², {_label(p['change_type'])}) at "
             f"{p['lat']:.4f}, {p['lon']:.4f} on recent high-resolution imagery."
         )
     for where, advice in FOLLOW_UP_GROUPS:  # `where` is a constant from this module, never user input
@@ -236,5 +236,5 @@ def _follow_ups(run: str) -> list[str]:
             r=run,
         )[0]
         if r["n"]:
-            out.append(f"{r['n']} polygons ({r['ha']:.1f} ha) {advice}.")
+            out.append(f"{r['n']} polygons ({r['ha'] / 100:.2f} km²) {advice}.")
     return out

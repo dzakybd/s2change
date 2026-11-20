@@ -6,15 +6,15 @@
 
 ## TL;DR
 
-- **The data has a trap.** Each provided "date" is a mosaic of two Sentinel-2 scenes from different orbits; I verified it pixel-exact against the STAC catalogue. Radiometry therefore steps along slanted seams, and the gap between the dates is 52–60 days, not 21. The provided Euclidean baseline mostly maps these seams and haze: **11,143 ha**, 42 % of the AOI.
+- **The data has a trap.** Each provided "date" is a mosaic of two Sentinel-2 scenes from different orbits; I verified it pixel-exact against the STAC catalogue. Radiometry therefore steps along slanted seams, and the gap between the dates is 52–60 days, not 21. The provided Euclidean baseline mostly maps these seams and haze: **111.4 km²**, 42 % of the AOI.
 - **Method:** normalize each source-scene zone on stable pixels, then run a robust change vector analysis with a **brightness-aware, empirically calibrated** noise model. The realised false-alarm rate is **0.10 %** at the 0.1 % target, measured on held-out stable pixels; the uncalibrated model gave 2.2 %.
-- **Result:** **413 ha in 215 polygons** (1.6 % of the AOI). **74 %** of it lies inside the mine's named facilities.
+- **Result:** **4.13 km² in 215 polygons** (1.6 % of the AOI). **74 %** of it lies inside the mine's named facilities.
 - **Interpretation:** this is operational mining, not expansion.
-  - Tailings deposition on the TSF: 185 ha.
-  - Waste dumping: 129 ha.
-  - Pit-floor and bench activity: 26 ha.
-  - Seasonal vegetation or burning outside the mine: 36 ha.
-  - No new clearing beyond the mine footprint at the 0.2 ha scale.
+  - Tailings deposition on the TSF: 1.85 km².
+  - Waste dumping: 1.29 km².
+  - Pit-floor and bench activity: 0.26 km².
+  - Seasonal vegetation or burning outside the mine: 0.36 km².
+  - No new clearing beyond the mine footprint at the 2,000 m² scale.
 - **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The false-alarm rate is measured; omission and per-class accuracy are not, because there is no reference data (section 5).
 
 ## 0. The data finding: each "date" is a mosaic
@@ -50,19 +50,19 @@ The steps are the seams along the swath edge of orbit R078. The detection uses t
 | Normalization | Per zone and band, orthogonal regression `T1 = a + b·T2` on pseudo-invariant pixels, iterated with 2.5σ rejection (adapted from Canty & Nielsen 2008) | Both dates are noisy; haze lowers contrast on T2 (slopes 1.1–1.8) |
 | Change statistic | Change vector `Δ = T2_norm − T1` (CVA, Malila 1980); squared Mahalanobis distance d² under a per-zone, **per-brightness-stratum** noise model fitted on stable pixels | Noise grows with brightness: one global model gave bright mine surfaces 10–25× too many false alarms |
 | Calibration | Thresholds from the 99.9th / 99.999th percentiles of d² on **held-out** stable pixels, per stratum | The χ² assumption is off (heavy tails, spatial autocorrelation). Calibrated, the realised rate is 0.092–0.107 % in every stratum |
-| Binary map | Hysteresis (Canny 1986): grow at 1e-3, seed at 1e-5; seam buffer; 1-px opening; minimum mapping unit 0.2 ha | Keeps coherent change and removes speckle |
+| Binary map | Hysteresis (Canny 1986): grow at 1e-3, seed at 1e-5; seam buffer; 1-px opening; minimum mapping unit 2,000 m² | Keeps coherent change and removes speckle |
 | Polygons | 8-connected regions, made valid, stored as MultiPolygon EPSG:32735 with area, magnitude, −log10 p and direction | Part 3 |
 | Interpretation | **Facility register** of 8 named facilities, outlined from the imagery; **change type** per polygon from RGB evidence + facility; one-line "why" | Part 5: from "pixels changed" to "what happened" |
 
-The cleanup (1-px opening + 0.2 ha minimum mapping unit) deliberately drops features narrower than about 20 m or smaller than 0.2 ha, such as haul-road edges and single noisy pixels.
+The cleanup (1-px opening + 2,000 m² minimum mapping unit) deliberately drops features narrower than about 20 m or smaller than 2,000 m², such as haul-road edges and single noisy pixels.
 
 ![methods](figures/03_method_comparison.png)
 
 | Method | Changed area | Why it behaves this way |
 |---|---:|---|
-| Provided Euclidean distance + Otsu | 11,143 ha (79 / 43 / 16 % per zone) | No radiometric model: it maps seams and haze |
-| Zone-wise IR-MAD (Nielsen 2007) | 10,824 ha | It converges on woodland (ρ ≈ 0.99). With only three correlated visible bands, every other cover then looks "changed" |
-| **Robust CVA, calibrated (this work)** | **413 ha (1.1 / 1.0 / 2.0 % per zone)** | Seam-free, mine-concentrated |
+| Provided Euclidean distance + Otsu | 111.4 km² (79 / 43 / 16 % per zone) | No radiometric model: it maps seams and haze |
+| Zone-wise IR-MAD (Nielsen 2007) | 108.2 km² | It converges on woodland (ρ ≈ 0.99). With only three correlated visible bands, every other cover then looks "changed" |
+| **Robust CVA, calibrated (this work)** | **4.13 km² (1.1 / 1.0 / 2.0 % per zone)** | Seam-free, mine-concentrated |
 
 Why no machine learning: there are no labels, only three bands and two dates. With labelled polygons, a Siamese U-Net or a change transformer on multi-date stacks would be the next step, and this pipeline would become its data and QA layer.
 
@@ -74,12 +74,12 @@ Why no machine learning: there are no labels, only three bands and two dates. Wi
 
 | Facility | Area | Changed | Mostly |
 |---|---:|---:|---|
-| Tailings storage facility (TSF) | 2,244 ha | **194 ha (9 %)** | tailings deposition |
-| South pit complex | 2,009 ha | 38 ha (2 %) | pit / bench activity |
-| Eastern waste dumps | 435 ha | 36 ha (8 %) | waste dumping |
-| North-west pit complex | 1,117 ha | 34 ha (3 %) | waste dumping |
-| Process plant | 195 ha | 5 ha | infrastructure |
-| Settlement, camp, fresh-water dam | 1,815 ha | 0.4 ha | — |
+| Tailings storage facility (TSF) | 22.44 km² | **1.94 km² (9 %)** | tailings deposition |
+| South pit complex | 20.09 km² | 0.38 km² (2 %) | pit / bench activity |
+| Eastern waste dumps | 4.35 km² | 0.36 km² (8 %) | waste dumping |
+| North-west pit complex | 11.17 km² | 0.34 km² (3 %) | waste dumping |
+| Process plant | 1.95 km² | 0.05 km² | infrastructure |
+| Settlement, camp, fresh-water dam | 18.15 km² | 0.004 km² | — |
 
 ![facility register](figures/09_facility_register.png)
 
@@ -87,15 +87,15 @@ Why no machine learning: there are no labels, only three bands and two dates. Wi
 
 | Change type | Brief category | Polygons | Area |
 |---|---|---:|---:|
-| Tailings deposition | mining activity | 61 | 185 ha |
-| Waste dumping | mining activity | 55 | 129 ha |
-| Seasonal vegetation or burn | seasonal variation / vegetation | 18 | 36 ha |
-| Pit excavation | mining activity | 26 | 26 ha |
-| Water level change | water change | 8 | 18 ha |
-| Noise or artifact | noise or artifacts | 27 | 9 ha |
-| Infrastructure / settlement | urban expansion | 9 | 4 ha |
-| Unexplained | — | 6 | 5 ha |
-| Land clearing (incl. at the mine edge) | land clearing | 5 | 1 ha |
+| Tailings deposition | mining activity | 61 | 1.85 km² |
+| Waste dumping | mining activity | 55 | 1.29 km² |
+| Seasonal vegetation or burn | seasonal variation / vegetation | 18 | 0.36 km² |
+| Pit excavation | mining activity | 26 | 0.26 km² |
+| Water level change | water change | 8 | 0.18 km² |
+| Noise or artifact | noise or artifacts | 27 | 0.09 km² |
+| Infrastructure / settlement | urban expansion | 9 | 0.04 km² |
+| Unexplained | — | 6 | 0.05 km² |
+| Land clearing (incl. at the mine edge) | land clearing | 5 | 0.01 km² |
 
 ## 3. Interpretation
 
@@ -108,14 +108,14 @@ Why no machine learning: there are no labels, only three bands and two dates. Wi
 | Darker or browner patches outside the mine | Dry-season grass senescence or burning | Medium | Burnt vegetation vs. wetness cannot be separated in RGB | Fire records; recovery after the rains |
 | Polygons on or near seams | Artifacts | High | — | The source-scene map |
 
-**What happened, in one paragraph.** Between early July and late August / early September 2023, the measurable change is operational. Tailings were deposited across the TSF (194 ha changed, 9 % of the facility). Waste rock was tipped at the eastern dumps and at the edges of both pit complexes (129 ha labelled waste dumping). Activity continued inside the pits. Outside the mine, change is small and seasonal. **I see no evidence of mine expansion into new ground at the 0.2 ha / 20 m detection limit**: only 1 ha qualifies as clearing. Every label is a hypothesis built from RGB evidence and facility context, and each polygon carries its "why".
+**What happened, in one paragraph.** Between early July and late August / early September 2023, the measurable change is operational. Tailings were deposited across the TSF (1.94 km² changed, 9 % of the facility). Waste rock was tipped at the eastern dumps and at the edges of both pit complexes (1.29 km² labelled waste dumping). Activity continued inside the pits. Outside the mine, change is small and seasonal. **I see no evidence of mine expansion into new ground at the 2,000 m² / 20 m detection limit**: only 0.01 km² qualifies as clearing. Every label is a hypothesis built from RGB evidence and facility context, and each polygon carries its "why".
 
 ## 4. Sensitivity
 
 ![sensitivity](figures/11_sensitivity.png)
 
-I re-ran the binary rule over per-pixel false-alarm rates from 1e-2 to 1e-5 and minimum mapping units from 0.1 to 1 ha (16 settings):
-- **Changed area** ranges over **210–682 ha**, versus 11,143 ha for the baseline.
+I re-ran the binary rule over per-pixel false-alarm rates from 1e-2 to 1e-5 and minimum mapping units from 1,000 to 10,000 m² (16 settings):
+- **Changed area** ranges over **2.10–6.82 km²**, versus 111.4 km² for the baseline.
 - **Share inside the mine's facilities** stays between **61 % and 77 %**, and rises as the test gets stricter: the strongest changes are the mining ones.
 
 The conclusions do not depend on one threshold choice.

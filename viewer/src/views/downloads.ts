@@ -19,7 +19,7 @@ const GROUPS: { title: string; blurb: string; items: Item[] }[] = [
     items: [
       { path: "data/processed/change_map.tif", title: "change_map.tif", desc: "Robust change magnitude per pixel (log10 d²).", size: "10.7 MB", kind: "GeoTIFF" },
       { path: "data/processed/change_significance.tif", title: "change_significance.tif", desc: "−log10 p of the change under the noise model.", size: "10.1 MB", kind: "GeoTIFF" },
-      { path: "data/processed/change_binary.tif", title: "change_binary.tif", desc: "Changed (1) or not (0) after hysteresis and the 0.2 ha minimum mapping unit; 255 = no data.", size: "40 KB", kind: "GeoTIFF" },
+      { path: "data/processed/change_binary.tif", title: "change_binary.tif", desc: "Changed (1) or not (0) after hysteresis and the 2,000 m² minimum mapping unit; 255 = no data.", size: "40 KB", kind: "GeoTIFF" },
       { path: "data/processed/change_binary_baseline.tif", title: "change_binary_baseline.tif", desc: "The provided Euclidean-difference baseline, binarised the same way, for comparison.", size: "205 KB", kind: "GeoTIFF" },
     ],
   },
@@ -39,7 +39,7 @@ const GROUPS: { title: string; blurb: string; items: Item[] }[] = [
       { path: "data/change_detection.sqlite", title: "change_detection.sqlite", desc: "SpatiaLite: runs, change features, facility register and per-facility changes.", size: "10.9 MB", kind: "SpatiaLite" },
       { path: "docs/web/change_features.geojson", title: "change_features.geojson", desc: "The 215 change polygons with type, explanation, confidence and facility (web export).", size: "0.5 MB", kind: "GeoJSON" },
       { path: "data/processed/change_features.geojson", title: "change_features.geojson (full)", desc: "Full-precision export with every attribute the pipeline computed.", size: "6.3 MB", kind: "GeoJSON" },
-      { path: "docs/web/facilities.geojson", title: "facilities.geojson", desc: "The facility register: outlines, hectares changed and the change mix.", size: "0.6 MB", kind: "GeoJSON" },
+      { path: "docs/web/facilities.geojson", title: "facilities.geojson", desc: "The facility register: outlines, area changed (hectares in the file) and the change mix.", size: "0.6 MB", kind: "GeoJSON" },
       { path: "docs/web/aoi.geojson", title: "aoi.geojson", desc: "The area of interest.", size: "1 KB", kind: "GeoJSON" },
     ],
   },

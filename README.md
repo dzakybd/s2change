@@ -8,10 +8,10 @@ Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two d
 
 ## Findings (nominal 2023-08-12 → 2023-09-02)
 
-- **The provided "dates" are mosaics.** Each combines two Sentinel-2 scenes from different orbits, verified pixel-exact against STAC (100 % identical DN). The scenes actually compared are **52–60 days** apart, and radiometry steps along the seams. The provided Euclidean baseline maps those seams and haze: **11,143 ha (42 % of the AOI)**.
-- **Calibrated change: 413 ha** in 215 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
-- **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (194 ha), the waste dumps and pit edges (129 ha of dumping), and pit benches. There is no clearing beyond the mine footprint at the 0.2 ha scale.
-- **Robust:** the result holds across 16 threshold settings (210–682 ha, 61–77 % inside the mine).
+- **The provided "dates" are mosaics.** Each combines two Sentinel-2 scenes from different orbits, verified pixel-exact against STAC (100 % identical DN). The scenes actually compared are **52–60 days** apart, and radiometry steps along the seams. The provided Euclidean baseline maps those seams and haze: **111.4 km² (42 % of the AOI)**.
+- **Calibrated change: 4.13 km²** in 215 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
+- **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (1.94 km²), the waste dumps and pit edges (1.29 km² of dumping), and pit benches. There is no clearing beyond the mine footprint at the 2,000 m² scale.
+- **Robust:** the result holds across 16 threshold settings (2.10–6.82 km², 61–77 % inside the mine).
 
 Full write-up: **[report.md](report.md)**: method, results, interpretation with RGB-only confounders, sensitivity, limitations.
 
@@ -45,7 +45,7 @@ flowchart LR
   P --> N
   N --> C[Robust CVA<br/>brightness-aware noise model]
   C --> K[Calibrated thresholds<br/>held-out stable pixels]
-  K --> B[Hysteresis + seam buffer<br/>+ 0.2 ha MMU]
+  K --> B[Hysteresis + seam buffer<br/>+ 2,000 m² MMU]
   B --> V[Valid polygons]
   R[Facility register<br/>8 named facilities] --> T
   V --> T[Change type + 'why'<br/>RGB evidence + facility]

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from functools import lru_cache
 
@@ -13,6 +14,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app import collector
 from app.tools import ALL_TOOLS
 
+log = logging.getLogger("s2cd.app")
 DEFAULT_MODEL = "gemini-3.5-flash"
 # deepagents adds planning, filesystem, shell and sub-agent tools by default. None helps a 3-8 call Q&A over a database,
 # and each is extra attack surface, so they are hidden from the model (tools=[...] below are the only ones it sees).
@@ -28,11 +30,13 @@ answer questions about the change polygons, the facility register and the monito
 How to answer
 - Lead with the finding, then the number, then the caveat. Short Markdown: a headline sentence, then at most a few bullets. Do \
   not repeat what a chart or table already shows.
-- Every number comes from a tool result in this conversation. Cite it with units (areas in hectares, ids as #id). Never guess or \
-  do arithmetic you can ask SQL to do. If the data cannot answer, say so and say what is missing.
+- Every number comes from the Key numbers below or a tool result in this conversation. Report areas in km² (tools return \
+  hectares: divide by 100, the one conversion you may do yourself) and ids as #id. Never guess or do other arithmetic you can \
+  ask SQL to do. If the data cannot answer, say so and say what is missing.
 - Use read_context(topic) for background (what a facility class is, seasons, how the method works, how to confirm a signal); \
   its notes explain numbers but never replace them.
-- Pick the cheapest tool: list_runs, area_summary, change_type_summary, facility_summary, aoi_stats, top_changes, \
+- For overview questions (how much changed, what kinds, which facility) answer from the Key numbers directly, without tools. \
+  Pick the cheapest tool otherwise: list_runs, area_summary, change_type_summary, facility_summary, aoi_stats, top_changes, \
   explain_change; readonly_sql only for what they cannot do. If a tool returns an error, fix the call once, then explain the limit.
 - "The default comparison" means robust_cva, nominal 2023-08-12 -> 2023-09-02 (the tools' default run_id). euclidean_baseline \
   is the provided method, which over-detects (haze and mosaic seams); compare it only when asked. The map can also show other \
@@ -84,11 +88,42 @@ def _model():
     return ChatGoogleGenerativeAI(model=name, max_retries=2, timeout=60, **extra)
 
 
+def key_numbers() -> str:
+    """The default comparison's totals per change type and facility, read once from the database for the system prompt.
+
+    Overview questions are the most common; answering them from the prompt saves several tool round trips (~3 s each)."""
+    from app import results
+
+    types = results.change_type_summary()
+    lines = [
+        f"Key numbers (default comparison, robust_cva): {types['total_ha'] / 100:.2f} km² changed in "
+        f"{sum(t['n_polygons'] for t in types['change_types'])} polygons."
+    ]
+    lines += [
+        "Per change type: "
+        + "; ".join(
+            f"{t['change_type']} {t['area_ha'] / 100:.2f} km² ({t['n_polygons']} polygons)" for t in types["change_types"]
+        )
+    ]
+    lines += [
+        "Per facility: "
+        + "; ".join(
+            f"{f['facility_id']} {f['name']} ({f['class']}): {(f['changed_ha'] or 0) / 100:.2f} km² changed of {f['area_ha'] / 100:.1f} km²"
+            for f in results.facility_rows()
+        )
+    ]
+    return "\n".join(lines)
+
+
 @lru_cache(maxsize=1)
 def get_agent():
     for provider in ("google_genai", "openai"):  # hide deepagents' built-in tools whichever provider is active
         register_harness_profile(provider, HarnessProfile(excluded_tools=BUILTIN_TOOLS))
-    return create_deep_agent(model=_model(), tools=ALL_TOOLS, system_prompt=SYSTEM_PROMPT)
+    try:
+        prompt = f"{SYSTEM_PROMPT}\n\n{key_numbers()}"
+    except Exception:  # database unreachable at start-up: the tools still work once it is back
+        prompt = SYSTEM_PROMPT
+    return create_deep_agent(model=_model(), tools=ALL_TOOLS, system_prompt=prompt)
 
 
 def _clip(v, n=400):
@@ -99,8 +134,37 @@ def _clip(v, n=400):
     return v[:n] if isinstance(v, str) else v
 
 
+# The viewer's starter questions (viewer/src/views/analyst.ts SUGGESTIONS). Their first-turn answers are cached and warmed at
+# start-up, so the first click is instant; the data only changes when results are republished (and the API restarts).
+STARTERS = (
+    "How much changed and why?",
+    "Show the 5 largest changes in the mine footprint",
+    "Which facility changed the most?",
+    "Which changes are likely burn scars?",
+)
+_cache: dict[str, dict] = {}
+
+
+def warm() -> None:
+    for q in STARTERS:
+        try:
+            run_chat([{"role": "user", "content": q}])
+        except Exception:
+            log.exception("warming the analyst cache failed for %r", q)
+
+
 def run_chat(messages: list[dict]) -> dict:
-    """Run one chat turn and return the API response body."""
+    """Run one chat turn and return the API response body. Single-turn starter questions are served from a cache."""
+    key = messages[0]["content"].strip() if len(messages) == 1 and messages[0].get("role") == "user" else None
+    if key in STARTERS and key in _cache:
+        return _cache[key]
+    out = _run(messages)
+    if key in STARTERS and not out["answer"].startswith("I could not"):
+        _cache[key] = out
+    return out
+
+
+def _run(messages: list[dict]) -> dict:
     c = collector.start()
     result = get_agent().invoke({"messages": messages}, config={"recursion_limit": 30})
     out: list[AnyMessage] = result["messages"]

@@ -115,7 +115,7 @@ def change_by_facility(facilities: gpd.GeoDataFrame, changes: gpd.GeoDataFrame) 
         by_fac = {f: dict(zip(g.change_type, g.ha, strict=True)) for f, g in top.groupby("facility_id")}
         out["change_types"] = [by_fac.get(f) for f in out.index]  # None where nothing changed
     out["summary"] = [
-        f"{n}: {c:.0f} ha changed ({s:.0%} of {a:.0f} ha)"
+        f"{n}: {c / 100:.2f} km² changed ({s:.0%} of {a / 100:.1f} km²)"
         + (f"; mostly {max(t, key=t.get).replace('_', ' ')}" if isinstance(t, dict) and t else "")
         for n, c, s, a, t in zip(
             out.name,

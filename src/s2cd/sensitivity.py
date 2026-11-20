@@ -67,16 +67,16 @@ def sweep(cfg: Config | None = None) -> pd.DataFrame:
 def plot(df: pd.DataFrame, path: Path) -> Path:
     fig, ax = plt.subplots(1, 2, figsize=(12, 4.2))
     for mmu, g in df.groupby("mmu_ha"):
-        ax[0].plot(g.far_low, g.changed_ha, "o-", label=f"MMU {mmu:g} ha")
-        ax[1].plot(g.far_low, 100 * g.share_in_mine_footprint, "o-", label=f"MMU {mmu:g} ha")
+        ax[0].plot(g.far_low, g.changed_ha / 100, "o-", label=f"MMU {mmu * 1e4:,.0f} m²")
+        ax[1].plot(g.far_low, 100 * g.share_in_mine_footprint, "o-", label=f"MMU {mmu * 1e4:,.0f} m²")
     d = df[df.is_default].iloc[0]
-    for a, y in ((ax[0], d.changed_ha), (ax[1], 100 * d.share_in_mine_footprint)):
+    for a, y in ((ax[0], d.changed_ha / 100), (ax[1], 100 * d.share_in_mine_footprint)):
         a.set_xscale("log")
         a.invert_xaxis()
         a.axvline(d.far_low, color="0.6", ls="--", lw=0.8)
         a.plot(d.far_low, y, "k*", ms=12, label="default")
         a.set_xlabel("nominal per-pixel false-alarm rate (stricter →)")
-    ax[0].set_ylabel("changed area (ha)")
+    ax[0].set_ylabel("changed area (km²)")
     ax[0].set_title("Total change shrinks smoothly as the test gets stricter")
     ax[1].set_ylabel("% of change inside the mine footprint")
     ax[1].set_title("…while the share inside the mine stays high")

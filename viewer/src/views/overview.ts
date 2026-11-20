@@ -2,7 +2,7 @@ import "../styles/overview.css";
 import type { AppContext, View } from "../app";
 import { logoSvg } from "../brand";
 import { dataUrl, loadChanges, loadManifest, loadOverview } from "../data";
-import { BLOB_URL, CHANGE_TYPES, EXTERNAL, LIVE_URL, REPO_URL, esc, fmtHa, fmtInt, fmtPct, q, typeInfo } from "../domain";
+import { BLOB_URL, CHANGE_TYPES, EXTERNAL, LIVE_URL, REPO_URL, esc, fmtInt, fmtKm2, fmtPct, q, typeInfo } from "../domain";
 import { hrefFor } from "../router";
 import type { Overview } from "../types";
 
@@ -34,9 +34,9 @@ function findings(o: Overview): string {
   const nominalGap = days(o.pair.before, o.pair.after);
   const ratio = h.baseline_ha / h.changed_ha;
   const cards = [
-    { n: `${fmtInt(h.changed_ha)} ha`, t: "changed between the two dates", d: `${h.changed_pct_of_aoi}% of the ${fmtInt(h.aoi_ha)} ha area, in ${fmtInt(h.n_polygons)} polygons of at least 0.2 ha. Across 16 threshold settings the total stays between ${fmtInt(lo)} and ${fmtInt(hi)} ha.`, href: hrefFor("map"), cta: "Open the map" },
-    { n: fmtPct(h.share_in_mine_footprint), t: "of the change is inside the mine footprint", d: top ? `${top.name} alone changed ${fmtInt(top.changed_ha)} ha (${fmtPct(top.changed_share)} of it), mostly ${typeInfo(Object.entries(top.change_types).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "").label.toLowerCase()}.` : "", href: hrefFor("map", { layer: "facilities" }), cta: "See the facility register" },
-    { n: `${ratio.toFixed(0)}×`, t: "fewer hectares than the provided baseline", d: `A plain Euclidean difference flags ${fmtInt(h.baseline_ha)} ha, mostly mosaic seams and haze. The two maps overlap by only ${fmtPct(h.agreement_iou_with_baseline)} (IoU).`, href: hrefFor("report"), cta: "Read why" },
+    { n: fmtKm2(h.changed_ha), t: "changed between the two dates", d: `${h.changed_pct_of_aoi}% of the ${fmtKm2(h.aoi_ha)} area, in ${fmtInt(h.n_polygons)} polygons of at least 2,000 m². Across 16 threshold settings the total stays between ${fmtKm2(lo)} and ${fmtKm2(hi)}.`, href: hrefFor("map"), cta: "Open the map" },
+    { n: fmtPct(h.share_in_mine_footprint), t: "of the change is inside the mine footprint", d: top ? `${top.name} alone changed ${fmtKm2(top.changed_ha)} (${fmtPct(top.changed_share)} of it), mostly ${typeInfo(Object.entries(top.change_types).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "").label.toLowerCase()}.` : "", href: hrefFor("map", { layer: "facilities" }), cta: "See the facility register" },
+    { n: `${ratio.toFixed(0)}×`, t: "less area than the provided baseline", d: `A plain Euclidean difference flags ${fmtKm2(h.baseline_ha)}, mostly mosaic seams and haze. The two maps overlap by only ${fmtPct(h.agreement_iou_with_baseline)} (IoU).`, href: hrefFor("report"), cta: "Read why" },
     { n: "2 + 2", t: "scenes behind the two “dates”", d: `Each date is a mosaic: ${dates(o.pair.before)} for the first, ${dates(o.pair.after)} for the second. The source scenes are ${gap.min} to ${gap.max} days apart, not the ${nominalGap} days the nominal dates suggest.`, href: hrefFor("report"), cta: "Data finding" },
   ];
   return cards
@@ -49,14 +49,14 @@ function findings(o: Overview): string {
 function typesBar(o: Overview): string {
   const total = Object.values(o.change_type_ha).reduce((a, b) => a + b, 0);
   const rows = CHANGE_TYPES.map((t) => ({ t, v: o.change_type_ha[t.key] ?? 0 })).filter((r) => r.v > 0);
-  return `<div class="tbar" role="img" aria-label="Changed hectares by type">${rows.map((r) => `<i style="flex:${r.v};background:${r.t.color}" title="${esc(r.t.label)}: ${fmtHa(r.v)} ha"></i>`).join("")}</div>
-  <ul class="tleg">${rows.map((r) => `<li><i class="swatch" style="background:${r.t.color}"></i><span>${esc(r.t.label)}</span><b class="num">${fmtHa(r.v)} ha</b><em class="num">${fmtPct(r.v / total)}</em></li>`).join("")}</ul>`;
+  return `<div class="tbar" role="img" aria-label="Changed area by type">${rows.map((r) => `<i style="flex:${r.v};background:${r.t.color}" title="${esc(r.t.label)}: ${fmtKm2(r.v)}"></i>`).join("")}</div>
+  <ul class="tleg">${rows.map((r) => `<li><i class="swatch" style="background:${r.t.color}"></i><span>${esc(r.t.label)}</span><b class="num">${fmtKm2(r.v)}</b><em class="num">${fmtPct(r.v / total)}</em></li>`).join("")}</ul>`;
 }
 
 const BRIEF = [
   { n: 1, t: "Work with real satellite data", d: "Every provided pixel matched to a Planetary Computer scene; the mosaic seams found and explained.", links: [["Provenance in the report", hrefFor("report")], ["Stacks to download", hrefFor("downloads")]] },
   { n: 2, t: "Design the pipeline", d: "Seven stages from provenance to PostGIS; thresholds are false-alarm rates, not tuned constants.", links: [["Method diagram", "#method"], ["Report, method", hrefFor("report")]] },
-  { n: 3, t: "Implement change detection", d: "Robust CVA against a per-zone noise model, hysteresis and a 0.2 ha minimum mapping unit.", links: [["Change intensity", hrefFor("map", { layer: "intensity" })], ["Change binary", hrefFor("map", { layer: "binary" })]] },
+  { n: 3, t: "Implement change detection", d: "Robust CVA against a per-zone noise model, hysteresis and a 2,000 m² minimum mapping unit.", links: [["Change intensity", hrefFor("map", { layer: "intensity" })], ["Change binary", hrefFor("map", { layer: "binary" })]] },
   { n: 4, t: "Store and query geospatial analytics", d: "A PostGIS database with spatial indexes, a read-only SQL console and an HTTP API.", links: [["SQL console", hrefFor("database")], ["API reference", `${BLOB_URL}docs/api.md`]] },
   { n: 5, t: "Visualize and interpret", d: "Typed change polygons with a stated reason each, a facility register, an oblique view and an analyst agent.", links: [["Change types", hrefFor("map")], ["Facilities", hrefFor("map", { layer: "facilities" })], ["Analyst", hrefFor("analyst")]] },
 ];
@@ -72,7 +72,7 @@ const STEPS: [string, string, string][] = [
   ["Zones", "Seams become", "radiometric zones"],
   ["Normalise", "Stable pixels,", "fit per zone"],
   ["Robust CVA", "Mahalanobis d²,", "χ² noise model"],
-  ["Hysteresis + MMU", "False-alarm rates,", "≥ 0.2 ha"],
+  ["Hysteresis + MMU", "False-alarm rates,", "≥ 2,000 m²"],
   ["Polygons + types", "Rules label and", "explain each one"],
   ["PostGIS", "SQL, API and", "analyst agent"],
 ];
@@ -87,8 +87,8 @@ function methodSvg(vertical: boolean): string {
     const x = vertical ? 0 : i * (w + gap);
     const y = vertical ? i * (h + gap) : 0;
     const last = i === STEPS.length - 1;
-    const arrow = i < STEPS.length - 1 ? (vertical ? `<path d="M${w / 2} ${y + h + 4}v${gap - 10}m-4-4 4 4 4-4" fill="none" stroke="#5a6678" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` : `<path d="M${x + w + 5} ${h / 2}h${gap - 10}m-4-4 4 4-4 4" fill="none" stroke="#5a6678" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`) : "";
-    return `<g transform="translate(${x} ${y})"><rect width="${w}" height="${h}" rx="12" fill="${last ? "rgb(240 163 94 / 0.14)" : "#1a222c"}" stroke="${last ? "rgb(240 163 94 / 0.5)" : "rgb(255 255 255 / 0.08)"}"/><text x="14" y="${vertical ? 23 : 26}" fill="${last ? "#f6b87d" : "#8b97a7"}" font-size="11" font-weight="700" letter-spacing=".06em">${String(i + 1).padStart(2, "0")}</text><text x="${vertical ? 40 : 14}" y="${vertical ? 23 : 47}" fill="#eaeff5" font-size="14" font-weight="650">${esc(title)}</text><text x="${vertical ? 14 : 14}" y="${vertical ? 41 : 66}" fill="#b4c0cf" font-size="12">${esc(l1)}</text><text x="14" y="${vertical ? 41 : 66}" fill="#b4c0cf" font-size="12">${esc(vertical ? `${l1} ${l2}` : l1)}</text>${vertical ? "" : `<text x="14" y="82" fill="#b4c0cf" font-size="12">${esc(l2)}</text>`}</g>${arrow}`;
+    const arrow = i < STEPS.length - 1 ? (vertical ? `<path d="M${w / 2} ${y + h + 4}v${gap - 10}m-4-4 4 4 4-4" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` : `<path d="M${x + w + 5} ${h / 2}h${gap - 10}m-4-4 4 4-4 4" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`) : "";
+    return `<g transform="translate(${x} ${y})"><rect width="${w}" height="${h}" rx="12" fill="${last ? "rgb(232 131 58 / 0.12)" : "#f1f3f6"}" stroke="${last ? "rgb(232 131 58 / 0.5)" : "rgb(15 23 42 / 0.08)"}"/><text x="14" y="${vertical ? 23 : 26}" fill="${last ? "#b4550c" : "#5b6a80"}" font-size="11" font-weight="700" letter-spacing=".06em">${String(i + 1).padStart(2, "0")}</text><text x="${vertical ? 40 : 14}" y="${vertical ? 23 : 47}" fill="#0f172a" font-size="14" font-weight="650">${esc(title)}</text><text x="${vertical ? 14 : 14}" y="${vertical ? 41 : 66}" fill="#475569" font-size="12">${esc(l1)}</text><text x="14" y="${vertical ? 41 : 66}" fill="#475569" font-size="12">${esc(vertical ? `${l1} ${l2}` : l1)}</text>${vertical ? "" : `<text x="14" y="82" fill="#475569" font-size="12">${esc(l2)}</text>`}</g>${arrow}`;
   }).join("");
   return `<svg viewBox="0 0 ${W} ${H}" class="${vertical ? "m-v" : "m-h"}" role="img" aria-label="Pipeline: ${STEPS.map((s) => s[0]).join(", then ")}">${nodes}</svg>`;
 }
@@ -102,9 +102,9 @@ function sensitivity(o: Overview): string {
     const s = o.sensitivity.find((x) => x.far_low === far && x.mmu_ha === mmu);
     if (!s) return "<td></td>";
     const t = (s.changed_ha - lo) / (hi - lo || 1);
-    return `<td class="num${s.is_default ? " dflt" : ""}" style="--t:${t.toFixed(2)}" ${s.is_default ? 'aria-label="default setting"' : ""}>${fmtInt(s.changed_ha)}</td>`;
+    return `<td class="num${s.is_default ? " dflt" : ""}" style="--t:${t.toFixed(2)}" ${s.is_default ? 'aria-label="default setting"' : ""}>${(s.changed_ha / 100).toFixed(2)}</td>`;
   };
-  return `<div class="table-wrap sens"><table><thead><tr><th>False-alarm rate ↓ · MMU (ha) →</th>${mmus.map((m) => `<th class="num">${m}</th>`).join("")}</tr></thead><tbody>${fars.map((f) => `<tr><th scope="row">${f.toExponential(0).replace("e-", "e−")}</th>${mmus.map((m) => cell(f, m)).join("")}</tr>`).join("")}</tbody></table></div>`;
+  return `<div class="table-wrap sens"><table><thead><tr><th>False-alarm rate ↓ · MMU (m²) →</th>${mmus.map((m) => `<th class="num">${fmtInt(m * 10_000)}</th>`).join("")}</tr></thead><tbody>${fars.map((f) => `<tr><th scope="row">${f.toExponential(0).replace("e-", "e−")}</th>${mmus.map((m) => cell(f, m)).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 
 function facilityRows(o: Overview): string {
@@ -112,7 +112,7 @@ function facilityRows(o: Overview): string {
   return `<ul class="fac">${o.facilities
     .map((f) => {
       const main = Object.entries(f.change_types).sort((a, b) => b[1] - a[1])[0]?.[0];
-      return `<li><a href="${hrefFor("map", { layer: "facilities" })}"><span class="fac-id">${esc(f.facility_id)}</span><span class="fac-n"><b>${esc(f.name)}</b><small>${main ? esc(typeInfo(main).label) : "no change detected"}</small></span><span class="fac-v num">${fmtHa(f.changed_ha)} ha</span><span class="bar"><i style="width:${Math.max(f.changed_ha > 0 ? 2 : 0, (f.changed_ha / max) * 100).toFixed(1)}%;background:${main ? typeInfo(main).color : "#5a6678"}"></i></span></a></li>`;
+      return `<li><a href="${hrefFor("map", { layer: "facilities" })}"><span class="fac-id">${esc(f.facility_id)}</span><span class="fac-n"><b>${esc(f.name)}</b><small>${main ? esc(typeInfo(main).label) : "no change detected"}</small></span><span class="fac-v num">${fmtKm2(f.changed_ha)}</span><span class="bar"><i style="width:${Math.max(f.changed_ha > 0 ? 2 : 0, (f.changed_ha / max) * 100).toFixed(1)}%;background:${main ? typeInfo(main).color : "#94a3b8"}"></i></span></a></li>`;
     })
     .join("")}</ul>`;
 }
@@ -159,7 +159,7 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
         <h1>What changed at an open-pit copper mine in Zambia?</h1>
         <p class="lede">s2change finds, types and explains change between two Sentinel-2 dates using only the visible bands, then lets you query it. Default pair: <b class="num">${esc(o.pair.before)} → ${esc(o.pair.after)}</b>, nominal dates (each is a mosaic of two scenes).</p>
         <div class="cta"><a class="btn primary" href="${hrefFor("map")}">Open the map</a><a class="btn" href="${hrefFor("report")}">Read the report</a></div>
-        <dl class="hero-stats"><div><dt>Changed</dt><dd class="num">${fmtInt(h.changed_ha)} ha</dd></div><div><dt>Polygons</dt><dd class="num">${fmtInt(h.n_polygons)}</dd></div><div><dt>Run time</dt><dd class="num">${Math.round(h.runtime_s)} s</dd></div></dl>
+        <dl class="hero-stats"><div><dt>Changed</dt><dd class="num">${fmtKm2(h.changed_ha)}</dd></div><div><dt>Polygons</dt><dd class="num">${fmtInt(h.n_polygons)}</dd></div><div><dt>Run time</dt><dd class="num">${Math.round(h.runtime_s)} s</dd></div></dl>
       </div>
       <a class="hero-art card" href="${hrefFor("map")}" aria-label="Open the map"><div class="art" id="art"><span class="spinner"></span></div><span class="art-cap">${fmtInt(h.n_polygons)} change polygons, coloured by type</span></a>
     </section>
@@ -172,7 +172,7 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
 
     <section aria-labelledby="h-method" id="method"><h2 id="h-method">Method at a glance</h2><div class="card method">${methodSvg(false)}${methodSvg(true)}<p class="note">Thresholds are false-alarm rates under a measured noise model, so they do not depend on tuned constants. Full reasoning, with the dead ends, is in the <a href="${hrefFor("report")}">report</a>.</p></div></section>
 
-    <section class="two" aria-labelledby="h-sens"><div><h2 id="h-sens">How stable is ${fmtInt(h.changed_ha)} ha?</h2><p class="sub">Changed hectares for four false-alarm rates and four minimum mapping units. The default is outlined.</p>${sensitivity(o)}</div><div><h2>Facilities</h2><p class="sub">Hectares changed inside each register facility.</p>${facilityRows(o)}</div></section>
+    <section class="two" aria-labelledby="h-sens"><div><h2 id="h-sens">How stable is ${fmtKm2(h.changed_ha)}?</h2><p class="sub">Changed area (km²) for four false-alarm rates and four minimum mapping units. The default is outlined.</p>${sensitivity(o)}</div><div><h2>Facilities</h2><p class="sub">Area changed inside each register facility.</p>${facilityRows(o)}</div></section>
 
     <footer class="ov-foot">
       <div class="links">${ext(REPO_URL, "GitHub")}${ext(`${BLOB_URL}report.md`, "Report source")}${ext(`${BLOB_URL}docs/api.md`, "API docs")}${ext(LIVE_URL, "Live site")}<a class="btn" href="${hrefFor("downloads")}">Data downloads</a></div>

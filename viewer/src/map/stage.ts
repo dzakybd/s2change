@@ -2,7 +2,7 @@ import type { Feature, FeatureCollection, Polygon, Position } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, StyleSpecification } from "maplibre-gl";
-import { BINARY_COLOR, CHANGE_TYPES, esc, prefersReducedMotion } from "../domain";
+import { BINARY_COLOR, CHANGE_TYPES, esc, fmtKm2, prefersReducedMotion } from "../domain";
 import type { AoiCollection, Bounds, Dataset, FacilityCollection, FacilityProps, MapRaster, MineralsManifest } from "../types";
 import { isValidAoi, labelPoint } from "./geo";
 import type { LayerDef } from "./layers";
@@ -17,7 +17,7 @@ const BASE_STYLE: StyleSpecification = {
   version: 8,
   sources: { esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 18, attribution: ESRI_ATTRIBUTION } },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0a0d12" } },
+    { id: "background", type: "background", paint: { "background-color": "#e9edf2" } },
     { id: "esri", type: "raster", source: "esri", paint: { "raster-brightness-max": 0.92, "raster-saturation": -0.1 } },
   ],
 };
@@ -141,11 +141,11 @@ export class MapStage {
     m.addSource("aoi-shape", { type: "geojson", data: empty });
     m.addLayer({ id: "aoi-shape-fill", type: "fill", source: "aoi-shape", paint: { "fill-color": "#5eead4", "fill-opacity": 0.1 } });
     m.addLayer({ id: "aoi-shape-line", type: "line", source: "aoi-shape", paint: { "line-color": "#5eead4", "line-width": 2.2, "line-dasharray": [2, 1.2] } });
-    m.addLayer({ id: "aoi-shape-pts", type: "circle", source: "aoi-shape", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 4.5, "circle-color": "#0a0d12", "circle-stroke-color": "#5eead4", "circle-stroke-width": 2 } });
+    m.addLayer({ id: "aoi-shape-pts", type: "circle", source: "aoi-shape", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 4.5, "circle-color": "#ffffff", "circle-stroke-color": "#5eead4", "circle-stroke-width": 2 } });
     m.addSource("query-result", { type: "geojson", data: empty });
     m.addLayer({ id: "query-fill", type: "fill", source: "query-result", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": "#c4b5fd", "fill-opacity": 0.28 } });
     m.addLayer({ id: "query-line", type: "line", source: "query-result", paint: { "line-color": "#c4b5fd", "line-width": 2 } });
-    m.addLayer({ id: "query-pts", type: "circle", source: "query-result", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#c4b5fd", "circle-stroke-color": "#0a0d12", "circle-stroke-width": 1.5 } });
+    m.addLayer({ id: "query-pts", type: "circle", source: "query-result", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#c4b5fd", "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.5 } });
   }
 
   private addFacilityLabels(): void {
@@ -157,7 +157,7 @@ export class MapStage {
         const el = document.createElement("div");
         el.className = "fac-label";
         el.hidden = true;
-        el.innerHTML = `<b>${esc(p.facility_id)}</b><span>${p.changed_ha < 10 ? (Math.round(p.changed_ha * 10) / 10).toString() : Math.round(p.changed_ha)} ha changed</span>`;
+        el.innerHTML = `<b>${esc(p.facility_id)}</b><span>${fmtKm2(p.changed_ha)} changed</span>`;
         this.markers.push(new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat(pt).addTo(m));
       }
     }

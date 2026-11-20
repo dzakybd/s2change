@@ -2,8 +2,8 @@
 
 - **Two-date change (the assignment).** The provided "dates" are two-scene mosaics, so the radiometry steps along seams.
   - The zones are the source-scene pairs found with STAC provenance (a blind, data-driven seam detection agrees at 99 %). The pipeline normalizes each zone on stable pixels, then scores change with a robust change vector analysis: a Mahalanobis distance under a brightness-stratified noise model, with thresholds calibrated on held-out stable pixels (realised false-alarm rate 0.10 % at a 0.1 % target).
-  - Thresholds are false-alarm rates (1e-3 to grow a region, 1e-5 to seed it). The minimum mapping unit is 0.2 ha.
-  - Result: 215 polygons and 413 ha, against 11,143 ha for the provided Euclidean baseline, which mostly maps seams and haze.
+  - Thresholds are false-alarm rates (1e-3 to grow a region, 1e-5 to seed it). The minimum mapping unit is 2,000 m².
+  - Result: 215 polygons and 4.13 km², against 111.4 km² for the provided Euclidean baseline, which mostly maps seams and haze.
 - **Confidence** on change polygons is a 0–1 *magnitude* score, not an accuracy or probability. There is no ground truth.
 - **change_type** labels each change polygon from RGB evidence plus facility context: pit_excavation, waste_dumping, tailings_deposition, water_level_change, mine_expansion_clearing, land_clearing, infrastructure_or_settlement, seasonal_vegetation_or_burn, noise_or_artifact. Each has a one-line explanation. These are hypotheses for follow-up, not ground truth.
 - **Facilities.** A curated register of 8 named facilities (`configs/facility_register.yaml`): analyst-defined boxes, with outlines taken from the imagery (bare in both dates, or water in both dates). Without elevation data, telling pits from dumps is the weakest call.

@@ -22,8 +22,8 @@ export const CHANGE_TYPES: readonly ChangeTypeInfo[] = [
   { key: "infrastructure_or_settlement", label: "Infrastructure / settlement", color: "#2dd4bf", blurb: "Roads, plant yard and buildings" },
   { key: "land_clearing", label: "Land clearing", color: "#fb923c", blurb: "Vegetation removed" },
   { key: "mine_expansion_clearing", label: "Mine expansion clearing", color: "#f0abfc", blurb: "Clearing at the mine edge" },
-  { key: "unexplained", label: "Unexplained", color: "#e5e7eb", blurb: "No rule matched" },
-  { key: "noise_or_artifact", label: "Noise / artifact", color: "#94a3b8", blurb: "Likely mosaic seam, haze or shadow" },
+  { key: "unexplained", label: "Unexplained", color: "#94a3b8", blurb: "No rule matched" },
+  { key: "noise_or_artifact", label: "Noise / artifact", color: "#64748b", blurb: "Likely mosaic seam, haze or shadow" },
 ];
 
 const TYPE_BY_KEY = new Map(CHANGE_TYPES.map((t) => [t.key, t]));
@@ -33,7 +33,7 @@ export function typeInfo(key: string): ChangeTypeInfo {
   return TYPE_BY_KEY.get(key) ?? { ...FALLBACK_TYPE, key, label: key.replaceAll("_", " ") };
 }
 
-export const BINARY_COLOR = "#f0a35e";
+export const BINARY_COLOR = "#e8833a";
 
 export const FACILITY_CLASS_LABEL: Record<string, string> = {
   tailings: "Tailings",
@@ -50,8 +50,12 @@ const one = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1, minimumFr
 const two = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 
 export const fmtInt = (v: number): string => int.format(v);
-/** Hectares with sensible precision: 2 decimals under 10, 1 under 100, none above. */
-export const fmtHa = (v: number): string => (v < 10 ? two.format(v) : v < 100 ? one.format(v) : int.format(v));
+const three = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3, minimumFractionDigits: 3 });
+/** An area given in hectares, shown in km² with sensible precision (the data keeps hectares; 1 km² = 100 ha). */
+export const fmtKm2 = (ha: number): string => {
+  const v = ha / 100;
+  return `${v === 0 ? "0" : v < 0.1 ? three.format(v) : v < 10 ? two.format(v) : v < 100 ? one.format(v) : int.format(v)} km²`;
+};
 export const fmtPct = (share: number, digits = 0): string => `${(share * 100).toFixed(digits)}%`;
 
 export function ha(m2: number): number {

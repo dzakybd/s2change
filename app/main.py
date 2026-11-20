@@ -236,6 +236,13 @@ class ChatRequest(BaseModel):
     messages: list[Message] = Field(min_length=1, max_length=100)
 
 
+@app.on_event("startup")
+def warm_analyst() -> None:
+    """Answer the starter questions in the background so their first click is instant (needs an LLM key)."""
+    if os.environ.get("OPENROUTER_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
+        threading.Thread(target=agent.warm, name="analyst-warm", daemon=True).start()
+
+
 @app.post("/api/agent/chat")
 @limiter.limit(lambda: RATE)
 def chat(request: Request, body: ChatRequest):

@@ -31,7 +31,7 @@ export const LAYERS: readonly LayerDef[] = [
   { id: "after_raw", label: "True colour, after (as delivered)", hint: "Before radiometric normalisation: the hazier raw mosaic", right: { after: 1 }, left: { before: 1 }, polygons: "outline", polygonStyle: "types", facilities: false, swipe: true },
   { id: "intensity", label: "Change intensity", hint: "log10 of the robust distance d², before thresholding", right: { after_normalized: 0.55, change_intensity: 0.95 }, left: { before: 0.55 }, polygons: "outline", polygonStyle: "types", facilities: false, swipe: true },
   { id: "binary", label: "Change binary", hint: "Changed or not, after hysteresis and the minimum mapping unit", right: { after_normalized: 0.8 }, left: { before: 0.8 }, polygons: "fill", polygonStyle: "binary", facilities: false, swipe: true },
-  { id: "facilities", label: "Facility register", hint: "Mine facilities with hectares changed", right: { after_normalized: 1 }, left: { before: 1 }, polygons: "outline", polygonStyle: "types", facilities: true, swipe: true, providedOnly: true },
+  { id: "facilities", label: "Facility register", hint: "Mine facilities with the area changed", right: { after_normalized: 1 }, left: { before: 1 }, polygons: "outline", polygonStyle: "types", facilities: true, swipe: true, providedOnly: true },
   { id: "redness", label: "Redness (B04 / B02)", hint: "Iron-oxide proxy from visible bands, before and after", right: { redness_after: 0.92 }, left: { redness_before: 0.92 }, polygons: "none", polygonStyle: "types", facilities: false, swipe: true, needsRedness: true, providedOnly: true },
 ];
 

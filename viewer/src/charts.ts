@@ -3,10 +3,10 @@ import type { AgentChart } from "./types";
 
 /** Tiny hand-rolled SVG charts (no chart library): multi-series line with gaps and grouped bars. */
 
-export const SERIES_COLORS = ["#f0a35e", "#5eead4", "#a78bfa", "#fb7185", "#38bdf8", "#94a3b8"];
+export const SERIES_COLORS = ["#e8833a", "#0d9488", "#7c3aed", "#e11d48", "#0284c7", "#64748b"];
 
-const GRID = "#2a3441";
-const AXIS_TEXT = "#8b97a7";
+const GRID = "#e2e8f0";
+const AXIS_TEXT = "#64748b";
 
 type Margin = { l: number; r: number; t: number; b: number };
 
@@ -96,10 +96,10 @@ function barSvg(spec: AgentChart, w: number, h: number): string {
       const yy = Math.min(top, y(0));
       const hh = Math.max(Math.abs(y(0) - top), 1);
       body += `<rect x="${x0.toFixed(1)}" y="${yy.toFixed(1)}" width="${(barW - 2).toFixed(1)}" height="${hh.toFixed(1)}" rx="2" fill="${color}"><title>${esc(`${s.name}, ${spec.x[i] ?? ""}: ${fmtNum(v)}`)}</title></rect>`;
-      if (showValues) body += `<text x="${(x0 + (barW - 2) / 2).toFixed(1)}" y="${(yy - 4).toFixed(1)}" text-anchor="middle" fill="#b4c0cf" font-size="10">${esc(fmtNum(v))}</text>`;
+      if (showValues) body += `<text x="${(x0 + (barW - 2) / 2).toFixed(1)}" y="${(yy - 4).toFixed(1)}" text-anchor="middle" fill="#475569" font-size="10">${esc(fmtNum(v))}</text>`;
     });
   });
-  body += `<line x1="${m.l}" x2="${w - m.r}" y1="${zero}" y2="${zero}" stroke="#3a4655"/>`;
+  body += `<line x1="${m.l}" x2="${w - m.r}" y1="${zero}" y2="${zero}" stroke="#cbd5e1"/>`;
   spec.x.forEach((label, i) => {
     if (!labels.has(i)) return;
     body += `<text x="${(m.l + group * i + group / 2).toFixed(1)}" y="${h - 9}" text-anchor="middle" fill="${AXIS_TEXT}" font-size="10"><title>${esc(String(label))}</title>${esc(truncate(String(label), Math.max(6, Math.floor(group / 6))))}</text>`;
@@ -137,7 +137,7 @@ function lineSvg(spec: AgentChart, w: number, h: number): string {
     body += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
     s.y.forEach((v, i) => {
       if (v === null || !Number.isFinite(v)) return;
-      body += `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" fill="${color}" stroke="#141a22" stroke-width="1.5"><title>${esc(`${s.name}, ${spec.x[i] ?? ""}: ${fmtNum(v)}`)}</title></circle>`;
+      body += `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" fill="${color}" stroke="#ffffff" stroke-width="1.5"><title>${esc(`${s.name}, ${spec.x[i] ?? ""}: ${fmtNum(v)}`)}</title></circle>`;
     });
   });
   return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(spec.title ?? "line chart")}">${body}</svg>`;

@@ -1,4 +1,4 @@
-import { BINARY_COLOR, CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtHa, fmtInt, fmtPct, ha, typeInfo } from "../domain";
+import { BINARY_COLOR, CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
 import type { AoiStats, ChangeCollection, ChangeProps, Dataset, FacilityProps, MineralsManifest } from "../types";
 import type { LayerDef } from "./layers";
 import { INTENSITY_RAMP, REDNESS_RAMP } from "./layers";
@@ -13,7 +13,7 @@ export function featureCard(p: ChangeProps, facilityName: string | null): string
   return `<header class="ins-head"><i class="swatch lg" style="background:${t.color}"></i><div><h3>${esc(t.label)}</h3><p class="muted">${esc(sentence(p.brief_category || "change"))}</p></div>${closeBtn}</header>
   <div class="why"><span>Why this label</span><p>${esc(sentence(p.explanation || "No explanation recorded."))}</p></div>
   <dl class="facts">
-    <div><dt>Area</dt><dd class="num">${fmtHa(ha(p.area_m2))} ha</dd></div>
+    <div><dt>Area</dt><dd class="num">${fmtKm2(ha(p.area_m2))}</dd></div>
     <div><dt>Confidence</dt><dd class="num">${p.confidence.toFixed(2)}<span class="meter" aria-hidden="true"><i style="width:${(conf * 100).toFixed(0)}%"></i></span></dd></div>
     <div><dt>Significance</dt><dd class="num">−log10 p = ${p.neglog10_p.toFixed(1)}</dd></div>
     <div><dt>Direction</dt><dd>${esc(p.change_direction)}</dd></div>
@@ -26,7 +26,7 @@ export function facilityCard(p: FacilityProps): string {
   const types = Object.entries(p.change_types ?? {}).sort((a, b) => b[1] - a[1]);
   const max = types[0]?.[1] ?? 0;
   return `<header class="ins-head"><i class="swatch lg" style="background:#5eead4"></i><div><h3>${esc(p.name)}</h3><p class="muted">${esc(FACILITY_CLASS_LABEL[p.class] ?? p.class)} · ${esc(p.facility_id)}</p></div>${closeBtn}</header>
-  <div class="tiles"><div><b class="num">${fmtHa(p.changed_ha)}</b><span>ha changed</span></div><div><b class="num">${fmtPct(p.changed_share, p.changed_share < 0.1 ? 1 : 0)}</b><span>of the facility</span></div><div><b class="num">${fmtInt(p.area_ha)}</b><span>ha total</span></div></div>
+  <div class="tiles"><div><b class="num">${fmtKm2(p.changed_ha)}</b><span>changed</span></div><div><b class="num">${fmtPct(p.changed_share, p.changed_share < 0.1 ? 1 : 0)}</b><span>of the facility</span></div><div><b class="num">${fmtKm2(p.area_ha)}</b><span>total</span></div></div>
   ${types.length ? `<h4>What changed</h4>${bars(types, max, (k) => typeInfo(k).color, (k) => typeInfo(k).label)}` : '<p class="note">No change detected inside this facility.</p>'}
   <p class="note">${esc(p.summary)}</p>`;
 }
@@ -35,8 +35,8 @@ export function aoiCard(s: AoiStats): string {
   const types = Object.entries(s.by_change_type).sort((a, b) => b[1] - a[1]);
   const facs = Object.entries(s.by_facility).sort((a, b) => b[1] - a[1]);
   const src = s.source === "api" ? "Computed in PostGIS by the live API." : "Estimated in your browser from the change polygons on the map (10 m sampling).";
-  return `<header class="ins-head"><i class="swatch lg" style="background:#5eead4"></i><div><h3>Selected area</h3><p class="muted">${fmtHa(s.area_ha)} ha drawn</p></div>${closeBtn}</header>
-  <div class="tiles"><div><b class="num">${fmtHa(s.changed_ha)}</b><span>ha changed</span></div><div><b class="num">${fmtPct(s.changed_share, s.changed_share < 0.1 ? 1 : 0)}</b><span>of the area</span></div><div><b class="num">${fmtInt(s.n_polygons)}</b><span>${s.n_polygons === 1 ? "polygon" : "polygons"}</span></div></div>
+  return `<header class="ins-head"><i class="swatch lg" style="background:#5eead4"></i><div><h3>Selected area</h3><p class="muted">${fmtKm2(s.area_ha)} drawn</p></div>${closeBtn}</header>
+  <div class="tiles"><div><b class="num">${fmtKm2(s.changed_ha)}</b><span>changed</span></div><div><b class="num">${fmtPct(s.changed_share, s.changed_share < 0.1 ? 1 : 0)}</b><span>of the area</span></div><div><b class="num">${fmtInt(s.n_polygons)}</b><span>${s.n_polygons === 1 ? "polygon" : "polygons"}</span></div></div>
   ${types.length ? `<h4>By change type</h4>${bars(types, types[0]?.[1] ?? 0, (k) => typeInfo(k).color, (k) => typeInfo(k).label)}` : '<p class="note">No change detected inside the area you drew.</p>'}
   ${facs.length ? `<h4>By facility</h4>${bars(facs, facs[0]?.[1] ?? 0, () => "#5eead4", (k) => k)}` : ""}
   <p class="note">${src}</p>
@@ -45,7 +45,7 @@ export function aoiCard(s: AoiStats): string {
 
 function bars(rows: [string, number][], max: number, color: (k: string) => string, label: (k: string) => string): string {
   return `<ul class="bars">${rows
-    .map(([k, v]) => `<li><span class="bar-l"><i class="swatch" style="background:${color(k)}"></i>${esc(label(k))}</span><b class="num">${fmtHa(v)} ha</b><span class="bar"><i style="width:${max ? Math.max(2, (v / max) * 100).toFixed(1) : 0}%;background:${color(k)}"></i></span></li>`)
+    .map(([k, v]) => `<li><span class="bar-l"><i class="swatch" style="background:${color(k)}"></i>${esc(label(k))}</span><b class="num">${fmtKm2(v)}</b><span class="bar"><i style="width:${max ? Math.max(2, (v / max) * 100).toFixed(1) : 0}%;background:${color(k)}"></i></span></li>`)
     .join("")}</ul>`;
 }
 
@@ -77,18 +77,18 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
   let title = def.label;
   if (def.id === "types") {
     title = "Change types";
-    body = `<p class="lg-sub num">${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"} · ${fmtHa(tally.ha)} ha. Click a type to hide it.</p><ul class="lg-types">${tally.rows
+    body = `<p class="lg-sub num">${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"} · ${fmtKm2(tally.ha)}. Click a type to hide it.</p><ul class="lg-types">${tally.rows
       .map((r) => {
         const t = typeInfo(r.key);
-        return `<li><button type="button" class="lg-row" data-type="${esc(r.key)}" aria-pressed="${!hidden.has(r.key)}" title="${esc(t.blurb)}"><i class="swatch" style="background:${t.color}"></i><span>${esc(t.label)}</span><b class="num">${r.count}</b><em class="num">${fmtHa(r.ha)} ha</em></button></li>`;
+        return `<li><button type="button" class="lg-row" data-type="${esc(r.key)}" aria-pressed="${!hidden.has(r.key)}" title="${esc(t.blurb)}"><i class="swatch" style="background:${t.color}"></i><span>${esc(t.label)}</span><b class="num">${r.count}</b><em class="num">${fmtKm2(r.ha)}</em></button></li>`;
       })
       .join("")}</ul>`;
   } else if (def.id === "binary") {
-    body = `<p class="lg-sub"><i class="swatch" style="background:${BINARY_COLOR}"></i> Changed · ${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"}, ${fmtHa(tally.ha)} ha</p><p class="note">Everything else is unchanged. Minimum mapping unit 0.2 ha.</p>`;
+    body = `<p class="lg-sub"><i class="swatch" style="background:${BINARY_COLOR}"></i> Changed · ${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"}, ${fmtKm2(tally.ha)}</p><p class="note">Everything else is unchanged. Minimum mapping unit 2,000 m².</p>`;
   } else if (def.id === "intensity") {
     body = `<div class="ramp" style="background:${INTENSITY_RAMP}"></div><div class="ramp-l"><span>no change</span><span>strong change</span></div><p class="note">log10 of the robust Mahalanobis distance d² per 10 m pixel, before thresholding.</p>`;
   } else if (def.id === "facilities") {
-    body = `<p class="lg-sub"><i class="swatch" style="background:#5eead4"></i> Facility outline · hectares changed inside it</p><p class="note">Click an outline for its change breakdown.</p>`;
+    body = `<p class="lg-sub"><i class="swatch" style="background:#5eead4"></i> Facility outline · area changed inside it</p><p class="note">Click an outline for its change breakdown.</p>`;
   } else if (def.id === "redness") {
     const lg = minerals?.legend;
     body = `<div class="ramp" style="background:${REDNESS_RAMP}"></div><div class="ramp-l"><span>${lg?.min.toFixed(1) ?? "1.0"}</span><span>${esc(lg?.label ?? "iron-oxide proxy")}</span><span>${lg?.max.toFixed(1) ?? "2.2"}</span></div><p class="note">${esc(minerals?.caveat ?? "B04/B02, an indicative proxy; not a mineral map.")}</p>`;

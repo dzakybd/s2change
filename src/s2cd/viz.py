@@ -155,7 +155,7 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
         frame(ax[0, j], title)
         ax[1, j].imshow(binary, cmap=ListedColormap(["#111", "#fde047"]), extent=ext, interpolation="nearest")
         key = list(area)[j]
-        frame(ax[1, j], f"binary: {area[key]:,.0f} ha changed")
+        frame(ax[1, j], f"binary: {area[key] / 100:,.2f} km² changed")
     paths.append(_save(fig, out_dir / "03_method_comparison.png"))
 
     # 4. Change polygons over T2
@@ -221,7 +221,7 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
     for _, r in fac[~fac.geometry.is_empty].iterrows():
         pt = r.geometry.representative_point()
         ax.annotate(
-            f"{r.facility_id}\n{r['name']}\n{r.area_ha:g} ha",
+            f"{r.facility_id}\n{r['name']}\n{r.area_ha / 100:.1f} km²",
             (pt.x, pt.y),
             fontsize=7,
             color="white",
@@ -243,12 +243,12 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
         if len(sub):
             sub.plot(ax=ax[0], facecolor=c, edgecolor=c, alpha=0.65, lw=0.5)
     frame(ax[0], "Change polygons by rule-based type (white: facility outlines)")
-    by_type = g.groupby("change_type").area_m2.sum().div(1e4).reindex(list(TYPE_COLORS)).dropna().sort_values()
+    by_type = g.groupby("change_type").area_m2.sum().div(1e6).reindex(list(TYPE_COLORS)).dropna().sort_values()
     ax[1].barh(by_type.index.str.replace("_", " "), by_type.values, color=[TYPE_COLORS[t] for t in by_type.index])
     for i, v in enumerate(by_type.values):
-        ax[1].text(v, i, f" {v:,.0f} ha", va="center", fontsize=9)
-    ax[1].set_xlabel("changed area (ha)")
-    ax[1].set_title("Hectares per change type (hypotheses from RGB + facility context)")
+        ax[1].text(v, i, f" {v:.2f} km²", va="center", fontsize=9)
+    ax[1].set_xlabel("changed area (km²)")
+    ax[1].set_title("Area per change type (hypotheses from RGB + facility context)")
     ax[1].margins(x=0.18)
     paths.append(_save(fig, out_dir / "10_change_types.png"))
     return paths
@@ -389,8 +389,8 @@ def folium_map(p: Products, web_dir: Path, out_html: Path) -> Path:
         overlay.url = f"{rel}/{r['url']}"  # folium would inline local files as base64; link them instead
         overlay.add_to(m)
     g = p.features["robust_cva"].to_crs(4326).drop(columns=["region"])
-    g["area_ha"] = (g.area_m2 / 1e4).round(2)
-    fields = ["area_ha", "change_type", "facility_id", "confidence", "change_direction", "d_brightness", "zone"]
+    g["area_m2"] = g.area_m2.round(0)
+    fields = ["area_m2", "change_type", "facility_id", "confidence", "change_direction", "d_brightness", "zone"]
     folium.GeoJson(
         g[fields + ["geometry"]].round(4),
         name="Change polygons (robust CVA), coloured by type",
@@ -400,7 +400,7 @@ def folium_map(p: Products, web_dir: Path, out_html: Path) -> Path:
             "fillOpacity": 0.35,
         },
         tooltip=folium.GeoJsonTooltip(
-            fields=fields, aliases=["area (ha)", "change type", "facility", "confidence", "direction", "d brightness", "zone"]
+            fields=fields, aliases=["area (m²)", "change type", "facility", "confidence", "direction", "d brightness", "zone"]
         ),
     ).add_to(m)
     folium.GeoJson(
