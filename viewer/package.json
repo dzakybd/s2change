@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@iconify-json/logos": "^1.2.20",
     "dompurify": "^3.4.18",
     "maplibre-gl": "^6.19.0",
     "marked": "^18.2.1",

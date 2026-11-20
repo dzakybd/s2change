@@ -192,7 +192,7 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
     el.append(body);
     for (const c of res.charts) el.append(chartElement(c));
     for (const t of res.tables) el.append(tableElement(t));
-    const actions = res.actions.filter((a) => ["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility", "compare_dates"].includes(a.type));
+    const actions = res.actions; // already filtered to known types by api.chat
     if (actions.length) {
       const row = document.createElement("div");
       row.className = "actions";

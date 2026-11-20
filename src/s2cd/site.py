@@ -6,8 +6,8 @@ Writes, under docs/web/ (served at /web/ by the live site and by GitHub Pages):
 
 * overview.json: headline numbers (data/processed/run_summary.json), the facility register
   (data/change_detection.sqlite), and the sensitivity grid (data/processed/sensitivity.csv);
-* report/report.md and report/figures/*.png: report.md with its images copied from docs/figures and the links
-  rewritten so the document renders from docs/web/report/.
+* report/report.md and report/figures/*: report.md with its images copied (docs/figures, or any repo-relative path
+  such as the logo in viewer/public/) and the links rewritten so the document renders from docs/web/report/.
 
 Everything is read from files the pipeline already wrote, so this never recomputes anything.
 """
@@ -31,6 +31,7 @@ FIGURES_SRC = Path("docs/figures")
 GITHUB_BLOB = "https://github.com/dzakybd/s2change/blob/main/"
 
 IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)\)")
+HTML_IMAGE = re.compile(r'(<img\b[^>]*?\bsrc=")([^"]+)(")')
 LINK = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)\s]+)\)")
 
 
@@ -142,18 +143,32 @@ def report(src: Path = REPORT_SRC, figures: Path = FIGURES_SRC, out: Path = WEB 
     copied: list[str] = []
     skipped: list[str] = []
 
+    def copy_image(target: str) -> str | None:
+        """Copy the image a relative link points to into out/figures and return its new link, or None if missing."""
+        name = Path(target).name
+        source = figures / name
+        if not source.exists():
+            source = Path(target)  # repo-relative, e.g. viewer/public/favicon.svg
+        if not source.is_file():
+            skipped.append(target)
+            return None
+        shutil.copyfile(source, out / "figures" / name)
+        copied.append(name)
+        return f"figures/{name}"
+
     def image(m: re.Match[str]) -> str:
         alt, target = m.groups()
         if target.startswith(("http://", "https://")):
             return m.group(0)
-        name = Path(target).name
-        source = figures / name
-        if not source.exists():
-            skipped.append(target)
-            return ""
-        shutil.copyfile(source, out / "figures" / name)
-        copied.append(name)
-        return f"![{alt}](figures/{name})"
+        new = copy_image(target)
+        return f"![{alt}]({new})" if new else ""
+
+    def html_image(m: re.Match[str]) -> str:
+        head, target, tail = m.groups()
+        if target.startswith(("http://", "https://", "data:")):
+            return m.group(0)
+        new = copy_image(target)
+        return f"{head}{new}{tail}" if new else m.group(0)
 
     def link(m: re.Match[str]) -> str:
         label, target = m.groups()
@@ -162,6 +177,7 @@ def report(src: Path = REPORT_SRC, figures: Path = FIGURES_SRC, out: Path = WEB 
         return f"[{label}]({GITHUB_BLOB}{target.lstrip('./')})"
 
     text = IMAGE.sub(image, text)
+    text = HTML_IMAGE.sub(html_image, text)
     text = LINK.sub(link, text)
     (out / "report.md").write_text(text)
     for t in skipped:

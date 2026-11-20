@@ -1,4 +1,10 @@
-# s2change: what changed at an open-pit copper mine in Zambia?
+<p align="center"><img src="viewer/public/favicon.svg" alt="s2change logo" width="72" height="72"></p>
+
+<h1 align="center">s2change</h1>
+
+<p align="center"><b>What changed at an open-pit copper mine in Zambia?</b><br>Sentinel-2 change detection from three visible bands and two dates.</p>
+
+<p align="center">
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-viewer-3178C6?logo=typescript&logoColor=white)](viewer/)
@@ -6,16 +12,24 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](app/)
 [![MapLibre](https://img.shields.io/badge/MapLibre-GL-396CB2)](viewer/)
 [![Live demo](https://img.shields.io/badge/live%20demo-s2change.dzaky.ai.id-E8833A)](https://s2change.dzaky.ai.id)
+[![Report](https://img.shields.io/badge/read-report.md-0F766E)](report.md)
+
+</p>
 
 Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two dates**, as the brief provides. The pipeline finds the change, types it ("tailings deposition", "waste dumping"…), stores it in PostGIS and explains it.
 
-**Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report and the downloads. No setup is needed.
+> [!TIP]
+> **Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report and the downloads. No setup is needed.
 
-![s2change: overview, before/after swipe, other-date comparison, oblique view](docs/figures/demo.gif)
+<p align="center"><img src="docs/figures/demo.gif" alt="s2change: overview, before/after swipe, other-date comparison, oblique view" width="860"></p>
+
+<p align="center"><i>Overview, before/after swipe, other-date comparison and oblique view.</i></p>
 
 ## Findings (nominal 2023-08-12 → 2023-09-02)
 
-- **The provided "dates" are mosaics.** Each combines two Sentinel-2 scenes from different orbits, verified pixel-exact against STAC (100 % identical DN). The scenes actually compared are **52–60 days** apart, and radiometry steps along the seams. The provided Euclidean baseline maps those seams and haze: **111.4 km² (42 % of the AOI)**.
+> [!IMPORTANT]
+> **The provided "dates" are mosaics.** Each combines two Sentinel-2 scenes from different orbits, verified pixel-exact against STAC (100 % identical DN). The scenes actually compared are **52–60 days** apart, and radiometry steps along the seams. The provided Euclidean baseline maps those seams and haze: **111.4 km² (42 % of the AOI)**.
+
 - **Calibrated change: 4.13 km²** in 215 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
 - **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (1.94 km²), the waste dumps and pit edges (1.29 km² of dumping), and pit benches. There is no clearing beyond the mine footprint at the 2,000 m² scale.
 - **Robust:** the result holds across 16 threshold settings (2.10–6.82 km², 61–77 % inside the mine).
@@ -68,26 +82,18 @@ flowchart LR
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  IN[Rasters + STAC<br/>B02-B04] --> PIPE[Python pipeline<br/>s2cd]
-  PIPE --> FILES[GeoTIFF/COG, GeoJSON,<br/>SpatiaLite]
-  FILES --> PUB[app.publish]
-  PUB --> PG[(Supabase PostGIS<br/>s2cd_reader, read-only)]
-  PG --> API[FastAPI<br/>SQL guard, AOI stats,<br/>compare jobs, analyst agent]
-  API --> UI[Viewer<br/>Vite + TypeScript + MapLibre]
-  CADDY[Caddy + PM2<br/>s2change.dzaky.ai.id] --- API
-  CADDY --- UI
-```
+<p align="center"><img src="docs/figures/12_architecture.png" alt="Architecture with the technology of each part" width="900"></p>
 
-- **Pipeline:** Python 3.12, uv, rasterio, numpy/scipy/scikit-image, geopandas/shapely/pyogrio
-- **Storage:** SpatiaLite file plus PostGIS (GiST index) via SQLAlchemy/psycopg; Docker Compose for a local PostGIS
-- **API:** FastAPI, slowapi rate limits, sqlglot SQL guard, read-only DB role
-- **Analyst:** LangChain deepagents on Gemini (direct or via OpenRouter), typed tools and knowledge notes
-- **Viewer:** Vite, TypeScript, MapLibre GL
-- **Delivery:** Caddy (TLS, static) + PM2 on a VPS; GitHub Actions runs ruff, pytest and the builds
+| | Technology |
+|---|---|
+| **Pipeline** | <img src="https://cdn.simpleicons.org/python" alt="" height="16"> Python 3.12, <img src="https://cdn.simpleicons.org/uv" alt="" height="16"> uv, <img src="https://cdn.simpleicons.org/numpy" alt="" height="16"> numpy, <img src="https://cdn.simpleicons.org/scipy" alt="" height="16"> scipy, rasterio, scikit-image, <img src="https://cdn.simpleicons.org/geopandas" alt="" height="16"> geopandas, shapely, pyogrio |
+| **Storage** | <img src="https://cdn.simpleicons.org/postgresql" alt="" height="16"> PostGIS (GiST index) on <img src="https://cdn.simpleicons.org/supabase" alt="" height="16"> Supabase, <img src="https://cdn.simpleicons.org/sqlite" alt="" height="16"> SpatiaLite file, <img src="https://cdn.simpleicons.org/sqlalchemy" alt="" height="16"> SQLAlchemy and psycopg; <img src="https://cdn.simpleicons.org/docker" alt="" height="16"> Docker Compose for a local PostGIS |
+| **API** | <img src="https://cdn.simpleicons.org/fastapi" alt="" height="16"> FastAPI, slowapi rate limits, sqlglot SQL guard, read-only DB role |
+| **Analyst** | <img src="https://cdn.simpleicons.org/langchain" alt="" height="16"> LangChain deepagents on <img src="https://cdn.simpleicons.org/googlegemini" alt="" height="16"> Gemini (direct or via <img src="https://cdn.simpleicons.org/openrouter" alt="" height="16"> OpenRouter), typed tools and knowledge notes |
+| **Viewer** | <img src="https://cdn.simpleicons.org/vite" alt="" height="16"> Vite, <img src="https://cdn.simpleicons.org/typescript" alt="" height="16"> TypeScript, <img src="https://cdn.simpleicons.org/maplibre" alt="" height="16"> MapLibre GL |
+| **Delivery** | <img src="https://cdn.simpleicons.org/caddy" alt="" height="16"> Caddy (TLS, static) + <img src="https://cdn.simpleicons.org/pm2" alt="" height="16"> PM2 on a VPS; <img src="https://cdn.simpleicons.org/githubactions" alt="" height="16"> GitHub Actions runs <img src="https://cdn.simpleicons.org/ruff" alt="" height="16"> ruff, <img src="https://cdn.simpleicons.org/pytest" alt="" height="16"> pytest and the builds |
 
-The full diagram, the analyst sequence and the stack table with reasons are in [report.md, section 5](report.md).
+The analyst sequence diagram and the stack table with reasons are in [report.md, section 5](report.md#5-system-and-stack).
 
 ## Repository
 

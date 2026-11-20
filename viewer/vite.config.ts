@@ -12,6 +12,7 @@ const MIME: Record<string, string> = {
   ".geojson": "application/geo+json",
   ".webp": "image/webp",
   ".png": "image/png",
+  ".svg": "image/svg+xml",
   ".md": "text/markdown; charset=utf-8",
 };
 

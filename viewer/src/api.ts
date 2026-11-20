@@ -88,7 +88,7 @@ async function call<T>(state: ReadyApi, method: "GET" | "POST", path: string, bo
 
 const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
-const ACTIONS = new Set(["fly_to", "highlight", "show_run"]);
+const ACTIONS = new Set(["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility", "compare_dates"]);
 
 /** Defensive parse: unknown shapes degrade to an answer-only message instead of throwing in the UI. */
 export function normalizeResponse(raw: unknown): AgentResponse {
