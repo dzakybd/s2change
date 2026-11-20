@@ -275,7 +275,7 @@ def _warp_png(arr: np.ndarray, grid: Grid, path: Path, categorical: bool = False
             resampling=Resampling.nearest if categorical else Resampling.bilinear,
         )
     path.parent.mkdir(parents=True, exist_ok=True)
-    Image.fromarray(np.moveaxis(dst, 0, -1)).save(path, quality=88, method=6)
+    Image.fromarray(np.moveaxis(dst, 0, -1)).save(path, quality=88, method=4)  # method 6 is ~7x slower for the same size
     w_, s_, e_, n_ = transform_bounds(dst_crs, "EPSG:4326", *rasterio.transform.array_bounds(dh, dw, tr))
     return [[s_, w_], [n_, e_]]
 

@@ -58,6 +58,9 @@ def _pick_month(candidates: list[dict]) -> dict | None:
 def build(end: date | None = None) -> dict:
     end = end or date.today()
     known = {e["date"][:7]: e for e in load()}
+    # Months already found cloudy are not downloaded again, except the last two: late scenes can still arrive for them.
+    recent = {f"{end:%Y-%m}", f"{date(end.year - (end.month == 1), (end.month - 2) % 12 + 1, 1):%Y-%m}"}
+    cloudy = set(json.loads(CATALOG.read_text()).get("skipped_months", [])) - recent if CATALOG.exists() else set()
     by_month: dict[str, list[dict]] = {}
     for c in scenes.available_dates(FIRST, end):
         by_month.setdefault(c["date"][:7], []).append(c)
@@ -65,7 +68,7 @@ def build(end: date | None = None) -> dict:
     month = date(FIRST.year, FIRST.month, 1)
     while month <= end:
         key = f"{month:%Y-%m}"
-        entry = known.get(key) or _pick_month(by_month.get(key, []))
+        entry = known.get(key) or (None if key in cloudy else _pick_month(by_month.get(key, [])))
         (kept.append(entry) if entry else skipped.append(key))
         log.info("%s: %s", key, entry["date"] if entry else "no clear date")
         month = date(month.year + month.month // 12, month.month % 12 + 1, 1)
