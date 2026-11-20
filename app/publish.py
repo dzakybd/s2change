@@ -1,12 +1,14 @@
 """Publish the SQLite results into PostGIS for the app: ``python -m app.publish`` (idempotent, rerunnable).
 
 Reads data/change_detection.sqlite (change_runs, change_features, change_context) and, if present,
-data/timeline/timeline.sqlite (change_runs, change_features incl. likely_cause, timeline_months).
+data/timeline/timeline.sqlite (change_runs, change_features incl. likely_cause, timeline_months) and
+data/facilities/facilities.sqlite (facilities, facility_changes).
 Env: DATABASE_URL (admin/owner), READER_PASSWORD (password for the read-only role s2cd_reader).
 """
 
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 import sys
@@ -17,11 +19,13 @@ import geopandas as gpd
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
+from sqlalchemy.dialects.postgresql import JSONB
 
 from s2cd.db import FEATURE_COLUMNS
 
 ROOT = Path(__file__).resolve().parents[1]
 MAIN_DB = ROOT / "data" / "change_detection.sqlite"
+FACILITIES_DB = ROOT / "data" / "facilities" / "facilities.sqlite"
 TIMELINE_DB = ROOT / "data" / "timeline" / "timeline.sqlite"
 SCHEMAS = [ROOT / "sql" / "schema_postgis.sql", ROOT / "sql" / "schema_app.sql"]
 TIMELINE_COLUMNS = [
@@ -87,6 +91,21 @@ def load_timeline(conn, path: Path) -> int:
     return len(months)
 
 
+def load_facilities(conn, path: Path) -> dict:
+    """Replace the facility inventory (``facilities`` + ``facility_changes``) with the contents of ``path``."""
+    facilities = gpd.read_file(path, layer="facilities", fid_as_index=False)
+    facilities = facilities.set_crs(32735, allow_override=True) if facilities.crs is None else facilities.to_crs(32735)
+    changes = _table(path, "facility_changes")
+    facilities["evidence"] = facilities["evidence"].map(json.loads)
+    conn.execute(text("DELETE FROM facilities"))  # cascades to facility_changes
+    facilities[["facility_id", "class", "confidence", "area_ha", "label", "evidence", "geometry"]].to_postgis(
+        "facilities", conn, if_exists="append", index=False, dtype={"evidence": JSONB}
+    )
+    if changes is not None:
+        _insert(conn, "facility_changes", changes)
+    return {"facilities": len(facilities), "changes": 0 if changes is None else len(changes)}
+
+
 def set_reader_password(conn) -> None:
     password = os.environ.get("READER_PASSWORD")
     if not password:
@@ -114,6 +133,10 @@ def main() -> None:
             print("timeline months:", load_timeline(conn, TIMELINE_DB))
         else:
             print(f"{TIMELINE_DB.relative_to(ROOT)} not found: skipped")
+        if FACILITIES_DB.exists():
+            print("facilities:", load_facilities(conn, FACILITIES_DB))
+        else:
+            print(f"{FACILITIES_DB.relative_to(ROOT)} not found: skipped")
         set_reader_password(conn)
 
 

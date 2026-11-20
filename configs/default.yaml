@@ -3,19 +3,29 @@ before: inputs/data/sentinel2_20230812
 after: inputs/data/sentinel2_20230902
 aoi: inputs/aoi.geojson
 out_dir: data/processed
+provenance_dir: data/processed/provenance   # `s2cd provenance` output; if it matches the dates, its seams define the zones
+facility_register: configs/facility_register.yaml
 sqlite_path: data/change_detection.sqlite
 figures_dir: docs/figures
 bands: [B02, B03, B04]
 run_irmad: true
 
-# Binary change rule (robust CVA). FAR = per-pixel false-alarm rate under the chi2(3) noise model.
+# Binary change rule (robust CVA). FAR = nominal per-pixel false-alarm rate under the chi2(3) noise model; the realised
+# rate on held-out no-change pixels is reported in run_summary.json under noise_calibration. Sizes are in ha and metres.
 rule:
-  far_low: 1.0e-3        # region growing threshold
-  far_high: 1.0e-5       # every region must contain at least one pixel this significant
-  seam_buffer_px: 2      # ignore pixels within 2 px of a detector-stripe boundary
-  opening_radius_px: 1
-  mmu_px: 20             # minimum mapping unit: 20 px = 0.2 ha
-  fill_holes_px: 20
+  far_low: 1.0e-3        # region growing threshold (nominal)
+  far_high: 1.0e-5       # every region must contain at least one pixel this significant (nominal)
+  seam_buffer_m: 90      # ignore pixels within 90 m (9 px) of a source-scene / stripe boundary; also used by interpret
+  opening_radius_m: 10   # morphological opening, removes 1-2 px lines and speckle
+  mmu_ha: 0.2            # minimum mapping unit (20 px at 10 m)
+  fill_holes_ha: 0.2
+
+# Brightness-aware noise model of the robust CVA (see methods.NoiseRules).
+noise:
+  n_bins: 6              # brightness strata of the before image per zone
+  holdout_fraction: 0.3  # no-change pixels held out (in blocks) to measure the realised false-alarm rate
+  holdout_block_px: 32
+  tolerance: 1.5         # realised/nominal beyond this factor -> thresholds from empirical held-out quantiles
 
 # Overrides for radiometry.detect_stripe_zones (defaults are fine for this scene).
 stripe: {}

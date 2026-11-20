@@ -1,0 +1,218 @@
+{
+  "dates": [
+    "2023-08-12",
+    "2023-09-02"
+  ],
+  "bands": [
+    "B02",
+    "B03",
+    "B04"
+  ],
+  "rules": {
+    "lookback_days": 75,
+    "lookahead_days": 3,
+    "min_gain": 0.001,
+    "max_sources": 8,
+    "workers": 4
+  },
+  "stac": {
+    "2023-08-12": {
+      "nominal_date_has_item": false,
+      "n_candidates_searched": 55,
+      "search_window": [
+        "2023-05-29",
+        "2023-08-15"
+      ],
+      "sources": [
+        {
+          "id": "S2B_MSIL2A_20230701T080609_R078_T35LLG_20230701T134619",
+          "datetime": "2023-07-01T08:06:09.024000Z",
+          "platform": "Sentinel-2B",
+          "mgrs_tile": "35LLG",
+          "relative_orbit": 78,
+          "orbit_state": "descending",
+          "datatake_id": "GS2B_20230701T080609_032994_N05.09",
+          "processing_baseline": "05.09",
+          "generation_time": "2023-07-01T13:46:19.752902Z",
+          "cloud_cover": 0.001653,
+          "nodata_pixel_percentage": 68.887877,
+          "label": "2023-07-01 S2B R078 N05.09",
+          "pixels": 1481382,
+          "fraction_of_valid": 0.5599
+        },
+        {
+          "id": "S2B_MSIL2A_20230704T081609_R121_T35LLG_20230704T142502",
+          "datetime": "2023-07-04T08:16:09.024000Z",
+          "platform": "Sentinel-2B",
+          "mgrs_tile": "35LLG",
+          "relative_orbit": 121,
+          "orbit_state": "descending",
+          "datatake_id": "GS2B_20230704T081609_033037_N05.09",
+          "processing_baseline": "05.09",
+          "generation_time": "2023-07-04T14:25:02.399515Z",
+          "cloud_cover": 0.000225,
+          "nodata_pixel_percentage": 6.945388,
+          "label": "2023-07-04 S2B R121 N05.09",
+          "pixels": 1164330,
+          "fraction_of_valid": 0.4401
+        }
+      ],
+      "unexplained_fraction": 0.0,
+      "coverage": {
+        "n_items": 2,
+        "n_datatakes": 2,
+        "mgrs_tiles": [
+          "35LLG"
+        ],
+        "processing_baselines": [
+          "05.09"
+        ],
+        "reprocessed_duplicates": 0,
+        "more_than_one_datatake": true
+      }
+    },
+    "2023-09-02": {
+      "nominal_date_has_item": true,
+      "n_candidates_searched": 56,
+      "search_window": [
+        "2023-06-19",
+        "2023-09-05"
+      ],
+      "sources": [
+        {
+          "id": "S2A_MSIL2A_20230825T080611_R078_T35LLG_20230825T175054",
+          "datetime": "2023-08-25T08:06:11.024000Z",
+          "platform": "Sentinel-2A",
+          "mgrs_tile": "35LLG",
+          "relative_orbit": 78,
+          "orbit_state": "descending",
+          "datatake_id": "GS2A_20230825T080611_042689_N05.09",
+          "processing_baseline": "05.09",
+          "generation_time": "2023-08-25T17:50:54.131060Z",
+          "cloud_cover": 0.001979,
+          "nodata_pixel_percentage": 68.143249,
+          "label": "2023-08-25 S2A R078 N05.09",
+          "pixels": 1616040,
+          "fraction_of_valid": 0.6108
+        },
+        {
+          "id": "S2B_MSIL2A_20230902T081609_R121_T35LLG_20230902T164949",
+          "datetime": "2023-09-02T08:16:09.024000Z",
+          "platform": "Sentinel-2B",
+          "mgrs_tile": "35LLG",
+          "relative_orbit": 121,
+          "orbit_state": "descending",
+          "datatake_id": "GS2B_20230902T081609_033895_N05.09",
+          "processing_baseline": "05.09",
+          "generation_time": "2023-09-02T16:49:49.53975Z",
+          "cloud_cover": 6.8e-05,
+          "nodata_pixel_percentage": 7.062773,
+          "label": "2023-09-02 S2B R121 N05.09",
+          "pixels": 1029672,
+          "fraction_of_valid": 0.3892
+        }
+      ],
+      "unexplained_fraction": 0.0,
+      "coverage": {
+        "n_items": 2,
+        "n_datatakes": 2,
+        "mgrs_tiles": [
+          "35LLG"
+        ],
+        "processing_baselines": [
+          "05.09"
+        ],
+        "reprocessed_duplicates": 0,
+        "more_than_one_datatake": true
+      }
+    }
+  },
+  "provided_vs_planetary_computer_mosaic": {
+    "2023-08-12": {
+      "B02": {
+        "n_pixels": 2645712,
+        "correlation": 1.0,
+        "median_diff_dn": 0.0,
+        "mean_abs_diff_dn": 0.0,
+        "exact_match_fraction": 1.0
+      },
+      "B03": {
+        "n_pixels": 2645712,
+        "correlation": 1.0,
+        "median_diff_dn": 0.0,
+        "mean_abs_diff_dn": 0.0,
+        "exact_match_fraction": 1.0
+      },
+      "B04": {
+        "n_pixels": 2645712,
+        "correlation": 1.0,
+        "median_diff_dn": 0.0,
+        "mean_abs_diff_dn": 0.0,
+        "exact_match_fraction": 1.0
+      }
+    },
+    "2023-09-02": {
+      "B02": {
+        "n_pixels": 2645712,
+        "correlation": 1.0,
+        "median_diff_dn": 0.0,
+        "mean_abs_diff_dn": 0.0,
+        "exact_match_fraction": 1.0
+      },
+      "B03": {
+        "n_pixels": 2645712,
+        "correlation": 1.0,
+        "median_diff_dn": 0.0,
+        "mean_abs_diff_dn": 0.0,
+        "exact_match_fraction": 1.0
+      },
+      "B04": {
+        "n_pixels": 2645712,
+        "correlation": 1.0,
+        "median_diff_dn": 0.0,
+        "mean_abs_diff_dn": 0.0,
+        "exact_match_fraction": 1.0
+      }
+    }
+  },
+  "source_scene_by_stripe_zone": {
+    "2023-08-12": {
+      "0": {
+        "2023-07-04 S2B R121 N05.09": 1.0
+      },
+      "1": {
+        "2023-07-04 S2B R121 N05.09": 1.0
+      },
+      "2": {
+        "2023-07-04 S2B R121 N05.09": 1.0
+      },
+      "3": {
+        "2023-07-01 S2B R078 N05.09": 0.9926,
+        "2023-07-04 S2B R121 N05.09": 0.0074
+      }
+    },
+    "2023-09-02": {
+      "0": {
+        "2023-09-02 S2B R121 N05.09": 1.0
+      },
+      "1": {
+        "2023-08-25 S2A R078 N05.09": 0.0078,
+        "2023-09-02 S2B R121 N05.09": 0.9922
+      },
+      "2": {
+        "2023-08-25 S2A R078 N05.09": 1.0
+      },
+      "3": {
+        "2023-08-25 S2A R078 N05.09": 1.0
+      }
+    }
+  },
+  "zone_source_agreement": {
+    "2023-08-12": 0.9958,
+    "2023-09-02": 0.9976
+  },
+  "files": [
+    "data/processed/provenance/source_scene.tif",
+    "docs/figures/06_provenance.png"
+  ]
+}

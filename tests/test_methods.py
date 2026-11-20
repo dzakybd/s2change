@@ -26,7 +26,7 @@ def test_robust_cva_false_alarm_rate_matches_nominal(rng):
         rate = float((res.d2 > thr).mean())
         sigma = np.sqrt(far * (1 - far) / n)
         assert abs(rate - far) < 5 * sigma + 0.1 * far
-    assert abs(float((res.p_change > 0.999).mean()) - 1e-3) < 4e-4
+    assert abs(float((res.neglog10_p > 3).mean()) - 1e-3) < 4e-4  # -log10 p > 3  <=>  p < 1e-3
     assert float(np.nanmean(res.d2)) == pytest.approx(3.0, abs=0.05)  # E[chi2(3)] = 3
 
 
@@ -41,8 +41,8 @@ def test_robust_cva_detects_planted_change(rng):
 
     res = methods.robust_cva(before, after_norm, zones, ~block)
 
-    assert (res.p_change[block] > 0.99999).all()
-    assert float((res.p_change[~block] > 0.999).mean()) < 3e-3
+    assert (res.neglog10_p[block] > 5).all()
+    assert float((res.neglog10_p[~block] > 3).mean()) < 3e-3
     assert res.delta[:, block].mean() == pytest.approx(0.12, abs=0.01)
 
 
@@ -58,7 +58,7 @@ def test_robust_cva_noise_model_is_per_zone(rng):
     for z in (0, 1):
         assert float((res.d2[zones == z] > stats.chi2.isf(1e-3, 3)).mean()) < 3e-3
     assert set(res.noise_cov) == {0, 1}
-    assert np.trace(np.array(res.noise_cov[1])) > 20 * np.trace(np.array(res.noise_cov[0]))
+    assert np.trace(np.array(res.noise_cov[1][0])) > 20 * np.trace(np.array(res.noise_cov[0][0]))  # first brightness bin
 
 
 def test_robust_cva_invalid_pixels_are_nan(rng):
@@ -68,8 +68,8 @@ def test_robust_cva_invalid_pixels_are_nan(rng):
     before = rng.uniform(0.1, 0.3, size=(3, *shape)).astype(np.float32)
     after_norm = before + rng.normal(0, 0.01, size=before.shape).astype(np.float32)
     res = methods.robust_cva(before, after_norm, zones, zones >= 0)
-    assert np.isnan(res.p_change[:5]).all()
-    assert np.isfinite(res.p_change[5:]).all()
+    assert np.isnan(res.neglog10_p[:5]).all()
+    assert np.isfinite(res.neglog10_p[5:]).all()
 
 
 def _correlated_scene(rng, shape):
@@ -109,7 +109,7 @@ def test_irmad_chi2_is_nan_where_invalid(rng):
     res = methods.irmad(before, after, valid)
     assert np.isnan(res.chi2[:, :6]).all()
     assert np.isfinite(res.chi2[valid]).all()
-    assert np.isnan(res.p_change[~valid]).all()
+    assert np.isnan(res.neglog10_p[~valid]).all()
 
 
 class TestEuclideanBaseline:

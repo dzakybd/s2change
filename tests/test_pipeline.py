@@ -16,7 +16,7 @@ def test_config_from_default_yaml():
     cfg = pipeline.Config.from_yaml(ROOT / "configs" / "default.yaml")
     assert cfg.bands == ("B02", "B03", "B04")
     assert cfg.before.name == "sentinel2_20230812" and cfg.after.name == "sentinel2_20230902"
-    assert cfg.rule.mmu_px == 20
+    assert cfg.rule.mmu_ha == 0.2 and cfg.rule.seam_buffer_m == 90
     assert cfg.rule.far_high < cfg.rule.far_low
     assert cfg.database_url is None
 

@@ -9,6 +9,7 @@ from s2cd import vectorize
 from s2cd.vectorize import BinaryRule
 
 RULE = BinaryRule()
+PX = 10.0  # pixel size in metres
 LOW, HIGH = RULE.thresholds(3)
 
 
@@ -31,7 +32,7 @@ class TestBinaryFromD2:
     def _run(self, d2, seam=None, valid=None, rule=RULE):
         valid = np.ones(self.shape, bool) if valid is None else valid
         seam = np.full(self.shape, np.inf, np.float32) if seam is None else seam
-        return vectorize.binary_from_d2(d2, valid, seam, 3, rule)
+        return vectorize.binary_from_d2(d2, valid, seam, 3, rule, PX)
 
     def test_objects_below_mmu_are_removed(self):
         d2 = _score(self.shape, [((5, 15, 5, 15), 100), ((40, 43, 40, 43), 100)])  # 100 px vs 9 px
@@ -43,7 +44,7 @@ class TestBinaryFromD2:
 
     def test_mmu_boundary(self):
         d2 = _score(self.shape, [((5, 9, 5, 10), 100), ((40, 44, 40, 45), 100), ((60, 64, 60, 64), 100)])  # 20, 20, 16 px
-        out = self._run(d2, rule=BinaryRule(opening_radius_px=0))
+        out = self._run(d2, rule=BinaryRule(opening_radius_m=0))
         assert out[5:9, 5:10].all() and out[40:44, 40:45].all()
         assert not out[60:64, 60:64].any()
 
@@ -51,8 +52,8 @@ class TestBinaryFromD2:
         d2 = _score(self.shape, [((10, 40, 40, 80), 100)])
         seam = np.abs(np.arange(self.shape[1]) + 0.5 - 60.0)[None, :].repeat(self.shape[0], 0).astype(np.float32)
         out = self._run(d2, seam=seam)
-        assert not out[seam < RULE.seam_buffer_px].any()
-        assert out[11:39, 41:58].all() and out[11:39, 62:79].all()  # both sides of the seam survive
+        assert not out[seam < RULE.seam_buffer_px(PX)].any()
+        assert out[11:39, 41:50].all() and out[11:39, 70:79].all()  # both sides of the seam survive, beyond the 9 px buffer
 
     def test_region_needs_one_strongly_significant_pixel(self):
         weak = _score(self.shape, [((5, 25, 5, 25), (LOW + HIGH) / 2)])  # above growing threshold, never above seed threshold
@@ -87,7 +88,7 @@ def test_binary_from_otsu_separates_two_populations(rng):
     prob = rng.normal(0.1, 0.02, size=(80, 80)).astype(np.float32)
     prob[20:40, 20:40] = 0.9
     valid = np.ones(prob.shape, bool)
-    mask, thr = vectorize.binary_from_otsu(prob, valid, RULE)
+    mask, thr = vectorize.binary_from_otsu(prob, valid, RULE, PX)
     assert 0.15 < thr < 0.8
     assert mask[21:39, 21:39].all()
     assert mask[20:40, 20:40].sum() == mask.sum() >= 396
@@ -98,7 +99,8 @@ def _layers(shape, delta=None):
     d2 = np.full(shape, 50.0, np.float32)
     return {
         "d2": d2,
-        "p_change": np.full(shape, 0.9999, np.float32),
+        "neglog10_p": np.full(shape, 4.0, np.float32),
+        "valid": np.ones(shape, bool),
         "delta": np.zeros((3, *shape), np.float32) if delta is None else delta,
         "bright_before": zeros + 0.2,
         "bright_after": zeros + 0.25,

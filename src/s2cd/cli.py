@@ -46,37 +46,40 @@ def run(
 
 
 @app.command()
-def enrich(
+def provenance(
     config: Annotated[Path, typer.Option(help="YAML config (paths); the same file as for `run`.")] = Path("configs/default.yaml"),
-    timeline: Annotated[bool, typer.Option(help="Also build the June-October AOI timeline (many small reads).")] = True,
     lookback_days: Annotated[
         int, typer.Option(help="Search STAC items this many days before each nominal date (inputs are mosaics).")
     ] = 75,
     refresh: Annotated[bool, typer.Option(help="Ignore cached windows under data/cache/stac.")] = False,
 ) -> None:
-    """Optional: validate/interpret the changes with extra bands from Planetary Computer (needs `--extra stac` and network)."""
-    from . import pipeline, stac_context
+    """Optional: find the source Sentinel-2 items behind each provided date and check the B02/B03/B04 match pixel by pixel.
+
+    Needs `--extra stac` and network; reads only B02/B03/B04 from Planetary Computer.
+    """
+    from . import pipeline
+    from .provenance import ProvenanceRules
+    from .provenance import provenance as run_provenance
 
     cfg = pipeline.Config.from_yaml(config) if config.exists() else pipeline.Config()
     try:
-        summary = stac_context.enrich(
-            cfg.before, cfg.after, cfg.aoi, cfg.out_dir, cfg.sqlite_path, cfg.figures_dir,
-            lookback_days=lookback_days, with_timeline=timeline, refresh=refresh,
+        summary = run_provenance(
+            cfg.before, cfg.after, cfg.aoi, cfg.out_dir, cfg.figures_dir, refresh=refresh,
+            rules=ProvenanceRules(lookback_days=lookback_days),
         )  # fmt: skip
     except (ImportError, FileNotFoundError) as e:
-        typer.echo(f"{e}\n(`s2cd run` must have been run first; enrichment needs `uv run --extra stac`.)", err=True)
+        typer.echo(f"{e}\n(`s2cd run` must have been run first; provenance needs `uv run --extra stac`.)", err=True)
         raise typer.Exit(2) from e
     typer.echo(
         json.dumps(
-            {"area_by_likely_cause": summary["area_by_likely_cause"], "aot": summary["aot_by_zone"]["overall_mean"]}, indent=2
+            {
+                "sources": {d: [s["label"] for s in v["sources"]] for d, v in summary["stac"].items()},
+                "exact_match_fraction": {
+                    d: {b: c["exact_match_fraction"] for b, c in v.items()}
+                    for d, v in summary["provided_vs_planetary_computer_mosaic"].items()
+                },
+                "zone_source_agreement": summary["zone_source_agreement"],
+            },
+            indent=2,
         )
     )
-
-
-@app.command("fetch-artifacts")
-def fetch_artifacts() -> None:
-    """Download the large optional outputs (enrichment rasters, timeline DB) listed in artifacts.json."""
-    from . import artifacts
-
-    for line in artifacts.fetch():
-        typer.echo(line)

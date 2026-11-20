@@ -1,17 +1,21 @@
 -- Example queries for the PostGIS database (schema: sql/schema_postgis.sql, filled by `s2cd run --postgis`).
 -- Tables: change_runs (one row per method run), change_features (one row per change polygon, EPSG:32735, metres).
--- Same questions as sql/queries_spatialite.sql, PostGIS dialect.
+-- Same questions as sql/queries_spatialite.sql, PostGIS dialect. The database can hold several date pairs, so every query
+-- is restricted to one pair via the psql variables below (edit them, or call psql with -v after removing the two \set lines).
 --
 --   docker compose exec -T db psql -U s2cd -d s2cd -f - < sql/queries_postgis.sql      (or: make query-postgis)
 
 \pset footer off
+\set date_before 2023-08-12
+\set date_after 2023-09-02
 
 -- 1. Runs overview: parameters and summary are JSONB.
 SELECT run_id, method, date_before, date_after,
        summary ->> 'changed_area_ha'    AS changed_area_ha,
        summary ->> 'n_features'         AS n_features,
-       params -> 'rule' ->> 'mmu_px'    AS mmu_px
+       params -> 'rule' ->> 'mmu_ha'    AS mmu_ha
 FROM change_runs
+WHERE date_before = :'date_before' AND date_after = :'date_after'
 ORDER BY run_id;
 
 -- 2. Changed area by direction and method.
@@ -20,6 +24,7 @@ SELECT method, change_direction,
        round((sum(area_m2) / 10000.0)::numeric, 2) AS area_ha,
        round(avg(confidence)::numeric, 3) AS mean_confidence
 FROM change_features
+WHERE date_before = :'date_before' AND date_after = :'date_after'
 GROUP BY method, change_direction
 ORDER BY method, area_ha DESC;
 
@@ -30,7 +35,8 @@ SELECT id,
        round(ST_X(ST_Transform(ST_Centroid(geometry), 4326))::numeric, 5) AS lon,
        round(ST_Y(ST_Transform(ST_Centroid(geometry), 4326))::numeric, 5) AS lat
 FROM change_features
-WHERE method = 'robust_cva' AND confidence >= 0.5
+WHERE date_before = :'date_before' AND date_after = :'date_after'
+  AND method = 'robust_cva' AND confidence >= 0.5
 ORDER BY area_m2 DESC
 LIMIT 10;
 
@@ -41,6 +47,7 @@ SELECT method,
        round((sum(area_m2) / 10000.0)::numeric, 2)     AS area_ha,
        round((100.0 * sum(area_m2) / sum(sum(area_m2)) OVER (PARTITION BY method))::numeric, 1) AS pct_of_method_area
 FROM change_features
+WHERE date_before = :'date_before' AND date_after = :'date_after'
 GROUP BY method, in_disturbed_area
 ORDER BY method, in_disturbed_area DESC;
 
@@ -52,7 +59,8 @@ SELECT f.id,
        round((f.area_m2 / 10000.0)::numeric, 2)          AS area_ha,
        f.change_direction, f.confidence
 FROM change_features AS f, poi
-WHERE f.method = 'robust_cva'
+WHERE f.date_before = :'date_before' AND f.date_after = :'date_after'
+  AND f.method = 'robust_cva'
   AND ST_DWithin(f.geometry, poi.g, 500)
 ORDER BY distance_m;
 
@@ -63,12 +71,14 @@ WITH pairs AS (
     SELECT sum(ST_Area(ST_Intersection(c.geometry, b.geometry))) AS both_m2
     FROM change_features AS c
     JOIN change_features AS b ON b.method = 'euclidean_baseline' AND ST_Intersects(c.geometry, b.geometry)
-    WHERE c.method = 'robust_cva'
+                            AND b.date_before = :'date_before' AND b.date_after = :'date_after'
+    WHERE c.method = 'robust_cva' AND c.date_before = :'date_before' AND c.date_after = :'date_after'
 ),
 totals AS (
     SELECT sum(area_m2) FILTER (WHERE method = 'robust_cva')         AS cva_m2,
            sum(area_m2) FILTER (WHERE method = 'euclidean_baseline') AS base_m2
     FROM change_features
+    WHERE date_before = :'date_before' AND date_after = :'date_after'
 )
 SELECT round((cva_m2 / 10000.0)::numeric, 2)                          AS robust_cva_ha,
        round((base_m2 / 10000.0)::numeric, 2)                         AS baseline_ha,
@@ -89,4 +99,15 @@ SELECT jsonb_build_object(
                                                 'change_direction', change_direction, 'in_disturbed_area', in_disturbed_area),
                'geometry', ST_AsGeoJSON(ST_Transform(geometry, 4326), 6)::jsonb)), '[]'::jsonb)
        ) AS geojson
-FROM (SELECT * FROM change_features WHERE method = 'robust_cva' ORDER BY area_m2 DESC LIMIT 20) AS top;
+FROM (SELECT * FROM change_features
+      WHERE date_before = :'date_before' AND date_after = :'date_after' AND method = 'robust_cva'
+      ORDER BY area_m2 DESC LIMIT 20) AS top;
+
+-- 8. What changed: area per change type (robust_cva only; the baseline carries no interpretation).
+SELECT change_type, brief_category,
+       count(*)                                       AS n_polygons,
+       round((sum(area_m2) / 10000.0)::numeric, 1)    AS area_ha
+FROM change_features
+WHERE date_before = :'date_before' AND date_after = :'date_after' AND method = 'robust_cva'
+GROUP BY change_type, brief_category
+ORDER BY area_ha DESC;

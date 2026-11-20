@@ -1,4 +1,4 @@
-"""Raster I/O: load Sentinel-2 band folders, validate grid consistency, stack, write GeoTIFFs."""
+"""Raster I/O: load Sentinel-2 band folders, validate grid consistency, stack, write GeoTIFFs / COGs."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ import rasterio
 from affine import Affine
 from rasterio.crs import CRS
 from rasterio.enums import Resampling
+from rasterio.io import MemoryFile
+from rasterio.shutil import copy
 
 BAND_NAMES = {"B02": "blue", "B03": "green", "B04": "red"}
 
@@ -127,19 +129,46 @@ def write_raster(
     nodata: float | None = None,
     descriptions: list[str] | None = None,
     tags: dict | None = None,
-    overviews: bool = True,
+    overview_resampling: Resampling | None = Resampling.average,
+    scale_offset: tuple[float, float] | None = None,
 ) -> Path:
-    """Write a tiled, deflate-compressed GeoTIFF with internal overviews. ``data`` is (H, W) or (B, H, W)."""
+    """Write ``data`` ((H, W) or (B, H, W)) as a COG (a plain tiled GeoTIFF if ``overview_resampling`` is None).
+
+    ``overview_resampling`` is explicit because the right choice depends on the content: pass ``Resampling.nearest`` for
+    categorical rasters (binary masks, zone ids, source-scene ids), where averaging would invent classes, and
+    ``Resampling.average`` for continuous ones. ``scale_offset = (scale, offset)`` is stored as the GDAL band scale/offset
+    (physical = DN * scale + offset), so readers can recover reflectance from digital numbers.
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     arr = data[None] if data.ndim == 2 else data
-    with rasterio.open(path, "w", **grid.profile(arr.shape[0], str(arr.dtype), nodata)) as dst:
+    profile = grid.profile(arr.shape[0], str(arr.dtype), nodata)
+
+    def fill(dst) -> None:
         dst.write(arr)
         for i, d in enumerate(descriptions or [], start=1):
             dst.set_band_description(i, d)
         if tags:
             dst.update_tags(**{k: str(v) for k, v in tags.items()})
-        if overviews:
-            categorical = arr.dtype == np.uint8 and arr.max(initial=0) <= 1
-            dst.build_overviews([2, 4, 8], Resampling.nearest if categorical else Resampling.average)
+        if scale_offset:
+            dst.scales = (scale_offset[0],) * arr.shape[0]
+            dst.offsets = (scale_offset[1],) * arr.shape[0]
+
+    if overview_resampling is None:
+        with rasterio.open(path, "w", **profile) as dst:
+            fill(dst)
+        return path
+    # The COG driver only supports CreateCopy, so stage the raster in memory and copy it out.
+    staging = {k: v for k, v in profile.items() if k not in ("tiled", "blockxsize", "blockysize", "compress", "predictor")}
+    with MemoryFile() as mem, mem.open(**staging) as staged:
+        fill(staged)
+        copy(
+            staged,
+            path,
+            driver="COG",
+            COMPRESS="DEFLATE",
+            PREDICTOR="YES",  # horizontal differencing for integers, floating-point predictor for floats
+            BLOCKSIZE=256,
+            OVERVIEW_RESAMPLING=overview_resampling.name.upper(),
+        )
     return path

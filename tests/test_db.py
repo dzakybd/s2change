@@ -24,7 +24,8 @@ def _polygons(rng, grid):
     delta[:, 30:38, 50:58] = -0.05
     layers = {
         "d2": np.full(SHAPE, 50.0, np.float32),
-        "p_change": np.full(SHAPE, 0.9999, np.float32),
+        "neglog10_p": np.full(SHAPE, 4.0, np.float32),
+        "valid": np.ones(SHAPE, bool),
         "delta": delta,
         "bright_before": np.full(SHAPE, 0.2, np.float32),
         "bright_after": np.full(SHAPE, 0.25, np.float32),
@@ -50,7 +51,7 @@ def tables(rng):
                 "method": method,
                 "date_before": str(before),
                 "date_after": str(after),
-                "params": {"rule": {"mmu_px": 20}, "bands": ["B02", "B03", "B04"]},
+                "params": {"rule": {"mmu_ha": 0.2}, "bands": ["B02", "B03", "B04"]},
                 "summary": {"changed_area_ha": 1.64, "n_features": len(poly)},
             }
         )
@@ -69,10 +70,10 @@ def test_as_feature_table_schema(tables):
 
 def test_as_feature_table_does_not_mutate_input(tables):
     *_, poly = tables
-    cols = list(poly.columns)
+    cols, geoms = list(poly.columns), poly.geometry.copy()
     db.as_feature_table(poly, "r", "m", date(2023, 1, 1), date(2023, 2, 1))
     assert list(poly.columns) == cols
-    assert poly.geometry.geom_type.eq("Polygon").all()
+    assert all(a.equals(b) for a, b in zip(poly.geometry, geoms, strict=True))
 
 
 def test_as_feature_table_is_idempotent_on_multipolygons(tables):

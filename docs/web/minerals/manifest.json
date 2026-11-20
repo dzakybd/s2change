@@ -1,0 +1,41 @@
+{
+  "index": "redness",
+  "formula": "B04 / B02",
+  "legend": {
+    "min": 1.0,
+    "max": 2.2,
+    "colormap": "YlOrRd",
+    "label": "iron-oxide (ferric) proxy"
+  },
+  "layers": {
+    "before": {
+      "url": "redness_before.webp",
+      "label": "nominal 2023-08-12 (mosaic of 2023-07-01/07-04)",
+      "bounds": [
+        [
+          -12.320287299499615,
+          25.79001102217236
+        ],
+        [
+          -12.17529130101085,
+          25.944378082147733
+        ]
+      ]
+    },
+    "after": {
+      "url": "redness_after.webp",
+      "label": "nominal 2023-09-02 (mosaic of 2023-08-25/09-02) (normalized)",
+      "bounds": [
+        [
+          -12.320287299499615,
+          25.79001102217236
+        ],
+        [
+          -12.17529130101085,
+          25.944378082147733
+        ]
+      ]
+    }
+  },
+  "caveat": "Redness = B04/B02, an indicative iron-oxide proxy from visible bands only. It also responds to soil colour, moisture, shadow and haze; it is not a mineral map."
+}

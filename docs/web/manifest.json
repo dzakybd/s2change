@@ -1,10 +1,14 @@
 {
   "date_before": "2023-08-12",
   "date_after": "2023-09-02",
+  "date_labels": {
+    "before": "nominal 2023-08-12 (mosaic of 2023-07-01/07-04)",
+    "after": "nominal 2023-09-02 (mosaic of 2023-08-25/09-02)"
+  },
   "rasters": {
     "before": {
       "url": "before.webp",
-      "label": "Sentinel-2 RGB 2023-08-12",
+      "label": "Sentinel-2 RGB, nominal 2023-08-12 (mosaic of 2023-07-01/07-04)",
       "bounds": [
         [
           -12.320287299499615,
@@ -18,7 +22,7 @@
     },
     "after": {
       "url": "after.webp",
-      "label": "Sentinel-2 RGB 2023-09-02 (as delivered)",
+      "label": "Sentinel-2 RGB, nominal 2023-09-02 (mosaic of 2023-08-25/09-02) (as delivered)",
       "bounds": [
         [
           -12.320287299499615,
@@ -32,7 +36,7 @@
     },
     "after_normalized": {
       "url": "after_normalized.webp",
-      "label": "Sentinel-2 RGB 2023-09-02 (normalized)",
+      "label": "Sentinel-2 RGB, nominal 2023-09-02 (mosaic of 2023-08-25/09-02) (normalized)",
       "bounds": [
         [
           -12.320287299499615,
@@ -60,12 +64,13 @@
     }
   },
   "summary": {
-    "euclidean_baseline": 11077.82,
-    "robust_cva": 1345.2,
-    "irmad": 10622.7
+    "euclidean_baseline": 11143.36,
+    "robust_cva": 413.3,
+    "irmad": 10824.45
   },
   "vectors": {
     "changes": "change_features.geojson",
+    "facilities": "facilities.geojson",
     "aoi": "aoi.geojson"
   }
 }

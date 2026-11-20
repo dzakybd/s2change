@@ -93,7 +93,8 @@ class TestRelativeNormalization:
             n = int(changed_fraction * changed.size)
             changed.flat[rng.choice(changed.size, n, replace=False)] = True
             before[:, changed] += rng.choice([-1, 1]) * 0.15  # same-signed large change, would bias OLS
-        norm, pif, cals = radiometry.relative_normalization(before, after, zones, BANDS)
+        res = radiometry.relative_normalization(before, after, zones, BANDS)
+        norm, pif, cals = res.normalized, res.pif, res.calibration
 
         assert len(cals) == 6
         for c in cals:
@@ -112,7 +113,8 @@ class TestRelativeNormalization:
         zones = np.zeros(shape, np.int16)
         zones[:, :10] = -1
         after = rng.uniform(0.1, 0.3, size=(3, *shape)).astype(np.float32)
-        norm, pif, cals = radiometry.relative_normalization(after + 0.01, after, zones, BANDS)
+        res = radiometry.relative_normalization(after + 0.01, after, zones, BANDS)
+        norm, pif, cals = res.normalized, res.pif, res.calibration
         assert np.isnan(norm[:, :, :10]).all()
         assert not pif[:, :10].any()
         assert len(cals) == 3
@@ -159,6 +161,6 @@ class TestReflectance:
     def test_infer_offset(self):
         valid = np.ones((10, 10), bool)
         with_offset = np.full((3, 10, 10), 1500, dtype=np.uint16)
-        without = np.full((3, 10, 10), 500, dtype=np.uint16)
+        without = np.full((3, 10, 10), 200, dtype=np.uint16)
         assert radiometry.infer_offset(with_offset, valid) == 1000.0
         assert radiometry.infer_offset(without, valid) == 0.0

@@ -1,29 +1,40 @@
-"""Radiometric handling: DN -> reflectance, radiometric zoning, relative normalization.
+"""Radiometric handling: DN -> reflectance, radiometric zoning, relative normalization, registration check.
 
 Why zones exist
 ---------------
 Image "dates" are often mosaics. In this AOI each provided date combines two Sentinel-2 scenes
 from adjacent orbits, seamed along a slanted swath edge (verified pixel-exact against Planetary
-Computer STAC by ``s2cd enrich``). Detector-footprint striping under haze produces the same
+Computer STAC by ``s2cd provenance``). Detector-footprint striping under haze produces the same
 geometry. Either way the before/after radiometric relation changes in straight, parallel steps,
 so a single global relation is wrong, and every method that assumes one (image difference,
 Euclidean distance, global IR-MAD) paints whole zones as "change". The ``stripe`` names below
 refer to this geometry, whatever causes it.
 
-We model the date-to-date radiometric relation as piecewise constant across zones:
-1. compute the per-pixel blue-band reflectance difference between dates (haze adds path
-   radiance, which is additive and strongest in blue),
-2. find the stripe orientation that best explains it (straight lines, angle search),
-3. segment the 1-D profile across the stripes into zones (binary segmentation),
-4. treat each zone independently in IR-MAD and in the relative normalization.
+We model the date-to-date radiometric relation as piecewise constant across zones. Zones come from one of two sources:
+
+* **provenance** (preferred): when ``s2cd provenance`` has identified the source scene of every pixel, a zone is one
+  unique (before-source, after-source) pair (``zones_from_sources``) and the seam is the exact boundary between zones;
+* **data-driven** (fallback, also run for validation): ``detect_stripe_zones``
+  1. computes the per-pixel blue-band reflectance difference between dates (haze adds path radiance,
+     which is additive and strongest in blue),
+  2. finds the stripe orientation that best explains it (straight lines, angle search),
+  3. segments the 1-D profile across the stripes into zones (binary segmentation).
+
+Each zone is then treated independently in IR-MAD, in the relative normalization and in the noise model.
 """
 
 from __future__ import annotations
 
+import logging
 import warnings
 from dataclasses import dataclass, field
 
 import numpy as np
+from scipy import ndimage as ndi
+from skimage.filters import difference_of_gaussians
+from skimage.registration import phase_cross_correlation
+
+log = logging.getLogger("s2cd")
 
 # Sentinel-2 L2A products from processing baseline 04.00 (Jan 2022) onward carry BOA_ADD_OFFSET = -1000.
 L2A_OFFSET = 1000.0
@@ -37,10 +48,26 @@ def to_reflectance(dn: np.ndarray, valid: np.ndarray, offset: float = L2A_OFFSET
     return refl
 
 
-def infer_offset(dn: np.ndarray, valid: np.ndarray) -> float:
-    """Guess the BOA offset: with the +1000 offset, almost no valid DN falls below 1000."""
-    frac_below = float(np.mean(dn[:, valid] < L2A_OFFSET))
-    return L2A_OFFSET if frac_below < 0.001 else 0.0
+def infer_offset(dn: np.ndarray, valid: np.ndarray, dark_fraction: float = 0.01) -> float:
+    """Decide the BOA offset (+1000 for processing baseline >= 04.00, else 0) from the darkest pixels.
+
+    A scene without the offset has dark targets (water, shadow, dense forest) near DN 0-300; with the +1000 offset the same
+    targets sit near 1000 (and any DN below 1000 is just noise around zero reflectance). The median DN of the darkest
+    ``dark_fraction`` of all valid band values is therefore far above 900 with the offset and below 500 without it.
+    In between the data cannot tell, so the function warns and falls back to ``L2A_OFFSET`` (the value for all scenes
+    processed since January 2022).
+    """
+    v = dn[:, valid].ravel()
+    k = max(1, int(dark_fraction * v.size))
+    dark = float(np.median(np.partition(v, k - 1)[:k]))
+    if dark > 900:
+        return L2A_OFFSET
+    if dark < 500:
+        return 0.0
+    log.warning(
+        "Ambiguous BOA offset (median of the darkest %.0f%% is DN %.0f); assuming %d", 100 * dark_fraction, dark, L2A_OFFSET
+    )
+    return L2A_OFFSET
 
 
 @dataclass
@@ -50,7 +77,7 @@ class StripeZones:
     breakpoints: list[float]  # zone boundaries along p (pixels)
     zone_offsets: list[float]  # median after-minus-before reflectance per zone (diagnostic)
     explained_variance: float  # eta^2 of the 1-D profile model at the best angle
-    profile: tuple[np.ndarray, np.ndarray] = field(repr=False)  # (bin centres, bin medians)
+    profile: tuple[np.ndarray, np.ndarray] = field(repr=False)  # (bin centres, bin means)
 
 
 def _block_median(img: np.ndarray, block: int) -> np.ndarray:
@@ -191,6 +218,16 @@ def _robust_z(e: np.ndarray, ref: np.ndarray) -> np.ndarray:
     return np.abs(e - med) / max(mad, 1e-9)
 
 
+@dataclass
+class Normalization:
+    """Result of ``relative_normalization``."""
+
+    normalized: np.ndarray  # after-image mapped onto the before-image radiometry (bands, H, W)
+    pif: np.ndarray  # pseudo-invariant pixels used to fit the calibration lines (tightly trimmed)
+    noise_pif: np.ndarray  # looser no-change set for the noise model: its tails are not trimmed (superset of ``pif``)
+    calibration: list[ZoneCalibration]
+
+
 def relative_normalization(
     refl_before: np.ndarray,
     refl_after: np.ndarray,
@@ -198,8 +235,13 @@ def relative_normalization(
     band_names: tuple[str, ...],
     n_iter: int = 5,
     reject_z: float = 2.5,
-) -> tuple[np.ndarray, np.ndarray, list[ZoneCalibration]]:
+    noise_reject_z: float = 4.0,
+) -> Normalization:
     """Map the after-image onto the before-image radiometry, zone by zone.
+
+    Adapted from the iterative orthogonal-regression normalization of Canty & Nielsen (2008, Remote Sensing of Environment
+    112:1025): they take the no-change pixels from the IR-MAD no-change probability, here they are the pixels that survive
+    the residual trimming below, so no canonical-correlation step is needed.
 
     Per zone, every band gets a linear model before = a + b * after, fitted by orthogonal
     regression (both dates are noisy, so ordinary least squares would bias the slope). The fit is
@@ -207,10 +249,14 @@ def relative_normalization(
     the lines refitted. The survivors are the pseudo-invariant features (PIFs); changed pixels
     end up as outliers and do not bias the calibration.
 
-    Returns (normalized after-image, PIF mask, calibration table).
+    Trimming at ``reject_z`` is right for a regression but wrong for estimating the noise covariance of the change vector:
+    cutting every band at 2.5 sigma shrinks the fitted covariance, so the chi-square test over-detects. ``noise_pif``
+    applies the final fit with the much looser ``noise_reject_z`` (4 sigma), which only drops gross outliers, so the
+    truncation of the residual tails is negligible.
     """
     out = np.full_like(refl_after, np.nan)
     pif = np.zeros(zones.shape, bool)
+    noise_pif = np.zeros(zones.shape, bool)
     cals: list[ZoneCalibration] = []
     for z in np.unique(zones[zones >= 0]):
         m = zones == z
@@ -219,14 +265,16 @@ def relative_normalization(
         for _ in range(n_iter):
             coefs = [_tls(x[b, inl], y[b, inl]) for b in range(len(band_names))]
             resid = np.stack([y[b] - (c0 + c1 * x[b]) for b, (c0, c1) in enumerate(coefs)])
-            inl = np.max([_robust_z(r, inl) for r in resid], axis=0) < reject_z
+            zmax = np.max([_robust_z(r, inl) for r in resid], axis=0)
+            inl = zmax < reject_z
         out[:, m] = np.stack([c0 + c1 * x[b] for b, (c0, c1) in enumerate(coefs)])
         pif[m] = inl
+        noise_pif[m] = zmax < noise_reject_z
         cals += [
             ZoneCalibration(int(z), name, c1, c0, int(m.sum()), float(inl.mean()))
             for name, (c0, c1) in zip(band_names, coefs, strict=True)
         ]
-    return out, pif, cals
+    return Normalization(out, pif, noise_pif, cals)
 
 
 def seam_distance(shape: tuple[int, int], angle_deg: float, breakpoints: list[float]) -> np.ndarray:
@@ -237,3 +285,105 @@ def seam_distance(shape: tuple[int, int], angle_deg: float, breakpoints: list[fl
     yy, xx = np.mgrid[0 : shape[0], 0 : shape[1]]
     p = (xx + 0.5) * np.cos(t) + (yy + 0.5) * np.sin(t)
     return np.min([np.abs(p - b) for b in breakpoints], axis=0).astype(np.float32)
+
+
+def zone_boundary_distance(zones: np.ndarray) -> np.ndarray:
+    """Distance in pixels from every pixel to the nearest boundary between two zones (inf if there is none).
+
+    Boundary pixels are valid pixels with a 4-neighbour in a different valid zone. Used for zones that come from
+    source-scene pairs, whose seams the analytic ``seam_distance`` (straight lines) would only approximate.
+    """
+    edge = np.zeros(zones.shape, bool)
+    horiz = (zones[:, :-1] != zones[:, 1:]) & (zones[:, :-1] >= 0) & (zones[:, 1:] >= 0)
+    vert = (zones[:-1] != zones[1:]) & (zones[:-1] >= 0) & (zones[1:] >= 0)
+    edge[:, :-1] |= horiz
+    edge[:, 1:] |= horiz
+    edge[:-1] |= vert
+    edge[1:] |= vert
+    if not edge.any():
+        return np.full(zones.shape, np.inf, np.float32)
+    return ndi.distance_transform_edt(~edge).astype(np.float32)
+
+
+def zones_from_sources(source_scene: np.ndarray, valid: np.ndarray) -> tuple[np.ndarray, list[tuple[int, int]]]:
+    """Zones from the source scenes of both dates: one zone per unique (before source, after source) pair.
+
+    ``source_scene`` is (2, H, W), the index of the source scene of each pixel on each date (-1 = unexplained, see
+    ``provenance``). Within one pair the date-to-date radiometric relation is constant by construction (same two
+    acquisitions everywhere), which is exactly the assumption of the per-zone models. Pixels no source explains take the zone
+    of the nearest explained pixel. Zone ids are ordered west to east. Returns (int16 zone map, -1 outside ``valid``; the
+    (before, after) source-index pair of each zone).
+    """
+    pair = np.where((source_scene >= 0).all(axis=0), source_scene[0].astype(np.int32) * 100 + source_scene[1], -1)
+    keys = [k for k in np.unique(pair[valid & (pair >= 0)])]
+    cols = np.arange(valid.shape[1])[None, :]
+    keys.sort(key=lambda k: float(np.mean(np.broadcast_to(cols, valid.shape)[valid & (pair == k)])))
+    zone_of = np.full(pair.shape, -1, np.int16)
+    for i, k in enumerate(keys):
+        zone_of[pair == k] = i
+    known = valid & (zone_of >= 0)
+    nearest = ndi.distance_transform_edt(~known, return_distances=False, return_indices=True)
+    zones = zone_of[nearest[0], nearest[1]]
+    zones[~valid] = -1
+    return zones, [(int(k) // 100, int(k) % 100) for k in keys]
+
+
+def zone_agreement(zones_a: np.ndarray, zones_b: np.ndarray) -> float:
+    """Share of valid pixels whose ``zones_a`` zone lies in the same ``zones_b`` zone as most of that zone (1 = A refines B).
+
+    For every zone of A the best-overlapping zone of B is taken; the score is the overlapped share. 1.0 means every A zone is
+    contained in a single B zone, i.e. B's seams contain all of A's seams.
+    """
+    ok = (zones_a >= 0) & (zones_b >= 0)
+    a, b = zones_a[ok].astype(int), zones_b[ok].astype(int)
+    joint = np.zeros((a.max() + 1, b.max() + 1), np.int64) if a.size else np.zeros((1, 1), np.int64)
+    np.add.at(joint, (a, b), 1)
+    return round(float(joint.max(axis=1).sum() / max(a.size, 1)), 4)
+
+
+def registration_shifts(
+    before: np.ndarray,
+    after_norm: np.ndarray,
+    zones: np.ndarray,
+    pif: np.ndarray,
+    window: int = 48,
+    n_windows: int = 8,
+    min_pif: float = 0.9,
+    upsample: int = 10,
+) -> dict[int, dict]:
+    """Residual misregistration between the dates, per zone, by phase correlation on invariant, textured windows.
+
+    Per zone, square windows lying entirely inside the zone with at least ``min_pif`` pseudo-invariant pixels are ranked by
+    texture (standard deviation of the band-passed brightness) and the best ``n_windows`` are registered with
+    ``skimage.registration.phase_cross_correlation`` (subpixel, ``upsample`` = 10 gives 0.1 px). Reported per zone:
+    the median shift ``(dy, dx)`` in pixels, its magnitude and the largest deviation of a single window from the median.
+    ``shift_px`` is the translation to apply to the after-image to align it with the before-image (rows down, columns
+    right). Values well below one pixel mean misregistration is not a driver of the detections.
+    """
+
+    def prepare(refl: np.ndarray) -> np.ndarray:  # brightness, band-passed so haze gradients do not dominate
+        return difference_of_gaussians(np.nan_to_num(refl.mean(axis=0)), 1.0, 8.0)
+
+    b_img, a_img = prepare(before), prepare(after_norm)
+    out: dict[int, dict] = {}
+    for z in np.unique(zones[zones >= 0]):
+        inside, inv = zones == z, pif & (zones == z)
+        cands = []
+        for r in range(0, zones.shape[0] - window + 1, window // 2):
+            for c in range(0, zones.shape[1] - window + 1, window // 2):
+                sl = (slice(r, r + window), slice(c, c + window))
+                if inside[sl].all() and inv[sl].mean() >= min_pif:
+                    cands.append((float(b_img[sl].std()), sl))
+        if not cands:
+            out[int(z)] = {"shift_px": None, "n_windows": 0}
+            continue
+        best = sorted(cands, key=lambda t: t[0], reverse=True)[:n_windows]
+        shifts = np.array([phase_cross_correlation(b_img[sl], a_img[sl], upsample_factor=upsample)[0] for _, sl in best])
+        med = np.median(shifts, axis=0)
+        out[int(z)] = {
+            "shift_px": [round(float(v), 2) for v in med],
+            "magnitude_px": round(float(np.hypot(*med)), 2),
+            "max_window_deviation_px": round(float(np.abs(shifts - med).max()), 2),
+            "n_windows": len(best),
+        }
+    return out

@@ -30,6 +30,29 @@ CREATE TABLE IF NOT EXISTS timeline_months (
     changed_ha              real, changed_ha_in_footprint real
 );
 
+-- Rule-based mine facility inventory (python -m s2cd.facilities): one row per facility, RGB-only evidence, and the change
+-- between the two dates inside it.
+CREATE TABLE IF NOT EXISTS facilities (
+    facility_id  text PRIMARY KEY,                    -- 'PIT-1', 'WD-3', 'TSF-1', ...
+    class        text NOT NULL,                       -- open_pit, waste_dump, tailings_beach, tailings_pond, pit_lake, ...
+    confidence   real,                                -- 0-1, how strongly the class rules are met
+    area_ha      real,
+    label        text,                                -- 'waste_dump 0.92'
+    evidence     jsonb,                               -- feature values, rule memberships, rules that fired, rival classes
+    geometry     geometry(MultiPolygon, 32735) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS facilities_geom_idx ON facilities USING gist (geometry);
+
+CREATE TABLE IF NOT EXISTS facility_changes (
+    facility_id        text PRIMARY KEY REFERENCES facilities (facility_id) ON DELETE CASCADE,
+    area_before_ha     real,                          -- bare (water for water bodies) extent in a 30 m envelope, before date
+    area_after_ha      real,
+    delta_ha           real,                          -- after - before (includes residual haze)
+    changed_ha         real,                          -- area inside the robust_cva change polygons
+    dominant_direction text,                          -- brightening | darkening | spectral shift | none
+    summary            text
+);
+
 CREATE INDEX IF NOT EXISTS change_features_cause_idx ON change_features (run_id, likely_cause);
 
 DO $$
@@ -45,6 +68,7 @@ GRANT USAGE ON SCHEMA public TO s2cd_reader;
 -- Needed where CONNECT was revoked from PUBLIC (production does this).
 DO $$ BEGIN EXECUTE format('GRANT CONNECT ON DATABASE %I TO s2cd_reader', current_database()); END $$;
 GRANT SELECT ON change_runs, change_features, change_context, timeline_months, change_features_wgs84 TO s2cd_reader;
+GRANT SELECT ON facilities, facility_changes TO s2cd_reader;
 ALTER ROLE s2cd_reader SET statement_timeout = '5s';
 ALTER ROLE s2cd_reader SET default_transaction_read_only = on;
 
@@ -59,6 +83,7 @@ BEGIN
     END IF;
     IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
         REVOKE ALL ON change_runs, change_features, change_context, timeline_months, change_features_wgs84 FROM anon, authenticated;
+        REVOKE ALL ON facilities, facility_changes FROM anon, authenticated;
         REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
         ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
         ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated;
