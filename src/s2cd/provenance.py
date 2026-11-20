@@ -1,8 +1,8 @@
 """Which Sentinel-2 acquisitions are the provided "dates" made of? RGB-only provenance from Planetary Computer (STAC).
 
-Needs the ``stac`` extra (``uv run --extra stac s2cd provenance``) and network access; the core pipeline never imports this
-module. Only B02/B03/B04 are read, the bands the brief provides. STAC item metadata (platform, orbit, baseline, cloud cover)
-is used to describe the sources, nothing else is read from them.
+Needs the ``stac`` extra (``uv run --extra stac s2cd provenance``) and network access. The core pipeline imports this module,
+but the STAC libraries load only when called. Only B02/B03/B04 are read, the bands the brief provides. STAC item
+metadata (platform, orbit, baseline, cloud cover) is used to describe the sources, nothing else is read from them.
 
 Steps:
 

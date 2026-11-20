@@ -33,7 +33,6 @@ PROPERTIES = [  # polygon properties exported to changes.geojson (same names as 
     *("area_m2", "confidence", "neglog10_p", "change_direction", "change_type", "brief_category"),
     *("explanation", "facility_id", "touches_aoi_edge"),
 ]
-OVERLAYS = ("before", "after", "intensity")
 PAIR = re.compile(r"\d{8}_\d{8}")
 
 
@@ -66,7 +65,7 @@ def pair_id(d_before: date, d_after: date) -> str:
     return f"{d_before:%Y%m%d}_{d_after:%Y%m%d}"
 
 
-def _folder(label: str, day: date) -> Path:
+def _folder(label: str) -> Path:
     return PROVIDED[label] if label in PROVIDED else catalog.folder(label)
 
 
@@ -89,15 +88,19 @@ def _overlays(p: pipeline.Products, out: Path) -> dict:
 
 def _summary(p: pipeline.Products) -> dict:
     polys = p.features["robust_cva"]
-    by_type = (polys.groupby("change_type").area_m2.sum() / 1e4).round(1).sort_values(ascending=False)
+    by_type = (
+        (polys.groupby("change_type").area_m2.sum() / 1e4).round(1).sort_values(ascending=False)
+        if len(polys) and "change_type" in polys
+        else None
+    )
     fac = p.facility_changes[p.facility_changes.changed_ha > 0].sort_values("changed_ha", ascending=False)
     return {
         "date_before": str(p.before.acquired),
         "date_after": str(p.after.acquired),
         "date_labels": p.date_labels,
         "n_polygons": len(polys),
-        "changed_ha": round(float(polys.area_m2.sum()) / 1e4, 1),
-        "by_change_type": by_type.to_dict(),
+        "changed_ha": round(float(polys.area_m2.sum()) / 1e4, 1) if len(polys) else 0.0,
+        "by_change_type": by_type.to_dict() if by_type is not None else {},
         "by_facility": dict(zip(fac.facility_id, fac.changed_ha, strict=True)),
     }
 
@@ -109,8 +112,8 @@ def run(before: str, after: str, root: Path = ROOT) -> Path:
     if (out / "summary.json").exists():
         return out
     cfg = pipeline.Config(
-        before=_folder(before, d_before),
-        after=_folder(after, d_after),
+        before=_folder(before),
+        after=_folder(after),
         out_dir=out,
         sqlite_path=out / "db.sqlite",
         run_irmad=False,

@@ -112,11 +112,8 @@ def change_by_facility(facilities: gpd.GeoDataFrame, changes: gpd.GeoDataFrame) 
     if "change_type" in inter:
         top = inter.groupby(["facility_id", "change_type"]).ha.sum().round(1).reset_index().sort_values("ha", ascending=False)
         top = top[top.ha > 0]  # drop types that round to 0.0 ha
-        out["change_types"] = (
-            top.groupby("facility_id")
-            .apply(lambda g: dict(zip(g.change_type, g.ha, strict=True)), include_groups=False)
-            .reindex(out.index)
-        )
+        by_fac = {f: dict(zip(g.change_type, g.ha, strict=True)) for f, g in top.groupby("facility_id")}
+        out["change_types"] = [by_fac.get(f) for f in out.index]  # None where nothing changed
     out["summary"] = [
         f"{n}: {c:.0f} ha changed ({s:.0%} of {a:.0f} ha)"
         + (f"; mostly {max(t, key=t.get).replace('_', ' ')}" if isinstance(t, dict) and t else "")

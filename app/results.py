@@ -154,7 +154,8 @@ def brief(run_id: str | None = None) -> str:
     types = change_type_summary(run)
     total, n = types["total_ha"], sum(t["n_polygons"] for t in types["change_types"])
     register = facility_rows()
-    facilities = [f for f in register if f["changed_ha"]]
+    # facility_changes holds the default run only; other runs get no facility numbers rather than mixed ones.
+    facilities = [f for f in register if f["changed_ha"]] if run == resolve_run(None) else []
     in_facilities = sum(f["changed_ha"] for f in facilities)
     interpreted = [t for t in types["change_types"] if t["change_type"] not in (None, "noise_or_artifact")]
     top = interpreted[0] if interpreted else None
@@ -179,7 +180,8 @@ def brief(run_id: str | None = None) -> str:
         ]
         lines += _table(["Facility", "Class", "Changed (ha)", "Share of facility", "Main change"], rows)
     else:
-        lines += ["No facility register is loaded for this database."]
+        no_facilities = "Facility numbers are computed for the default comparison (robust CVA) only."
+        lines += [no_facilities if register else "No facility register is loaded for this database."]
     lines += ["", "## Change types", ""]
     rows = [
         [_label(t["change_type"]), t["brief_category"] or "-", t["n_polygons"], f"{t['area_ha']:,.1f}"]

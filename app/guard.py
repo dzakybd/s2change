@@ -10,7 +10,10 @@ from sqlglot import exp
 
 ALLOWED_TABLES = {"change_runs", "change_features", "change_features_wgs84", "facilities", "facility_changes"}
 MAX_ROWS = 200
-BANNED_FUNCTION_PREFIXES = ("pg_", "lo_", "dblink", "set_config", "current_setting", "query_to_xml", "txid_", "ts_debug")
+BANNED_FUNCTION_PREFIXES = (
+    *("pg_", "lo_", "dblink", "set_config", "current_setting", "query_to_xml", "txid_", "ts_debug"),
+    *("repeat", "lpad", "rpad", "pad"),  # string builders that can return a huge cell within the statement timeout
+)
 
 
 class SqlRejected(ValueError):

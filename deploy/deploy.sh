@@ -24,7 +24,7 @@ if [ -z "${S2CD_DEPLOY_REEXEC:-}" ]; then
   S2CD_DEPLOY_REEXEC=1 exec bash "$REPO/deploy/deploy.sh" "$@"
 fi
 
-log "uv sync (app + stac extras; the date comparison needs stac)"
+log "uv sync (app + stac extras; stac builds the date catalogue: python -m s2cd.catalog)"
 uv sync --frozen --no-dev --extra app --extra stac
 
 log "build viewer"

@@ -19,7 +19,7 @@ flowchart LR
   EXP -->|SELECT only| DB
   T -->|SELECT only| DB
   T -->|map_action, make_chart, make_table| C[per-request Collector<br/>contextvar]
-  JOBS -->|s2cd.compare| STAC[Planetary Computer STAC<br/>B02/B03/B04 of one date]
+  JOBS -->|s2cd.compare| SCENES[data/scenes<br/>monthly catalogue, B02/B03/B04]
   JOBS --> FILES[(data/compare/pair/<br/>GeoJSON, WebP, summary)]
   API -->|compare/files| FILES
   PUB[python -m app.publish] -->|owner role, idempotent| DB
@@ -38,7 +38,7 @@ uv run --all-extras uvicorn app.main:app --port 8000
 uv run --all-extras python -m app.evals     # needs the API running; writes app/evals/results.{md,json}
 ```
 
-Run the API from the repository root: the comparison worker reads `inputs/` and writes `data/compare/` and `data/scenes/` (both git-ignored). Comparing other dates needs the `stac` extra (`uv sync --extra app --extra stac`) and network access to Planetary Computer.
+Run the API from the repository root: the comparison worker reads `inputs/` and writes `data/compare/` and `data/scenes/` (both git-ignored). Other dates come from the catalogue in `data/scenes/` (built once with `uv run --extra stac python -m s2cd.catalog`, which needs network access to Planetary Computer); comparisons themselves run offline.
 
 Production data lives in Supabase PostGIS. Publish runs from a workstation with the owner URL (pooler, session mode, port 5432); the VPS only gets the read-only `s2cd_reader` URL. On Supabase, `schema_app.sql` also revokes the auto-exposed REST roles (`anon`, `authenticated`) on every table and grants the reader `USAGE` on the `extensions` schema where PostGIS lives.
 
@@ -56,7 +56,7 @@ Production data lives in Supabase PostGIS. Publish runs from a workstation with 
 | `AGENT_DAILY_CAP` | API | `300` chat calls per day, whole service |
 | `AGENT_RATE` | API | `6/minute` per client IP |
 | `DB_RATE` | API | `30/minute` per client IP for `POST /api/db/query` |
-| `COMPARE_RATE` | API | `10/minute` per client IP for date lookups and comparison submissions |
+| `COMPARE_RATE` | API | `10/minute` per client IP for comparison submissions |
 | `COMPARE_DAILY_CAP` | API | `12` new (uncached) comparisons per day, whole service |
 | `EVAL_API_URL` | evals | `http://127.0.0.1:8000`; start the API with a high `AGENT_RATE` for evals |
 
@@ -66,7 +66,7 @@ See `docs/api.md` for every endpoint and its shape. By module:
 
 - `app/results.py` (shared by the endpoints and the agent tools): `resolve_run`, `change_type_summary`, `facility_rows`, `facilities_geojson`, `aoi_stats`, and `brief`, a deterministic markdown monitoring brief (headline, top facilities, change types, caveats, follow-up list) built from the database with no LLM.
 - `app/explorer.py`: `/api/db/schema` (tables, row counts, columns, geometry SRID), `/api/db/examples` (the titled blocks of `sql/queries_postgis.sql` with `:'run_id'` filled in) and `/api/db/query` (guarded SELECT, 500 rows max, `elapsed_ms`; a geometry column comes back as a GeoJSON FeatureCollection converted to EPSG:4326, and the table shows the cell as `geometry`).
-- `app/compare_jobs.py` + `src/s2cd/compare.py`: `POST /api/compare` validates both dates (`YYYY-MM-DD`, `provided-before`/`provided-after`; not in the future; after later than before), returns a cached result at once, otherwise queues one job. One worker thread runs `s2cd.scenes.fetch_scene` for each date and `pipeline.run` (no IR-MAD, no figures), then writes `changes.geojson`, `summary.json` and the WebP overlays to `data/compare/<pair>/`. At most 5 jobs wait, and new uncached jobs are capped per day. Cloudy or uncovered dates come back as a friendly `error` message. Compare results live on disk, not in the database, so the analyst cannot query them.
+- `app/compare_jobs.py` + `src/s2cd/compare.py`: `POST /api/compare` validates both dates (`provided-before`/`provided-after` or a catalogue date; after later than before), returns a cached result at once, otherwise queues one job. One worker thread runs `pipeline.run` on the stored scenes (no IR-MAD, no figures), then writes `changes.geojson`, `summary.json` and the WebP overlays to `data/compare/<pair>/`. At most 5 jobs wait, and new uncached jobs are capped per day. Dates outside the catalogue are rejected with a 422. Compare results live on disk, not in the database, so the analyst cannot query them.
 - Chat: `POST /api/agent/chat` with `{"messages":[{"role","content"}]}` returning `{answer, actions, charts, tables, tool_calls}`. Action types: `fly_to {bbox}`, `highlight {run_id, ids}`, `show_run {run_id}`.
 
 ## Agent design
@@ -94,7 +94,7 @@ See `docs/api.md` for every endpoint and its shape. By module:
 
 `app/evals/cases.yaml`: 17 cases. Expected values come from ground-truth SQL run at eval time against the same database, never hard-coded. Checks: numbers within 2 %, required tool called, required action type present (and highlighted ids equal the truth top-5), chart/table returned, refusal or "cannot answer" wording, and unchanged row counts after destructive requests. Refusal detection is a keyword regex, so it is a coarse check.
 
-Results: `app/evals/results.md` was produced with the previous data model (`likely_cause`, a timeline case) and is **stale**; the cases were updated for `change_type` and the facility register but the evals were not re-run after that change.
+Results: the evals were not re-run after the move to `change_type` and the facility register, so no results file is committed. Run them with the command above to produce `app/evals/results.md`.
 
 ## Tests
 

@@ -137,7 +137,7 @@ export class DatePicker {
     const list = (kind: "before" | "after") => {
       const sel = kind === "before" ? this.before : this.after;
       const provided = kind === "before" ? PROVIDED_BEFORE : PROVIDED_AFTER;
-      const rows = [{ value: provided, text: `Nominal ${this.opts.provided.dates[kind]}`, meta: "provided mosaic" }, ...this.dates!.map((d) => ({ value: d.date, text: d.date, meta: `${d.aoi_cloud < 0.005 ? "<1" : Math.round(d.aoi_cloud * 100)}% cloud${kind === "after" && d.ready ? " · ready" : ""}` }))];
+      const rows = [{ value: provided, text: `Nominal ${this.opts.provided.dates[kind]}`, meta: "provided mosaic" }, ...this.dates!.map((d) => ({ value: d.date, text: d.date, meta: `${d.aoi_cloud < 0.005 ? "<1" : Math.round(d.aoi_cloud * 100)}% cloud${kind === "after" && d.ready && this.before === PROVIDED_BEFORE ? " · ready" : ""}` }))];
       const other = this.sortKey(kind === "before" ? this.after : this.before);
       return rows
         .map((r) => {
@@ -219,7 +219,8 @@ export class DatePicker {
       }
       if (token !== this.runToken) return;
       if (!job.result) throw new Error("The job finished without a result");
-      const ds = await this.toDataset(api, job.result);
+      const ds = await this.toDataset(api, job.result, this.label(this.before), this.label(this.after), this.before === PROVIDED_BEFORE || this.after === PROVIDED_AFTER);
+      if (token !== this.runToken) return;
       this.phase = "choose";
       this.opts.onDataset(ds);
       this.close();
@@ -231,15 +232,15 @@ export class DatePicker {
     }
   }
 
-  private async toDataset(api: ReadyApi, r: CompareResult): Promise<Dataset> {
+  private async toDataset(api: ReadyApi, r: CompareResult, beforeLabel: string, afterLabel: string, nominal: boolean): Promise<Dataset> {
     const changes = indexed(await getJson<ChangeCollection>(apiUrl(api, r.changes_url)));
     const abs = (o: { url: string; bounds: CompareResult["overlays"]["before"]["bounds"] }) => ({ url: apiUrl(api, o.url), bounds: o.bounds });
     const before = abs(r.overlays.before);
     const after = abs(r.overlays.after);
     return {
       id: r.pair,
-      dates: { before: this.label(this.before).replace(" (nominal)", ""), after: this.label(this.after).replace(" (nominal)", "") },
-      nominal: this.before === PROVIDED_BEFORE || this.after === PROVIDED_AFTER,
+      dates: { before: beforeLabel.replace(" (nominal)", ""), after: afterLabel.replace(" (nominal)", "") },
+      nominal,
       rasters: { before, after, after_normalized: after, change_intensity: abs(r.overlays.intensity) },
       changes,
     };

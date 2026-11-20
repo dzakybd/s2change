@@ -1,6 +1,6 @@
 # s2change API (live at https://s2change.dzaky.ai.id/api)
 
-The app is the single place to inspect the solution, so evaluators never need a database client. All database access goes through the read-only role `s2cd_reader` (5 s statement timeout), and every write endpoint is rate-limited.
+The app is the single place to inspect the solution, so evaluators never need a database client. All database access goes through the read-only role `s2cd_reader` (5 s statement timeout), and the query, AOI, compare and chat endpoints are rate-limited per client IP.
 
 ## Results of the default comparison (the provided pair)
 

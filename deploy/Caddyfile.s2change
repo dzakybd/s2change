@@ -10,7 +10,7 @@ s2change.dzaky.ai.id {
         }
     }
 
-    # Web assets (overlays, GeoJSON, monthly frames) served straight from the repo.
+    # Web assets (overlays, GeoJSON, report) served straight from the repo.
     handle_path /web/* {
         root * /home/ubuntu/s2change/docs/web
         file_server

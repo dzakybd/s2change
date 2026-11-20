@@ -53,8 +53,8 @@ class DailyCap:
 limiter = Limiter(key_func=client_ip)
 daily = DailyCap(int(os.environ.get("AGENT_DAILY_CAP", "300")))
 RATE = os.environ.get("AGENT_RATE", "6/minute")
-DB_RATE = os.environ.get("DB_RATE", "30/minute")  # explorer queries: cheap, read-only, 5 s timeout
-COMPARE_RATE = os.environ.get("COMPARE_RATE", "10/minute")  # date lookups and job submissions
+DB_RATE = os.environ.get("DB_RATE", "30/minute")  # explorer queries and AOI stats: read-only, 5 s timeout
+COMPARE_RATE = os.environ.get("COMPARE_RATE", "10/minute")  # comparison job submissions
 jobs = compare_jobs.CompareJobs(int(os.environ.get("COMPARE_DAILY_CAP", "12")))
 
 app = FastAPI(title="s2change API")
@@ -69,7 +69,7 @@ app.add_middleware(
 
 @app.exception_handler(RateLimitExceeded)
 async def too_many(request: Request, exc: RateLimitExceeded):
-    msg = "You are asking quickly. The analyst allows a few questions per minute, please try again shortly."
+    msg = "Too many requests in a short time. Please wait a minute and try again."
     return JSONResponse({"detail": msg}, status_code=429, headers={"Retry-After": "60"})
 
 
@@ -163,7 +163,8 @@ class AoiRequest(BaseModel):
 
 
 @app.post("/api/aoi/stats")
-def aoi_stats(body: AoiRequest):
+@limiter.limit(lambda: DB_RATE)
+def aoi_stats(request: Request, body: AoiRequest):
     try:
         return results.aoi_stats(body.geometry, body.run_id)
     except ValueError as e:

@@ -1,6 +1,6 @@
 # s2change web app
 
-One place to evaluate the whole take-home: a Vite + strict TypeScript + MapLibre GL app with seven hash-routed tabs
+One place to evaluate the whole take-home: a Vite + strict TypeScript + MapLibre GL app with six hash-routed tabs
 (`#/overview`, `#/map`, `#/database`, `#/report`, `#/analyst`, `#/downloads`). Live at
 https://s2change.dzaky.ai.id, also buildable for GitHub Pages.
 
@@ -30,7 +30,7 @@ uv run python -m s2cd.site   # docs/web/overview.json, docs/web/report/report.md
 ## URLs
 
 - Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&oblique=1&bearing=30&extrude=1&swipe=0`.
-  `#/map?before=2023-06-14&after=2023-09-02` runs the other-date comparison when the API is reachable.
+  `#/map?before=provided-before&after=2026-11-02` runs the other-date comparison when the API is reachable.
   Layers: `types` (default), `after`, `before`, `after_raw`, `intensity`, `binary`, `facilities`, `redness`.
 - `?mock` serves every API call from `fixtures/` (`fixtures/agent/*.json` for the chat, `fixtures/api/*.json` for the
   database, dates, comparison job and brief). `?mock=429` / `?mock=error` simulate chat failures.
