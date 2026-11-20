@@ -24,7 +24,7 @@ from s2cd import compare
 
 load_dotenv()
 log = logging.getLogger("s2cd.app")
-MAX_CHARS, KEEP_MESSAGES = 2000, 10
+MAX_CHARS, KEEP_MESSAGES = 2000, 20
 
 
 def client_ip(request: Request) -> str:

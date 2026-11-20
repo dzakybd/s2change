@@ -15,7 +15,7 @@
   - Pit-floor and bench activity: 0.26 km².
   - Seasonal vegetation or burning outside the mine: 0.36 km².
   - No new clearing beyond the mine footprint at the 2,000 m² scale.
-- **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The false-alarm rate is measured; omission and per-class accuracy are not, because there is no reference data (section 5).
+- **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The false-alarm rate is measured; omission and per-class accuracy are not, because there is no reference data (section 6).
 
 ## 0. The data finding: each "date" is a mosaic
 
@@ -120,7 +120,81 @@ I re-ran the binary rule over per-pixel false-alarm rates from 1e-2 to 1e-5 and 
 
 The conclusions do not depend on one threshold choice.
 
-## 5. Limitations and next steps
+## 5. System and stack
+
+The analysis is one Python package (`s2cd`); everything else exists so a reader can check it without installing anything. The pipeline writes files, `app.publish` loads them into PostGIS, a read-only API sits in front of the database, and a static viewer talks to that API.
+
+```mermaid
+flowchart TB
+  subgraph IN["1. Inputs"]
+    direction LR
+    RAS["Provided rasters<br/>B02 / B03 / B04, 2 nominal dates"]
+    STAC["STAC: Planetary Computer<br/>B02-B04 only"]
+  end
+  subgraph PIPE["2. Python pipeline (package s2cd)"]
+    direction LR
+    IO["io<br/>load, stack"] --> PROV["provenance<br/>source scenes"] --> RAD["radiometry<br/>zones, normalize"] --> METH["methods<br/>robust CVA, baseline, IR-MAD"] --> VEC["vectorize<br/>hysteresis, MMU"] --> INT["rgb, register, interpret<br/>type + why"]
+  end
+  subgraph OUT["3. Outputs"]
+    direction LR
+    TIF["GeoTIFF / COG"]
+    GJ["GeoJSON"]
+    SQL["SpatiaLite"]
+  end
+  PUB["4. app.publish<br/>owner role, idempotent"]
+  PG[("5. Supabase PostGIS<br/>read-only role s2cd_reader")]
+  subgraph API["6. FastAPI app"]
+    direction LR
+    DBX["DB explorer<br/>SQL guard"]
+    AOI["AOI stats"]
+    CMP["Compare jobs<br/>monthly scene catalogue"]
+    AGT["Analyst agent<br/>deepagents + Gemini via OpenRouter<br/>typed tools + knowledge notes"]
+  end
+  VIEW["7. Viewer<br/>Vite, TypeScript, MapLibre GL"]
+  HOST["VPS at s2change.dzaky.ai.id<br/>Caddy (TLS, static files, /api proxy) + PM2 + uv"]
+  IN --> PIPE --> OUT --> PUB --> PG --> API --> VIEW
+  HOST -.- VIEW
+  HOST -.- API
+```
+
+One analyst question, end to end. Every number comes from a typed tool that runs as the read-only role (its `readonly_sql` tool goes through the same SQL guard as the Database tab), and map changes are returned as data for the viewer to apply.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor U as Analyst
+  participant V as Viewer
+  participant A as FastAPI /api/agent/chat
+  participant G as Agent (deepagents, Gemini)
+  participant T as Typed tools
+  participant D as PostGIS (s2cd_reader)
+  U->>V: "Where was waste rock tipped?"
+  V->>A: POST messages (rate-limited, daily cap)
+  A->>G: run_chat(messages)
+  G->>T: read_context, facility_summary, top_changes
+  T->>D: parameterised SELECT
+  D-->>T: rows
+  T-->>G: numbers + ids
+  G->>T: map_action(fly_to / highlight), make_chart
+  Note over T: actions, charts and tables are collected per request
+  G-->>A: answer text
+  A-->>V: answer + map actions + charts + tool calls
+  V-->>U: text in chat, map moves, polygons highlighted
+```
+
+| Layer | Technology | Why |
+|---|---|---|
+| Environment and quality | uv, ruff, pytest | One lockfile, one command to run, one linter; tests run in CI |
+| Raster and numerics | rasterio, numpy, scipy, scikit-image | Windowed GeoTIFF/COG I/O, the robust covariance and statistics, hysteresis and morphology |
+| Vector | geopandas, shapely, pyogrio, pyproj | Polygons, validity repair, EPSG:32735 areas in m² |
+| Source scenes | pystac-client, odc-stac, planetary-computer | Optional extra: recovers the true acquisitions behind each mosaic, B02-B04 only |
+| Storage | PostGIS 16 with a GiST index, SpatiaLite; SQLAlchemy, GeoAlchemy2, psycopg | A geospatial DB as the brief asks; the app reads through a `SELECT`-only role |
+| API | FastAPI, uvicorn, slowapi, sqlglot | Typed endpoints, per-route rate limits, SQL parsed and checked before it runs |
+| Analyst | LangChain deepagents, langchain-google-genai / langchain-openai | An agent restricted to typed tools plus knowledge notes, on Gemini (directly or via OpenRouter) |
+| Viewer | Vite, TypeScript, MapLibre GL, marked, DOMPurify, Mermaid | Static bundle, no server rendering; this report is rendered in the app from the same markdown |
+| Delivery | Caddy, PM2, GitHub Actions, Docker Compose, Dockerfile | TLS and static files from one binary; CI runs ruff, pytest, the viewer build and the image; Compose gives a local PostGIS |
+
+## 6. Limitations and next steps
 
 - **No accuracy assessment.** There is no reference data. The false-alarm rate is calibrated and measured on held-out stable pixels, but missed change and the correctness of the change types are not. The next step is a stratified random sample labelled on very-high-resolution imagery (Olofsson et al. 2014), with strata from this map and the baseline so both get scored.
 

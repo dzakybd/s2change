@@ -1,7 +1,8 @@
 /**
  * Markdown to sanitised DOM for the Report tab and the monitoring brief. marked and DOMPurify load on first use,
  * so they stay out of the entry bundle. Post-processing happens on the sanitised DOM: heading ids for the table of
- * contents, figures with numbered captions, scrollable tables and external links that open safely.
+ * contents, figures with numbered captions, scrollable tables and external links that open safely. ```mermaid fences
+ * become SVG diagrams; the mermaid package is imported only when a document contains one.
  */
 export interface RichOptions {
   /** Resolve relative image URLs against this (the report's own folder). */
@@ -47,6 +48,8 @@ export async function renderRich(markdown: string, opts: RichOptions = {}): Prom
     }
   }
 
+  await renderMermaid(root);
+
   let n = 0;
   for (const img of root.querySelectorAll("img")) {
     const src = img.getAttribute("src") ?? "";
@@ -64,4 +67,29 @@ export async function renderRich(markdown: string, opts: RichOptions = {}): Prom
     }
   }
   return root;
+}
+
+let mermaidSeq = 0;
+
+/** Replace ```mermaid code blocks with rendered SVG (light "neutral" theme, strict security). A block that fails to parse stays as code. */
+async function renderMermaid(root: HTMLElement): Promise<void> {
+  const blocks = [...root.querySelectorAll<HTMLElement>("pre > code.language-mermaid")];
+  if (!blocks.length) return;
+  const { default: mermaid } = await import("mermaid");
+  mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "strict", fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" });
+  for (const code of blocks) {
+    const pre = code.parentElement;
+    if (!pre) continue;
+    try {
+      const { svg } = await mermaid.render(`mmd-${++mermaidSeq}`, code.textContent ?? "");
+      const fig = document.createElement("div");
+      fig.className = "mermaid-diagram";
+      fig.setAttribute("role", "img");
+      fig.setAttribute("aria-label", "Diagram");
+      fig.innerHTML = svg;
+      pre.replaceWith(fig);
+    } catch {
+      /* keep the source visible */
+    }
+  }
 }

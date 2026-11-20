@@ -124,7 +124,11 @@ export interface Overview {
 export type AgentAction =
   | { type: "fly_to"; bbox: BBox }
   | { type: "highlight"; run_id: string; ids: number[] }
-  | { type: "show_run"; run_id: string };
+  | { type: "show_run"; run_id: string }
+  | { type: "set_layer"; layer: string }
+  | { type: "set_view"; swipe?: boolean; oblique?: boolean }
+  | { type: "show_facility"; facility_id: string }
+  | { type: "compare_dates"; before: string; after: string };
 
 export interface AgentChart {
   type: "bar" | "line";

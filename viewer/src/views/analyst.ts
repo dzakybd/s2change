@@ -19,6 +19,10 @@ export interface AgentHost {
   flyTo(bbox: [number, number, number, number]): string | null;
   highlight(runId: string, ids: number[], fit: boolean): Promise<string | null>;
   showRun(runId: string): Promise<string | null>;
+  setLayer(layer: string): string | null;
+  setView(view: { swipe?: boolean; oblique?: boolean }): string | null;
+  showFacility(facilityId: string): string | null;
+  compareDates(before: string, after: string): Promise<string | null>;
   /** Clear anything the agent drew (highlights). */
   reset(): void;
 }
@@ -33,6 +37,14 @@ function actionLabel(a: AgentAction): string {
       return `Highlight ${a.ids.length} polygon${a.ids.length === 1 ? "" : "s"}`;
     case "show_run":
       return `Show run ${a.run_id}`;
+    case "set_layer":
+      return `Layer: ${a.layer.replace("_", " ")}`;
+    case "set_view":
+      return [a.swipe !== undefined ? `Swipe ${a.swipe ? "on" : "off"}` : "", a.oblique !== undefined ? `Oblique ${a.oblique ? "on" : "off"}` : ""].filter(Boolean).join(" · ");
+    case "show_facility":
+      return `Show ${a.facility_id}`;
+    case "compare_dates":
+      return `Compare ${a.before.replace("provided-", "provided ")} → ${a.after.replace("provided-", "provided ")}`;
   }
 }
 
@@ -156,6 +168,14 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
           return await host.highlight(a.run_id, a.ids, fit);
         case "show_run":
           return await host.showRun(a.run_id);
+        case "set_layer":
+          return host.setLayer(a.layer);
+        case "set_view":
+          return host.setView(a);
+        case "show_facility":
+          return host.showFacility(a.facility_id);
+        case "compare_dates":
+          return await host.compareDates(a.before, a.after);
       }
     } catch (err) {
       return err instanceof Error ? err.message : "Action failed";
@@ -172,13 +192,13 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
     el.append(body);
     for (const c of res.charts) el.append(chartElement(c));
     for (const t of res.tables) el.append(tableElement(t));
-    const actions = res.actions.filter((a) => ["fly_to", "highlight", "show_run"].includes(a.type));
+    const actions = res.actions.filter((a) => ["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility", "compare_dates"].includes(a.type));
     if (actions.length) {
       const row = document.createElement("div");
       row.className = "actions";
       const note = document.createElement("div");
       note.className = "action-note";
-      const fit = !actions.some((a) => a.type === "fly_to");
+      const fit = !actions.some((a) => a.type === "fly_to" || a.type === "show_facility");
       const buttons = actions.map((a) => {
         const b = document.createElement("button");
         b.type = "button";

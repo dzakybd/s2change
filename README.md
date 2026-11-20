@@ -1,5 +1,12 @@
 # s2change: what changed at an open-pit copper mine in Zambia?
 
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](pyproject.toml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-viewer-3178C6?logo=typescript&logoColor=white)](viewer/)
+[![PostGIS](https://img.shields.io/badge/PostGIS-Supabase-336791?logo=postgresql&logoColor=white)](sql/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](app/)
+[![MapLibre](https://img.shields.io/badge/MapLibre-GL-396CB2)](viewer/)
+[![Live demo](https://img.shields.io/badge/live%20demo-s2change.dzaky.ai.id-E8833A)](https://s2change.dzaky.ai.id)
+
 Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two dates**, as the brief provides. The pipeline finds the change, types it ("tailings deposition", "waste dumping"…), stores it in PostGIS and explains it.
 
 **Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report and the downloads. No setup is needed.
@@ -50,7 +57,6 @@ flowchart LR
   R[Facility register<br/>8 named facilities] --> T
   V --> T[Change type + 'why'<br/>RGB evidence + facility]
   T --> D[(SpatiaLite / PostGIS)]
-  D --> W[App: map, SQL console,<br/>report, analyst]
 ```
 
 **Assumptions:**
@@ -58,7 +64,30 @@ flowchart LR
 - The dates are nominal. The true acquisitions are stored in the run metadata.
 - Most of the AOI is unchanged, so stable pixels can be found per zone.
 - Facility regions are analyst-defined (human-in-the-loop), but their outlines come from the imagery.
-- "Confidence" is a change-magnitude score, not an accuracy. There is no reference data, so accuracy is not assessed (report section 5).
+- "Confidence" is a change-magnitude score, not an accuracy. There is no reference data, so accuracy is not assessed (report section 6).
+
+## Architecture
+
+```mermaid
+flowchart LR
+  IN[Rasters + STAC<br/>B02-B04] --> PIPE[Python pipeline<br/>s2cd]
+  PIPE --> FILES[GeoTIFF/COG, GeoJSON,<br/>SpatiaLite]
+  FILES --> PUB[app.publish]
+  PUB --> PG[(Supabase PostGIS<br/>s2cd_reader, read-only)]
+  PG --> API[FastAPI<br/>SQL guard, AOI stats,<br/>compare jobs, analyst agent]
+  API --> UI[Viewer<br/>Vite + TypeScript + MapLibre]
+  CADDY[Caddy + PM2<br/>s2change.dzaky.ai.id] --- API
+  CADDY --- UI
+```
+
+- **Pipeline:** Python 3.12, uv, rasterio, numpy/scipy/scikit-image, geopandas/shapely/pyogrio
+- **Storage:** SpatiaLite file plus PostGIS (GiST index) via SQLAlchemy/psycopg; Docker Compose for a local PostGIS
+- **API:** FastAPI, slowapi rate limits, sqlglot SQL guard, read-only DB role
+- **Analyst:** LangChain deepagents on Gemini (direct or via OpenRouter), typed tools and knowledge notes
+- **Viewer:** Vite, TypeScript, MapLibre GL
+- **Delivery:** Caddy (TLS, static) + PM2 on a VPS; GitHub Actions runs ruff, pytest and the builds
+
+The full diagram, the analyst sequence and the stack table with reasons are in [report.md, section 5](report.md).
 
 ## Repository
 
@@ -82,5 +111,3 @@ app/                     FastAPI: results, DB explorer, AOI stats, compare jobs,
 viewer/                  TypeScript + MapLibre app (built into docs/viewer and the live site)
 docs/                    figures, web assets, api.md
 ```
-
-**Tooling:** uv · ruff · pytest · GitHub Actions · Docker Compose (PostGIS) · Supabase PostGIS · FastAPI · Vite + TypeScript + MapLibre.

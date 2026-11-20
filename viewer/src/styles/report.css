@@ -36,6 +36,8 @@
 .prose figure img { display: block; width: 100%; height: auto; border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); }
 .prose figcaption { margin-top: var(--s-2); font-size: var(--fs-sm); color: var(--text-3); }
 .prose a { text-decoration-thickness: 1px; }
+.prose .mermaid-diagram { margin: var(--s-5) 0; padding: var(--s-4); overflow-x: auto; border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); text-align: center; line-height: 1.2; }
+.prose .mermaid-diagram svg { display: inline-block; min-width: 600px; height: auto; }
 
 @media (max-width: 900px) {
   .rp-grid { grid-template-columns: 1fr; gap: var(--s-4); }

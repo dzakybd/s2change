@@ -192,7 +192,7 @@ def test_chat_limits_input(client):
     ]
     assert client.post("/api/agent/chat", json={"messages": history}).status_code == 200
     sent = client.fake.seen[-1]
-    assert len(sent) == 10 and sent[-1]["content"] == "last"
+    assert len(sent) == main.KEEP_MESSAGES and sent[-1]["content"] == "last"
     assert client.post("/api/agent/chat", json={"messages": [{"role": "assistant", "content": "hi"}]}).status_code == 422
     assert client.post("/api/agent/chat", json={"messages": []}).status_code == 422
 

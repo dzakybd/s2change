@@ -10,6 +10,8 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 
 MAX_IDS, MAX_POINTS, MAX_ROWS, MAX_ITEMS = 500, 200, 100, 6
+# Layer ids of the viewer's layer menu (viewer/src/map/layers.ts).
+LAYERS = ("types", "after", "before", "after_raw", "intensity", "binary", "facilities", "redness")
 
 
 @dataclass
@@ -18,7 +20,7 @@ class Collector:
     charts: list[dict] = field(default_factory=list)
     tables: list[dict] = field(default_factory=list)
 
-    def add_action(self, type: str, bbox=None, run_id=None, ids=None) -> dict:
+    def add_action(self, type: str, bbox=None, run_id=None, ids=None, **kw) -> dict:
         if len(self.actions) >= MAX_ITEMS:
             raise ValueError("Too many map actions in one answer.")
         if type == "fly_to":
@@ -35,8 +37,26 @@ class Collector:
             if not run_id:
                 raise ValueError("show_run needs run_id.")
             action = {"type": type, "run_id": str(run_id)}
+        elif type == "set_layer":
+            if kw.get("layer") not in LAYERS:
+                raise ValueError(f"set_layer needs layer, one of {', '.join(LAYERS)}.")
+            action = {"type": type, "layer": kw["layer"]}
+        elif type == "set_view":
+            view = {k: bool(kw[k]) for k in ("swipe", "oblique") if kw.get(k) is not None}
+            if not view:
+                raise ValueError("set_view needs swipe and/or oblique (true or false).")
+            action = {"type": type, **view}
+        elif type == "show_facility":
+            if not kw.get("facility_id"):
+                raise ValueError("show_facility needs facility_id.")
+            action = {"type": type, "facility_id": str(kw["facility_id"])}
+        elif type == "compare_dates":
+            if not kw.get("before") or not kw.get("after"):
+                raise ValueError("compare_dates needs before and after.")
+            action = {"type": type, "before": str(kw["before"]), "after": str(kw["after"])}
         else:
-            raise ValueError("type must be one of fly_to, highlight, show_run.")
+            types = "fly_to, highlight, show_run, set_layer, set_view, show_facility, compare_dates"
+            raise ValueError(f"type must be one of {types}.")
         self.actions.append(action)
         return action
 

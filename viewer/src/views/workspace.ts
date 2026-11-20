@@ -389,6 +389,31 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         fit(fc.features, 15);
         return null;
       },
+      setLayer(id) {
+        setLayer(id);
+        syncHash();
+        return state.layer === id ? null : `The ${id} layer is not available for this comparison.`;
+      },
+      setView({ swipe, oblique }) {
+        if (swipe !== undefined && swipe !== state.swipe) q<HTMLButtonElement>(el, "#t-swipe").click();
+        if (oblique !== undefined && oblique !== obliqueUi) setOblique(oblique);
+        return null;
+      },
+      showFacility(facilityId) {
+        const f = facilities.features.find((x) => x.properties.facility_id === facilityId);
+        if (!f) return `No facility ${facilityId}.`;
+        if (!ds.nominal) return "Facilities are shown for the provided pair only; reset the dates first.";
+        setLayer("facilities");
+        syncHash();
+        fit([f as Feature], 15);
+        stage?.select(null);
+        showInspector(facilityCard(f.properties), "facility");
+        return null;
+      },
+      async compareDates(before, after) {
+        await picker.runFromLink(before, after);
+        return null;
+      },
       reset: () => runs.setHighlight([]),
     };
 
