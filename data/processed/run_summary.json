@@ -344,7 +344,8 @@
   },
   "change_type_ha": {
     "tailings_deposition": 185.3,
-    "waste_dumping": 128.9,
+    "waste_dumping": 89.7,
+    "tailings_dam_raise": 39.2,
     "seasonal_vegetation_or_burn": 36.4,
     "pit_excavation": 25.8,
     "water_level_change": 18.3,
@@ -364,5 +365,5 @@
     "CAMP": 0.0,
     "TOWN": 0.4
   },
-  "runtime_s": 33.9
+  "runtime_s": 32.8
 }

@@ -15,6 +15,7 @@ export interface ChangeTypeInfo {
 /** Order = legend order (largest classes first). Colours are picked to stay apart on satellite imagery. */
 export const CHANGE_TYPES: readonly ChangeTypeInfo[] = [
   { key: "tailings_deposition", label: "Tailings deposition", color: "#fbbf24", blurb: "Fresh tailings on the storage facility" },
+  { key: "tailings_dam_raise", label: "Tailings dam wall raised", color: "#dc2626", blurb: "Fresh fill on the tailings embankment" },
   { key: "waste_dumping", label: "Waste dumping", color: "#fb7185", blurb: "New waste rock at pit and dump edges" },
   { key: "pit_excavation", label: "Pit excavation", color: "#a78bfa", blurb: "Benches and pit floors being mined" },
   { key: "water_level_change", label: "Water level change", color: "#38bdf8", blurb: "Ponds, dams and wetlands filling or drying" },
@@ -56,6 +57,8 @@ export const fmtKm2 = (ha: number): string => {
   const v = ha / 100;
   return `${v === 0 ? "0" : v < 0.1 ? three.format(v) : v < 10 ? two.format(v) : v < 100 ? one.format(v) : int.format(v)} km²`;
 };
+/** An area given in m²: small ones stay in m² ("2,900 m²"), from 0.01 km² up they read as km². */
+export const fmtArea = (m2: number): string => (m2 < 10_000 ? `${int.format(m2)} m²` : fmtKm2(m2 / 10_000));
 export const fmtPct = (share: number, digits = 0): string => `${(share * 100).toFixed(digits)}%`;
 
 export function ha(m2: number): number {

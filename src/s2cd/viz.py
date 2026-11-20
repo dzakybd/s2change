@@ -28,6 +28,7 @@ from .pipeline import Products  # noqa: E402
 
 DIRECTION_COLORS = {"brightening": "#f59e0b", "darkening": "#3b82f6", "spectral shift": "#a855f7"}
 TYPE_COLORS = {
+    "tailings_dam_raise": "#9f1239",
     "waste_dumping": "#d97706",
     "pit_excavation": "#7c3aed",
     "tailings_deposition": "#0891b2",

@@ -15,7 +15,7 @@
 | | |
 |---|---|
 | **What we looked at** | A 16 × 16 km area around an open-pit copper mine in north-west Zambia, seen by the free Sentinel-2 satellite in ordinary colour (red, green, blue), on two dates in the 2023 dry season. |
-| **What happened** | The mine was **working normally**: 4.1 km² of ground changed, three quarters of it inside known mine facilities. Tailings (processing waste) were spread on the tailings dam, waste rock was dumped, pits were dug. **No new land was cleared outside the mine.** |
+| **What happened** | The mine was **working normally**: 4.1 km² of ground changed, three quarters of it inside known mine facilities. Tailings (processing waste) were spread on the tailings dam, its wall was most likely raised, waste rock was dumped, pits were dug. **No new land was cleared outside the mine.** Every change comes with a plain sentence, e.g. *"Tailings dam wall likely raised, 0.39 km² in the south-east of the Tailings storage facility: green vegetation became bare ground; more rust-coloured, typical of freshly exposed rock. Check the dam-raise plan and inspect the embankment."* |
 | **Over three years** | Comparing the same season each year, the mine is **growing**: waste rock moved rises from 5.7 to 20.2 km², and change outside the known facilities from 5.6 to 18.2 km². |
 | **Why it matters** | A regulator can see where the mine spreads and check it against the licence. An investor or insurer gets an independent signal that the operation is running and expanding. ESG teams see clearing and water changes early. |
 | **A trap we avoided** | The two images supplied are each stitched from two satellite passes. A standard method mistakes the stitching for change and reports **111 km², 27× the calibrated result**, mostly stitching and haze, which would send a client chasing false alarms. We detected it, proved it, and corrected for it. |
@@ -36,7 +36,8 @@
 - **Result:** **4.13 km² in 215 polygons** (1.6 % of the AOI). **74 %** of it lies inside the mine's named facilities.
 - **Interpretation:** this is operational mining, not expansion.
   - Tailings deposition on the TSF: 1.85 km².
-  - Waste dumping: 1.29 km².
+  - Waste dumping: 0.90 km².
+  - Tailings dam wall likely raised along its south-east edge: 0.39 km² (fresh fill where vegetation was).
   - Pit-floor and bench activity: 0.26 km².
   - Seasonal vegetation or burning outside the mine: 0.36 km².
   - No new clearing beyond the mine footprint at the 2,000 m² scale.
@@ -129,7 +130,8 @@ Where the change is, and what kind it is.
 | Change type | Brief category | Polygons | Area |
 |---|---|---:|---:|
 | Tailings deposition | mining activity | 61 | 1.85 km² |
-| Waste dumping | mining activity | 55 | 1.29 km² |
+| Waste dumping | mining activity | 53 | 0.90 km² |
+| Tailings dam wall raised | mining activity | 2 | 0.39 km² |
 | Seasonal vegetation or burn | seasonal variation / vegetation | 18 | 0.36 km² |
 | Pit excavation | mining activity | 26 | 0.26 km² |
 | Water level change | water change | 8 | 0.18 km² |
@@ -151,7 +153,7 @@ Each pattern is a hypothesis with its confounders and the evidence that would co
 | Darker or browner patches outside the mine | Dry-season grass senescence or burning | Medium | Burnt vegetation vs. wetness cannot be separated in RGB | Fire records; recovery after the rains |
 | Polygons on or near seams | Artifacts | High | — | The source-scene map |
 
-**What happened, in one paragraph.** Between early July and late August / early September 2023, the measurable change is operational. Tailings were deposited across the TSF (1.94 km² changed, 9 % of the facility). Waste rock was tipped at the eastern dumps and at the edges of both pit complexes (1.29 km² labelled waste dumping). Activity continued inside the pits. Outside the mine, change is small and seasonal. **I see no evidence of mine expansion into new ground at the 2,000 m² / 20 m detection limit**: only 0.01 km² qualifies as clearing. Each polygon carries its "why".
+**What happened, in one paragraph.** Between early July and late August / early September 2023, the measurable change is operational. Tailings were deposited across the TSF (1.94 km² changed, 9 % of the facility). Waste rock was tipped at the eastern dumps and at the edges of both pit complexes (0.90 km² labelled waste dumping), and the tailings dam wall was most likely raised along its south-east edge (0.39 km² of fresh, rust-coloured fill where there was vegetation), which is the change a dam-safety team would want to know about first. Activity continued inside the pits. Outside the mine, change is small and seasonal. **I see no evidence of mine expansion into new ground at the 2,000 m² / 20 m detection limit**: only 0.01 km² qualifies as clearing. Each polygon carries its "why".
 
 > [!WARNING]
 > **Confidence is not accuracy.** "Confidence" here is a change-magnitude score, and every label is a hypothesis built from RGB evidence and facility context. There is no reference data, so accuracy is not assessed (section 6).

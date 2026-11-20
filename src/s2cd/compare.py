@@ -32,6 +32,7 @@ PROVIDED = {"provided-before": Path("inputs/data/sentinel2_20230812"), "provided
 PROPERTIES = [  # polygon properties exported to changes.geojson (same names as the app's /api/changes)
     *("area_m2", "confidence", "neglog10_p", "change_direction", "change_type", "brief_category"),
     *("explanation", "facility_id", "touches_aoi_edge"),
+    *("headline", "location", "evidence", "what_to_check", "description"),
 ]
 PAIR = re.compile(r"\d{8}_\d{8}")
 

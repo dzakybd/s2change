@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-20T07:13:05+00:00",
+  "generated": "2026-11-20T07:56:15+00:00",
   "pair": {
     "before": "2023-08-12",
     "after": "2023-09-02",
@@ -46,11 +46,12 @@
     "share_in_register_mine_classes": 0.738,
     "agreement_iou_with_baseline": 0.031,
     "n_zones": 3,
-    "runtime_s": 33.9
+    "runtime_s": 32.8
   },
   "change_type_ha": {
     "tailings_deposition": 185.3,
-    "waste_dumping": 128.9,
+    "waste_dumping": 89.7,
+    "tailings_dam_raise": 39.2,
     "seasonal_vegetation_or_burn": 36.4,
     "pit_excavation": 25.8,
     "water_level_change": 18.3,
@@ -71,10 +72,11 @@
       "changed_share": 0.086,
       "change_types": {
         "tailings_deposition": 175.7,
-        "waste_dumping": 8.5,
+        "tailings_dam_raise": 8.4,
         "water_level_change": 6.2,
         "noise_or_artifact": 2.3,
-        "infrastructure_or_settlement": 1.0
+        "infrastructure_or_settlement": 1.0,
+        "waste_dumping": 0.1
       },
       "summary": "Tailings storage facility: 1.94 km\u00b2 changed (9% of 22.4 km\u00b2); mostly tailings deposition"
     },
@@ -135,7 +137,8 @@
       "changed_share": 0.025,
       "change_types": {
         "infrastructure_or_settlement": 3.6,
-        "waste_dumping": 1.3
+        "waste_dumping": 0.9,
+        "tailings_dam_raise": 0.4
       },
       "summary": "Process plant and central yard: 0.05 km\u00b2 changed (2% of 2.0 km\u00b2); mostly infrastructure or settlement"
     },

@@ -12,6 +12,8 @@ mapped as follows (first matching rule wins, in this order):
 | pit_excavation                 | (mining)              | inside a pit/dump complex, not brighter-and-redder                  |
 | waste_dumping                  | (mining)              | inside a waste dump; or brighter + redder in a pit/dump complex or  |
 |                                |                       | at the footprint edge (fresh oxidized rock)                         |
+| tailings_dam_raise             | (mining)              | brighter + redder, overlapping the tailings facility but mostly at  |
+|                                |                       | its edge (fresh fill on the embankment)                             |
 | tailings_deposition            | (mining)              | inside the tailings storage facility                                |
 | infrastructure_or_settlement   | urban expansion       | inside the plant, camp or settlement                                |
 | mine_expansion_clearing        | land clearing         | vegetation -> bare, touching the mine footprint                     |
@@ -19,8 +21,10 @@ mapped as follows (first matching rule wins, in this order):
 | seasonal_vegetation_or_burn    | seasonal / vegetation | greenness or darkening change without becoming bare, outside mine   |
 | unexplained                    | -                     | none of the above                                                   |
 
-Every label carries a one-line plain-English `explanation` so the viewer and the analyst agent can
-show *why*, and a `brief_category` so the report can be read against the brief's examples.
+Every label carries a technical `explanation` (the rule and its numbers) and a `brief_category` so the report can be read
+against the brief's examples. ``describe`` then turns each polygon into plain language for business readers: a
+`headline` ("Waste rock dumped"), a `location` ("on the east side of the South pit complex", "1.8 km north-east of the
+Process plant"), the `evidence` in words, `what_to_check`, and one `description` sentence combining them.
 
 Inputs are the *before* reflectance and the *normalized* after reflectance (``pipeline`` passes ``refl_after_norm``), so
 brightness, greenness, redness and the water flip compare the two dates on one radiometric scale instead of reading a
@@ -47,6 +51,7 @@ BRIEF_CATEGORY = {
     "water_level_change": "water change (mining: water management)",
     "pit_excavation": "mining activity",
     "waste_dumping": "mining activity",
+    "tailings_dam_raise": "mining activity",
     "tailings_deposition": "mining activity",
     "infrastructure_or_settlement": "urban expansion",
     "mine_expansion_clearing": "land clearing",
@@ -78,6 +83,7 @@ class InterpretRules:
     footprint_touch_m: float = 50.0
     greenness_drop: float = 0.015  # gcc drop that counts as vegetation loss
     redder: float = 0.05  # redness (B04/B02) increase that marks fresh oxidized material
+    dam_edge_share: float = 0.1  # least share inside the tailings facility for edge fill to count as its embankment
 
 
 def _zonal(labels: np.ndarray, n: int, values: np.ndarray) -> np.ndarray:
@@ -174,6 +180,9 @@ def label(polys: gpd.GeoDataFrame, ev: pd.DataFrame, ctx: pd.DataFrame, r: Inter
             if fac == "pit_dump_complex" and brighter and d_red >= r.redder:
                 t = "waste_dumping"
             why = f"inside {c.facility_id} ({fac}); {'brighter' if brighter else 'darker'}, redness {d_red:+.2f}"
+        elif c.facility_class == "tailings" and c.facility_share >= r.dam_edge_share and brighter and d_red >= r.redder:
+            t = "tailings_dam_raise"
+            why = f"brighter and redder (redness {d_red:+.2f}), {c.facility_share:.0%} inside {c.facility_id}, rest at its edge"
         elif c.near_footprint and brighter and d_red >= r.redder:
             t, why = "waste_dumping", f"brighter and redder (redness {d_red:+.2f}) at the mine edge: fresh oxidized material"
         elif veg_to_bare:
@@ -187,4 +196,95 @@ def label(polys: gpd.GeoDataFrame, ev: pd.DataFrame, ctx: pd.DataFrame, r: Inter
         else:
             t, why = "unexplained", "no rule matched"
         rows.append({"change_type": t, "brief_category": BRIEF_CATEGORY[t], "explanation": why, "facility_id": c.facility_id})
+    return pd.DataFrame(rows, index=polys.index)
+
+
+# ---- Plain language ------------------------------------------------------------------------------------------------
+
+#: change_type -> (headline, what to check). Written for a reader who does not know remote sensing.
+PLAIN = {
+    "tailings_dam_raise": ("Tailings dam wall likely raised", "Check the dam-raise plan and inspect the embankment."),
+    "waste_dumping": ("Waste rock dumped", "Check that the dump is inside the approved mine plan."),
+    "pit_excavation": ("Pit worked or deepened", "Check that the digging matches the mine plan."),
+    "tailings_deposition": ("Tailings deposited", "Routine operation: watch the pond and beach extent month to month."),
+    "water_level_change": ("Water level changed", "Check dam and pond levels and discharge records."),
+    "infrastructure_or_settlement": ("Buildings, roads or yards changed", "Check whether new construction is permitted."),
+    "mine_expansion_clearing": ("Vegetation cleared at the mine edge", "Check the cleared land is inside the licence."),
+    "land_clearing": ("Vegetation cleared", "Find out who cleared it: farming, charcoal or mining."),
+    "seasonal_vegetation_or_burn": ("Vegetation changed (season or fire)", "Usually seasonal; check fire records if large."),
+    "noise_or_artifact": ("Probably not a real change", "No action: it follows image stitching, haze or shadow."),
+    "unexplained": ("Unclear change", "Compare the before and after images."),
+}
+_COMPASS = ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west")
+
+
+def _compass(dx: float, dy: float) -> str:
+    return _COMPASS[int(((np.degrees(np.arctan2(dx, dy)) + 360 + 22.5) % 360) // 45)]
+
+
+def _distance(m: float) -> str:
+    return f"{m / 1000:.1f} km" if m >= 1000 else f"{round(m, -1):.0f} m"
+
+
+def plain_area(m2: float) -> str:
+    return f"{m2 / 1e6:.2f} km²" if m2 >= 1e4 else f"{round(m2, -2):,.0f} m²"
+
+
+def _location(geom, fac_id, outlines: gpd.GeoDataFrame | None) -> str:
+    """'on the east side of the X' inside (or touching) a facility, else 'N km <direction> of the nearest facility'."""
+    if outlines is None or not len(outlines):
+        return ""
+    names = dict(zip(outlines.facility_id, outlines["name"], strict=True))
+    c = geom.centroid
+    if fac_id in names:
+        f = outlines.loc[outlines.facility_id == fac_id].geometry.iloc[0]
+        x0, y0, x1, y1 = f.bounds
+        fx, fy = (c.x - x0) / max(x1 - x0, 1), (c.y - y0) / max(y1 - y0, 1)
+        ns = "north" if fy > 2 / 3 else "south" if fy < 1 / 3 else ""
+        ew = "east" if fx > 2 / 3 else "west" if fx < 1 / 3 else ""
+        part = f"{ns}-{ew}" if ns and ew else ns or ew
+        return f"in the {part} of the {names[fac_id]}" if part else f"in the middle of the {names[fac_id]}"
+    dist = outlines.geometry.distance(geom)
+    k = int(dist.values.argmin())
+    near, d = outlines.iloc[k], float(dist.iloc[k])
+    if d < 100:
+        return f"next to the {near['name']}"
+    nc = near.geometry.centroid
+    return f"{_distance(d)} {_compass(c.x - nc.x, c.y - nc.y)} of the {near['name']}"
+
+
+def _evidence(e, change_type: str) -> str:
+    """The RGB evidence in everyday words. Water is mentioned only for water-level changes: the RGB water test also fires on
+    dark wet vegetation, which ``label`` already guards against."""
+    bits = []
+    if change_type == "water_level_change":
+        bits.append(f"{e.water_flip:.0%} of it switched between water and dry land")
+    if e.gcc_before >= rgb.RgbRules().bare_gcc_max and e.bare_after >= 0.5:
+        bits.append("green vegetation became bare ground")
+    elif e.gcc_after - e.gcc_before >= 0.015:
+        bits.append("it turned greener")
+    elif e.gcc_after - e.gcc_before <= -0.015:
+        bits.append("it turned less green")
+    db = e.bright_after - e.bright_before
+    if abs(db) >= 0.01:
+        bits.append("the ground got brighter" if db > 0 else "the ground got darker")
+    if e.red_after - e.red_before >= 0.05:
+        bits.append("more rust-coloured, typical of freshly exposed rock")
+    elif e.red_after - e.red_before <= -0.05:
+        bits.append("less rust-coloured")
+    return "; ".join(bits) if bits else "a mixed colour change"
+
+
+def describe(polys: gpd.GeoDataFrame, labels: pd.DataFrame, ev: pd.DataFrame, outlines: gpd.GeoDataFrame | None) -> pd.DataFrame:
+    """Plain-language fields per polygon: headline, location, evidence, what_to_check and one description sentence."""
+    rows = []
+    for i, p in polys.iterrows():
+        t = labels.loc[i, "change_type"]
+        headline, check = PLAIN.get(t, PLAIN["unexplained"])
+        where = _location(p.geometry, labels.loc[i, "facility_id"], outlines)
+        evidence = _evidence(ev.loc[i], t)
+        sentence = f"{headline}, {plain_area(p.geometry.area)}{' ' + where if where else ''}: {evidence}. {check}"
+        rows.append(
+            {"headline": headline, "location": where, "evidence": evidence, "what_to_check": check, "description": sentence}
+        )
     return pd.DataFrame(rows, index=polys.index)

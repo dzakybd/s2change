@@ -2,8 +2,9 @@ import type { Feature, FeatureCollection, Polygon, Position } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, StyleSpecification } from "maplibre-gl";
-import { BINARY_COLOR, CHANGE_TYPES, esc, fmtKm2, prefersReducedMotion } from "../domain";
+import { BINARY_COLOR, CHANGE_TYPES, esc, fmtKm2, prefersReducedMotion, typeInfo } from "../domain";
 import type { AoiCollection, Bounds, Dataset, FacilityCollection, FacilityProps, MapRaster, MineralsManifest } from "../types";
+import { LABEL_COUNT, labelTargets, labelText } from "./changes";
 import { isValidAoi, labelPoint } from "./geo";
 import type { LayerDef } from "./layers";
 
@@ -77,6 +78,7 @@ export class MapStage {
   private extrude = false;
   private bearing = 24;
   private markers: maplibregl.Marker[] = [];
+  private changeLabels: { pt: [number, number]; w: number; markers: maplibregl.Marker[] }[] = [];
   private draw: Position[] | null = null;
   private cursor: Position | null = null;
 
@@ -94,6 +96,7 @@ export class MapStage {
     this.main.touchZoomRotate.disableRotation();
     this.main.on("move", () => {
       this.compare.jumpTo({ center: this.main.getCenter(), zoom: this.main.getZoom(), bearing: this.main.getBearing(), pitch: this.main.getPitch() });
+      this.layoutChangeLabels();
     });
   }
 
@@ -103,6 +106,7 @@ export class MapStage {
     for (const m of this.maps) this.addLayers(m);
     this.addOverlayLayers(this.main);
     this.addFacilityLabels();
+    this.buildChangeLabels();
     this.apply();
     this.bindInteractions();
   }
@@ -163,6 +167,49 @@ export class MapStage {
     }
   }
 
+  /** Name the few largest real changes on the map: "headline · area", as markers like the facility labels. */
+  private buildChangeLabels(): void {
+    for (const l of this.changeLabels) for (const mk of l.markers) mk.remove();
+    this.changeLabels = [];
+    for (const p of labelTargets(this.dataset.changes, this.hiddenTypes)) {
+      const f = this.dataset.changes.features[p.fid];
+      const pt = f ? labelPoint(f.geometry) : null;
+      if (!pt) continue;
+      const text = labelText(p);
+      const markers = this.maps.map((m) => {
+        const el = document.createElement("div");
+        el.className = "chg-label";
+        el.hidden = true;
+        el.innerHTML = `<i class="swatch" style="background:${typeInfo(p.change_type).color}"></i><span>${esc(text)}</span>`;
+        return new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat(pt).addTo(m);
+      });
+      this.changeLabels.push({ pt, w: text.length * 6.4 + 34, markers });
+    }
+    this.layoutChangeLabels();
+  }
+
+  /** Show labels largest-first and drop any that would overlap one already shown, so zooming out thins them instead of piling them up. */
+  private layoutChangeLabels(): void {
+    const on = this.layer.id === "types" && this.layer.polygons !== "none";
+    const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
+    const limit = this.main.getContainer().clientWidth < 720 ? 3 : LABEL_COUNT; // a phone screen has room for few
+    for (const l of this.changeLabels) {
+      let show = on && placed.length < limit;
+      if (show) {
+        const { x, y } = this.main.project(l.pt);
+        const box = { x0: x - l.w / 2, x1: x + l.w / 2, y0: y - 13, y1: y + 13 };
+        show = !placed.some((o) => box.x0 < o.x1 + 6 && box.x1 > o.x0 - 6 && box.y0 < o.y1 + 4 && box.y1 > o.y0 - 4);
+        if (show) placed.push(box);
+      }
+      for (const mk of l.markers) mk.getElement().hidden = !show;
+    }
+  }
+
+  /** Highlight a polygon from outside the map (a list row under the pointer). */
+  hoverFeature(id: number | null): void {
+    this.setHover(id);
+  }
+
   /* ---------- layer state ---------- */
 
   setLayer(def: LayerDef): void {
@@ -184,6 +231,7 @@ export class MapStage {
   setHiddenTypes(hidden: ReadonlySet<string>): void {
     this.hiddenTypes = new Set(hidden);
     this.apply();
+    this.buildChangeLabels();
   }
 
   private apply(): void {
@@ -200,6 +248,7 @@ export class MapStage {
       m.setLayoutProperty("fac-line", "visibility", def.facilities ? "visible" : "none");
     }
     for (const mk of this.markers) mk.getElement().hidden = !def.facilities;
+    this.layoutChangeLabels();
 
     const on = def.polygons !== "none";
     const fill = def.polygons === "fill";
@@ -232,6 +281,7 @@ export class MapStage {
     }
     this.hover = null;
     this.select(null);
+    this.buildChangeLabels();
   }
 
   /* ---------- oblique view ---------- */

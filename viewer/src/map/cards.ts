@@ -1,5 +1,7 @@
-import { BINARY_COLOR, CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
+import { BINARY_COLOR, CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtArea, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
 import type { AoiStats, ChangeCollection, ChangeProps, Dataset, FacilityProps, MineralsManifest } from "../types";
+import { changeTitle, changeWhere, listHtml, rankChanges } from "./changes";
+import type { ListUi } from "./changes";
 import type { LayerDef } from "./layers";
 import { INTENSITY_RAMP, REDNESS_RAMP } from "./layers";
 
@@ -10,16 +12,22 @@ const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 export function featureCard(p: ChangeProps, facilityName: string | null): string {
   const t = typeInfo(p.change_type);
   const conf = Math.max(0, Math.min(1, p.confidence));
-  return `<header class="ins-head"><i class="swatch lg" style="background:${t.color}"></i><div><h3>${esc(t.label)}</h3><p class="muted">${esc(sentence(p.brief_category || "change"))}</p></div>${closeBtn}</header>
-  <div class="why"><span>Why this label</span><p>${esc(sentence(p.explanation || "No explanation recorded."))}</p></div>
+  const see = p.evidence?.trim() || p.explanation;
+  const check = p.what_to_check?.trim();
+  return `<header class="ins-head"><i class="swatch lg" style="background:${t.color}"></i><div><h3>${esc(changeTitle(p))}</h3><p class="muted">${esc(sentence(changeWhere(p)))}</p></div>${closeBtn}</header>
+  <p class="ins-meta"><b class="num">${fmtArea(p.area_m2)}</b><span>changed</span><span class="chip"><i class="swatch" style="background:${t.color}"></i>${esc(t.label)}</span></p>
+  <div class="why"><span>What we see</span><p>${esc(sentence(see || "No evidence recorded."))}</p></div>
+  ${check ? `<div class="why check"><span>What to check</span><p>${esc(check)}</p></div>` : ""}
+  ${p.touches_aoi_edge ? '<p class="note">Touches the edge of the area of interest, so its shape may be clipped.</p>' : ""}
+  <details class="tech"><summary>Technical details</summary>
   <dl class="facts">
-    <div><dt>Area</dt><dd class="num">${fmtKm2(ha(p.area_m2))}</dd></div>
+    <div><dt>Change type</dt><dd>${esc(t.label)} <span class="muted">(${esc(p.brief_category || "change")})</span></dd></div>
     <div><dt>Confidence</dt><dd class="num">${p.confidence.toFixed(2)}<span class="meter" aria-hidden="true"><i style="width:${(conf * 100).toFixed(0)}%"></i></span></dd></div>
     <div><dt>Significance</dt><dd class="num">−log10 p = ${p.neglog10_p.toFixed(1)}</dd></div>
     <div><dt>Direction</dt><dd>${esc(p.change_direction)}</dd></div>
+    <div class="wide"><dt>Rule explanation</dt><dd>${esc(sentence(p.explanation || "None recorded."))}</dd></div>
     <div class="wide"><dt>Facility</dt><dd>${p.facility_id ? `${esc(facilityName ?? p.facility_id)} <span class="muted">(${esc(p.facility_id)})</span>` : '<span class="muted">Outside the register</span>'}</dd></div>
-  </dl>
-  ${p.touches_aoi_edge ? '<p class="note">Touches the edge of the area of interest, so its shape may be clipped.</p>' : ""}`;
+  </dl></details>`;
 }
 
 export function facilityCard(p: FacilityProps): string {
@@ -72,13 +80,17 @@ export function tallyTypes(changes: ChangeCollection): { rows: TypeTally[]; coun
   return { rows, count: changes.features.length, ha: total };
 }
 
-export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<string>, minerals: MineralsManifest | null, oblique: boolean, extrude: boolean): string {
+export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<string>, minerals: MineralsManifest | null, oblique: boolean, extrude: boolean, list: ListUi, selected: number | null): string {
   const tally = tallyTypes(ds.changes);
   let body = "";
   let title = def.label;
+  let count = "";
   if (def.id === "types") {
-    title = "Change types";
-    body = `<p class="lg-sub num">${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"} · ${fmtKm2(tally.ha)}. Click a type to hide it.</p><ul class="lg-types">${tally.rows
+    title = "What changed";
+    const vis = rankChanges(ds.changes, hidden, list.noise);
+    count = `${fmtInt(vis.length)} · ${fmtKm2(vis.reduce((a, p) => a + ha(p.area_m2), 0))}`;
+    const seg = `<div class="seg" role="tablist" aria-label="Panel view">${(["list", "legend"] as const).map((k) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${list.tab === k}">${k === "list" ? "List" : "Legend"}</button>`).join("")}</div>`;
+    body = list.tab === "list" ? seg + listHtml(ds, hidden, list, selected) : seg + `<p class="lg-sub num">${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"} · ${fmtKm2(tally.ha)}. Click a type to hide it.</p><ul class="lg-types">${tally.rows
       .map((r) => {
         const t = typeInfo(r.key);
         return `<li><button type="button" class="lg-row" data-type="${esc(r.key)}" aria-pressed="${!hidden.has(r.key)}" title="${esc(t.blurb)}"><i class="swatch" style="background:${t.color}"></i><span>${esc(t.label)}</span><b class="num">${r.count}</b><em class="num">${fmtKm2(r.ha)}</em></button></li>`;
@@ -97,5 +109,5 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
     body = `<p class="note">${esc(def.hint)}.${ds.nominal ? " The two dates are nominal: each is a mosaic of two Sentinel-2 scenes (07-01/07-04 and 08-25/09-02)." : ""} Outlines are the change polygons, coloured by type.</p>`;
   }
   const obl = oblique ? `<p class="note obl">Data visualization, not terrain.${extrude ? " Height shows model confidence." : " Polygons are flat; the view is only tilted."}</p>` : "";
-  return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lg-body">${body}${obl}</div>`;
+  return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b>${count ? `<span class="lg-count num">${count}</span>` : ""}<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lg-body">${body}${obl}</div>`;
 }

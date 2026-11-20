@@ -108,7 +108,8 @@ def changes(run_id: str, min_confidence: float = Query(0, ge=0, le=1), limit: in
         raise HTTPException(404, f"Unknown run_id {run_id!r}")
     rows = db.query(
         "SELECT id, area_m2, confidence, neglog10_p, change_direction, change_type, brief_category, explanation, facility_id, "
-        "touches_aoi_edge, ST_AsGeoJSON(ST_Transform(geometry, 4326), 6) AS geom FROM change_features "
+        "touches_aoi_edge, headline, location, evidence, what_to_check, description, "
+        "ST_AsGeoJSON(ST_Transform(geometry, 4326), 6) AS geom FROM change_features "
         "WHERE run_id = :r AND confidence >= :c ORDER BY area_m2 DESC, id LIMIT :n",
         r=run_id, c=min_confidence, n=limit,
     )  # fmt: skip

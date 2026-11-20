@@ -38,6 +38,11 @@ CREATE TABLE IF NOT EXISTS change_features (
     brief_category     text,
     explanation        text,
     facility_id        text,                           -- facility of the register the polygon mostly lies in
+    headline           text,                           -- plain language, for business readers (s2cd.interpret.describe)
+    location           text,
+    evidence           text,
+    what_to_check      text,
+    description        text,                           -- one sentence: headline, size, location, evidence, what to check
     geometry           geometry(MultiPolygon, 32735) NOT NULL,  -- WGS 84 / UTM 35S, metres
     CONSTRAINT change_features_valid_geometry CHECK (ST_IsValid(geometry))
 );
@@ -49,6 +54,11 @@ ALTER TABLE change_features ADD COLUMN IF NOT EXISTS change_type text;
 ALTER TABLE change_features ADD COLUMN IF NOT EXISTS brief_category text;
 ALTER TABLE change_features ADD COLUMN IF NOT EXISTS explanation text;
 ALTER TABLE change_features ADD COLUMN IF NOT EXISTS facility_id text;
+ALTER TABLE change_features ADD COLUMN IF NOT EXISTS headline text;
+ALTER TABLE change_features ADD COLUMN IF NOT EXISTS location text;
+ALTER TABLE change_features ADD COLUMN IF NOT EXISTS evidence text;
+ALTER TABLE change_features ADD COLUMN IF NOT EXISTS what_to_check text;
+ALTER TABLE change_features ADD COLUMN IF NOT EXISTS description text;
 ALTER TABLE change_features DROP COLUMN IF EXISTS mean_p_change;
 DO $$
 BEGIN
@@ -66,5 +76,6 @@ CREATE INDEX IF NOT EXISTS change_features_run_idx ON change_features (run_id);
 DROP VIEW IF EXISTS change_features_wgs84;
 CREATE VIEW change_features_wgs84 AS
 SELECT id, run_id, date_before, date_after, method, area_m2, confidence, change_direction,
-       in_disturbed_area, change_type, facility_id, d_brightness, ST_Transform(geometry, 4326) AS geometry
+       in_disturbed_area, change_type, facility_id, headline, location, description, d_brightness,
+       ST_Transform(geometry, 4326) AS geometry
 FROM change_features;

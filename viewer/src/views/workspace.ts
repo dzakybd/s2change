@@ -6,7 +6,7 @@ import type { AppContext, View } from "../app";
 import { aoiStats, fetchRun, STATIC_RUN_IDS } from "../api";
 import { authState, isLocked, markLocked, requestUnlock } from "../unlock";
 import { loadAoi, loadDefaultDataset, loadFacilities, loadMinerals, dataUrl } from "../data";
-import { q } from "../domain";
+import { q, qa } from "../domain";
 import { aoiStatsFromPolygons } from "../map/geo";
 import { DEFAULT_LAYER, LAYERS, layerById } from "../map/layers";
 import type { LayerDef } from "../map/layers";
@@ -15,6 +15,7 @@ import { DatePicker } from "../map/picker";
 import { MapStage } from "../map/stage";
 import { Swipe } from "../map/swipe";
 import { aoiCard, facilityCard, featureCard, legendHtml } from "../map/cards";
+import type { ListUi } from "../map/changes";
 import { featureBounds, RunOverlay } from "../overlays";
 import type { Route } from "../router";
 import { replaceParams } from "../router";
@@ -88,12 +89,22 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     const hidden = new Set<string>();
     let aoiShape: Polygon | null = null;
     let obliqueUi = false;
+    const list: ListUi = { tab: "list", showAll: false, noise: false };
+    let selectedFid: number | null = null;
 
     const swipe = new Swipe(q(el, ".swipe"), q(el, ".swipe-handle"), q(el, "#map-compare"));
     const inspector = q(el, ".inspector");
     const legend = q(el, ".legend");
 
     /* ---------- inspector ---------- */
+    const markSelected = (fid: number | null) => {
+      selectedFid = fid;
+      for (const r of qa(legend, ".ch-row")) {
+        if (r.dataset["fid"] === String(fid)) r.setAttribute("aria-current", "true");
+        else r.removeAttribute("aria-current");
+      }
+    };
+
     let inspecting: "feature" | "facility" | "aoi" | null = null;
     const showInspector = (html: string, kind: "feature" | "facility" | "aoi") => {
       inspecting = kind;
@@ -107,6 +118,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       inspector.hidden = true;
       inspecting = null;
       stage?.select(null);
+      markSelected(null);
       if (aoiShape) {
         aoiShape = null;
         stage?.setAoiShape(null);
@@ -150,6 +162,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         if (!f) return closeInspector();
         const p = f.properties as unknown as ChangeProps;
         stage?.select(p.fid);
+        markSelected(p.fid);
         showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null), "feature");
       },
       onFacilityClick: (p: FacilityProps) => {
@@ -192,7 +205,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     };
 
     const renderLegend = () => {
-      legend.innerHTML = legendHtml(layerById(state.layer), ds, hidden, minerals, state.oblique, state.extrude);
+      legend.innerHTML = legendHtml(layerById(state.layer), ds, hidden, minerals, state.oblique, state.extrude, list, selectedFid);
+      legend.querySelector(".lg-head")?.setAttribute("aria-expanded", String(!legend.classList.contains("collapsed")));
     };
 
     const syncSwipeUi = () => {
@@ -271,13 +285,28 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     /* ---------- legend ---------- */
     legend.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
+      const tab = t.closest<HTMLElement>("[data-tab]")?.dataset["tab"];
+      if (tab === "list" || tab === "legend") {
+        list.tab = tab;
+        return renderLegend();
+      }
+      const more = t.closest<HTMLElement>("[data-list]")?.dataset["list"];
+      if (more) {
+        if (more === "all") list.showAll = !list.showAll;
+        else list.noise = !list.noise;
+        return renderLegend();
+      }
+      const chg = t.closest<HTMLElement>("[data-fid]");
+      if (chg) return void openChange(Number(chg.dataset["fid"]));
       const row = t.closest<HTMLElement>("[data-type]");
       if (row?.dataset["type"]) {
         const k = row.dataset["type"];
         if (hidden.has(k)) hidden.delete(k);
         else hidden.add(k);
         st.setHiddenTypes(hidden);
-        row.setAttribute("aria-pressed", String(!hidden.has(k)));
+        const top = legend.scrollTop;
+        renderLegend(); // the head tally follows the hidden types
+        legend.scrollTop = top;
         return;
       }
       const head = t.closest<HTMLElement>(".lg-head");
@@ -287,7 +316,33 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         legend.classList.toggle("collapsed", !open);
       }
     });
-    if (window.matchMedia("(max-width: 720px)").matches) legend.classList.add("collapsed");
+    const phone = window.matchMedia("(max-width: 720px)");
+    if (phone.matches) legend.classList.add("collapsed");
+
+    /** Fly to a change, select it and open its card: the "What changed" list rows and the card share this path. */
+    const openChange = (fid: number) => {
+      const f = ds.changes.features[fid];
+      if (!f) return;
+      const b = featureBounds([f as Feature]);
+      const { clientWidth: w, clientHeight: h } = q(el, ".ws-stage");
+      if (b) st.fit(b, { maxZoom: 16, padding: w > 720 ? { top: 90, bottom: 90, left: Math.min(380, w * 0.3), right: Math.min(400, w * 0.3) } : { top: 90, bottom: Math.round(h * 0.5), left: 30, right: 30 } });
+      st.select(fid);
+      markSelected(fid);
+      if (phone.matches) {
+        legend.classList.add("collapsed");
+        legend.querySelector(".lg-head")?.setAttribute("aria-expanded", "false");
+      }
+      const p = f.properties;
+      showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null), "feature");
+    };
+    const rowFid = (e: Event): number | null => {
+      const v = (e.target as HTMLElement).closest<HTMLElement>(".ch-row")?.dataset["fid"];
+      return v === undefined ? null : Number(v);
+    };
+    legend.addEventListener("pointerover", (e) => {
+      if (e.pointerType === "mouse") st.hoverFeature(rowFid(e));
+    });
+    legend.addEventListener("pointerleave", () => st.hoverFeature(null));
 
     /* ---------- date picker ---------- */
     const picker = new DatePicker({

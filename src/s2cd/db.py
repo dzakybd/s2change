@@ -46,6 +46,11 @@ FEATURE_COLUMNS = [
     "brief_category",
     "explanation",
     "facility_id",
+    "headline",
+    "location",
+    "evidence",
+    "what_to_check",
+    "description",
 ]
 SCHEMA_SQL = Path(__file__).resolve().parents[2] / "sql" / "schema_postgis.sql"
 

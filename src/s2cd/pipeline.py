@@ -317,7 +317,10 @@ def run(cfg: Config) -> Products:
             polys, grid.transform, valid.shape, r1, r2n, seam_dist, rule.seam_buffer_px(px_m) + irules.seam_margin_px
         )
         context = interpret.facility_context(polys, outlines, mine, irules)
-        polys[["change_type", "brief_category", "explanation", "facility_id"]] = interpret.label(polys, evidence, context, irules)
+        labels = interpret.label(polys, evidence, context, irules)
+        polys[["change_type", "brief_category", "explanation", "facility_id"]] = labels
+        plain = interpret.describe(polys, labels, evidence, outlines)
+        polys[list(plain.columns)] = plain
     fac_changes = register.change_by_facility(outlines, polys)
 
     px = grid.pixel_area_m2

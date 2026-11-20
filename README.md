@@ -33,7 +33,7 @@
 > **The provided "dates" are mosaics.** Each combines two Sentinel-2 scenes from different orbits, verified pixel-exact against STAC (100 % identical DN). The scenes actually compared are **52–60 days** apart, and radiometry steps along the seams. The provided Euclidean baseline maps those seams and haze: **111.4 km² (42 % of the AOI)**.
 
 - **Calibrated change: 4.13 km²** in 215 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
-- **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (1.94 km²), the waste dumps and pit edges (1.29 km² of dumping), and pit benches. There is no clearing beyond the mine footprint at the 2,000 m² scale.
+- **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (1.94 km², including a likely dam-wall raise of 0.39 km²), the waste dumps and pit edges (0.90 km² of dumping), and pit benches. Each change comes with a plain sentence: what it is, where, how big, the evidence and what to check. There is no clearing beyond the mine footprint at the 2,000 m² scale.
 - **So what (multi-year, same season):** from August 2023 to August 2024 / 2025 / 2026, waste movement grows 5.7 → 14.5 → 20.2 km² and change outside the named facilities 5.6 → 12.9 → 18.2 km²: a mine in sustained development with a spreading footprint, the signal a regulator or investor would want. See [who acts on it](report.md#what-it-means-and-who-acts-on-it).
 - **Robust:** the result holds across 16 threshold settings (2.10–6.82 km², 61–77 % inside the mine).
 

@@ -6,7 +6,7 @@ The register (`configs/facility_register.yaml`, tables `facilities` and `facilit
 |---|---|---|---|---|
 | `pit_dump_complex` | PIT-NW, PIT-S | Open pits with the waste dumps around them: benches, ramps, pit lakes, tipped faces | Bare, terraced (high texture), shadowed walls that vary with sun angle; dumps red/orange (high B04/B02) | `pit_excavation`; `waste_dumping` where the surface gets brighter and redder |
 | `waste_dump` | WD-E | Rock removed to reach the ore, placed in mounds | Bare, red/orange (iron oxides), smooth tipped faces | `waste_dumping`: fresh faces brighter and redder as new lifts are tipped |
-| `tailings` | TSF | Fine processing residue deposited as slurry, with beaches and free water | Very bright, smooth, flat beaches; wet areas darker; ponded water blue above red | `tailings_deposition`: wet/dry patches move as deposition points change |
+| `tailings` | TSF | Fine processing residue deposited as slurry, with beaches and free water | Very bright, smooth, flat beaches; wet areas darker; ponded water blue above red | `tailings_deposition`: wet/dry patches move as deposition points change; `tailings_dam_raise` where brighter, redder fill overlaps the facility edge (embankment raise) |
 | `water_reservoir` | DAM | Fresh-water dam | Water rule (blue clearly above red, not bright) in both dates | `water_level_change` |
 | `plant` | PLANT | Processing plant, workshops, stockpile pads | Small, compact, bright, high contrast | `infrastructure_or_settlement` |
 | `camp` | CAMP | Accommodation camp | Regular roofs and roads | `infrastructure_or_settlement` |

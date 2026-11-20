@@ -218,17 +218,15 @@ def _follow_ups(run: str) -> list[str]:
     """Concrete review items derived from the polygons: the largest change, then each group that needs a second look."""
     out = []
     largest = db.query(
-        "SELECT id, change_type, area_m2 / 1e4 AS ha, ST_X(ST_Transform(ST_Centroid(geometry), 4326)) AS lon, "
+        "SELECT id, change_type, description, area_m2 / 1e4 AS ha, ST_X(ST_Transform(ST_Centroid(geometry), 4326)) AS lon, "
         "ST_Y(ST_Transform(ST_Centroid(geometry), 4326)) AS lat FROM change_features WHERE run_id = :r "
-        "ORDER BY area_m2 DESC LIMIT 1",
+        "AND change_type IS DISTINCT FROM 'noise_or_artifact' ORDER BY area_m2 DESC LIMIT 1",
         r=run,
     )
     if largest:
         p = largest[0]
-        out.append(
-            f"Check the largest polygon #{p['id']} ({p['ha'] / 100:.3f} km², {_label(p['change_type'])}) at "
-            f"{p['lat']:.4f}, {p['lon']:.4f} on recent high-resolution imagery."
-        )
+        what = p["description"] or f"{_label(p['change_type'])}, {p['ha'] / 100:.3f} km²."
+        out.append(f"Largest change, #{p['id']} at {p['lat']:.4f}, {p['lon']:.4f}: {what}")
     for where, advice in FOLLOW_UP_GROUPS:  # `where` is a constant from this module, never user input
         r = db.query(
             f"SELECT count(*)::int AS n, coalesce(sum(area_m2), 0) / 1e4 AS ha "

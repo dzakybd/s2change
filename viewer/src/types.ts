@@ -47,6 +47,12 @@ export interface ChangeProps {
   explanation: string;
   facility_id: string | null;
   touches_aoi_edge: boolean;
+  /** Plain-language fields; absent in older cached comparisons. */
+  headline?: string;
+  location?: string;
+  evidence?: string;
+  what_to_check?: string;
+  description?: string;
 }
 
 export type ChangeCollection = FeatureCollection<Geometry, ChangeProps>;

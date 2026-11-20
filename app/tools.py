@@ -125,13 +125,13 @@ def top_changes(
     facility_id: str | None = None,
 ) -> str:
     """The n (max 25) largest or most confident change polygons of a run, optionally filtered. Returns ids, area (ha),
-    confidence, direction, change_type, facility_id, explanation, centroid, and the combined bbox [west, south, east, north]
+    confidence, direction, change_type, facility_id, the plain-language description (use it with users), centroid, and the combined bbox [west, south, east, north]
     in lon/lat that map_action can fly to. in_disturbed_area=true means inside the heuristic mine footprint."""
     run, n = resolve_run(run_id), max(1, min(int(n), 25))
     order = {"area_m2": "area_m2", "confidence": "confidence"}[order_by]
     rows = db.query(
         f"SELECT id, round((area_m2 / 1e4)::numeric, 2) AS area_ha, round(confidence::numeric, 3) AS confidence, change_direction, "
-        f"in_disturbed_area, change_type, facility_id, explanation, ST_X(ST_Centroid(g)) AS lon, ST_Y(ST_Centroid(g)) AS lat, "
+        f"in_disturbed_area, change_type, facility_id, description, ST_X(ST_Centroid(g)) AS lon, ST_Y(ST_Centroid(g)) AS lat, "
         f"ST_XMin(g) AS w, ST_YMin(g) AS s, ST_XMax(g) AS e, ST_YMax(g) AS n "
         f"FROM (SELECT *, ST_Transform(geometry, 4326) AS g FROM change_features WHERE run_id = :r AND confidence >= :c "
         f"AND (CAST(:d AS boolean) IS NULL OR in_disturbed_area = :d) AND (CAST(:dir AS text) IS NULL OR change_direction = :dir) "
@@ -152,11 +152,13 @@ def top_changes(
 @safe
 def explain_change(id: int) -> str:
     """Everything known about one change polygon: attributes (area, confidence, direction, RGB deltas, facility, whether it
-    touches the AOI edge), its change_type with the rule's explanation, and a plain-language reading with caveats."""
+    touches the AOI edge), its change_type with the rule's explanation, the plain-language fields (headline, location,
+    evidence, what_to_check, description: use these with users) and a reading with caveats."""
     rows = db.query(
         "SELECT id, run_id, round((area_m2 / 1e4)::numeric, 2) AS area_ha, round(confidence::numeric, 3) AS confidence, "
         "round(neglog10_p::numeric, 1) AS neglog10_p, change_direction, in_disturbed_area, touches_aoi_edge, d_blue, d_green, "
-        "d_red, d_brightness, change_type, brief_category, explanation, facility_id FROM change_features WHERE id = :i",
+        "d_red, d_brightness, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, "
+        "description FROM change_features WHERE id = :i",
         i=int(id),
     )
     if not rows:
@@ -183,7 +185,7 @@ def readonly_sql(query: str) -> str:
     """Run one read-only PostgreSQL/PostGIS SELECT (max 200 rows, 5 s). Tables: change_runs(run_id, method, date_before,
     date_after, params, summary), change_features(id, run_id, area_m2, perimeter_m, confidence, neglog10_p, change_direction,
     in_disturbed_area, touches_aoi_edge, d_blue, d_green, d_red, d_brightness, change_type, brief_category, explanation,
-    facility_id, geometry in EPSG:32735 metres), facilities(facility_id, name, class, cover, area_ha, geometry),
+    facility_id, headline, location, evidence, what_to_check, description (plain language), geometry in EPSG:32735 metres), facilities(facility_id, name, class, cover, area_ha, geometry),
     facility_changes(facility_id, changed_ha, changed_share, change_types jsonb, summary), view change_features_wgs84
     (geometry in lon/lat). Use for questions the other tools cannot answer. Do not select raw geometry."""
     sql = guard_sql(query)
