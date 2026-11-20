@@ -123,11 +123,11 @@ class CompareJobs:
     def _work(self) -> None:
         while True:
             job = self._queue.get()
-            job.status, job.message = "running", "Fetching scenes and running the change detection (about a minute)."
+            job.status, job.message = "running", "Running the change detection on the stored scenes (about a minute)."
             try:
                 folder = self._run(job.before, job.after, self.root)
                 job.result, job.status, job.message = result_payload(job.pair, folder), "done", "Done."
-            except ValueError as e:  # scenes: no coverage, cloudy; pipeline: inconsistent inputs
+            except ValueError as e:  # pipeline: inconsistent inputs
                 job.status, job.message = "error", str(e)
             except Exception:
                 log.exception("comparison %s failed", job.pair)

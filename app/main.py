@@ -6,8 +6,7 @@ import json
 import logging
 import os
 import threading
-from datetime import date, timedelta
-from functools import lru_cache
+from datetime import date
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -26,7 +25,6 @@ from s2cd import compare
 load_dotenv()
 log = logging.getLogger("s2cd.app")
 MAX_CHARS, KEEP_MESSAGES = 2000, 10
-MAX_DATE_RANGE_DAYS = 2000  # the picker asks for 2023-01-01..today; metadata only, cached
 
 
 def client_ip(request: Request) -> str:
@@ -175,29 +173,21 @@ def aoi_stats(body: AoiRequest):
 # ---- Other dates ---------------------------------------------------------------------------------------------------
 
 
-@lru_cache(maxsize=32)
-def _available_dates(start: date, end: date, day: date) -> list[dict]:
-    """STAC lookups are slow and the catalogue changes daily: cache per (range, calendar day)."""
-    from s2cd import scenes
-
-    keys = ("date", "aoi_coverage", "tile_cloud_max")
-    return [{k: d[k] for k in keys} for d in scenes.available_dates(start, end)]
-
-
 @app.get("/api/compare/dates")
-@limiter.limit(lambda: COMPARE_RATE)
-def compare_dates(request: Request, start: date | None = None, end: date | None = None):
-    end = end or date.today()
-    start = start or end - timedelta(days=180)
-    if start > end or (end - start).days > MAX_DATE_RANGE_DAYS:
-        raise HTTPException(422, f"start must not be after end, and the range is limited to {MAX_DATE_RANGE_DAYS} days.")
-    try:
-        return _available_dates(start, end, date.today())
-    except ImportError:
-        raise HTTPException(503, "Date search is not installed on this server.") from None
-    except Exception:
-        log.exception("available_dates failed")
-        raise HTTPException(502, "The imagery catalogue is not reachable right now. Please try again.") from None
+def compare_dates():
+    """The date catalogue (``s2cd.catalog``): one clear scene per month, already downloaded. ``ready`` marks dates whose
+    comparison with the provided before date is precomputed."""
+    from s2cd import catalog
+
+    before = compare.parse_label("provided-before")
+    return [
+        {
+            "date": e["date"],
+            "aoi_cloud": e["aoi_cloud"],
+            "ready": (jobs.root / compare.pair_id(before, date.fromisoformat(e["date"])) / "summary.json").exists(),
+        }
+        for e in catalog.load()
+    ]
 
 
 class CompareRequest(BaseModel):

@@ -188,10 +188,13 @@ export interface AoiStats {
   source?: "api" | "browser";
 }
 
+/** A date from the curated catalogue: one clear scene per month, downloaded in advance. */
 export interface CompareDate {
   date: string;
-  aoi_coverage: number;
-  tile_cloud_max: number;
+  /** Share of AOI pixels flagged as cloud or shadow by the RGB check. */
+  aoi_cloud: number;
+  /** The comparison with the provided before date is precomputed. */
+  ready: boolean;
 }
 export interface CompareResult {
   pair: string;

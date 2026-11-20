@@ -94,8 +94,7 @@ export class DatePicker {
 
   private async loadDates(api: ReadyApi): Promise<void> {
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      this.dates = (await compareDates(api, "2023-01-01", today)).sort((a, b) => a.date.localeCompare(b.date));
+      this.dates = (await compareDates(api)).sort((a, b) => a.date.localeCompare(b.date));
       this.loadError = null;
     } catch (err) {
       this.loadError = friendlyError(err, "the date service");
@@ -120,7 +119,7 @@ export class DatePicker {
       return;
     }
     if (this.phase === "running") {
-      this.pop.innerHTML = `${head}<div class="pop-body"><p><b class="num">${esc(this.label(this.before))} → ${esc(this.label(this.after))}</b></p><div class="progress" role="progressbar" aria-label="Computing change"><i></i></div><p class="muted" role="status">${esc(this.message || "Starting…")}</p><p class="muted">Results are cached per pair; the first run takes a minute or two.</p><button type="button" class="btn sm" data-act="cancel">Stop waiting</button></div>`;
+      this.pop.innerHTML = `${head}<div class="pop-body"><p><b class="num">${esc(this.label(this.before))} → ${esc(this.label(this.after))}</b></p><div class="progress" role="progressbar" aria-label="Computing change"><i></i></div><p class="muted" role="status">${esc(this.message || "Starting…")}</p><p class="muted">Results are cached per pair; a new pair takes about a minute.</p><button type="button" class="btn sm" data-act="cancel">Stop waiting</button></div>`;
       return;
     }
     if (this.phase === "failed") {
@@ -132,13 +131,13 @@ export class DatePicker {
       return;
     }
     if (!this.dates) {
-      this.pop.innerHTML = `${head}<div class="pop-body"><p class="muted"><span class="spinner"></span> Looking up clear dates over the area…</p></div>`;
+      this.pop.innerHTML = `${head}<div class="pop-body"><p class="muted"><span class="spinner"></span> Loading the date catalogue…</p></div>`;
       return;
     }
     const list = (kind: "before" | "after") => {
       const sel = kind === "before" ? this.before : this.after;
       const provided = kind === "before" ? PROVIDED_BEFORE : PROVIDED_AFTER;
-      const rows = [{ value: provided, text: `Nominal ${this.opts.provided.dates[kind]}`, meta: "provided mosaic" }, ...this.dates!.map((d) => ({ value: d.date, text: d.date, meta: `${Math.round(d.aoi_coverage * 100)}% covered · ${d.tile_cloud_max}% cloud` }))];
+      const rows = [{ value: provided, text: `Nominal ${this.opts.provided.dates[kind]}`, meta: "provided mosaic" }, ...this.dates!.map((d) => ({ value: d.date, text: d.date, meta: `${d.aoi_cloud < 0.005 ? "<1" : Math.round(d.aoi_cloud * 100)}% cloud${kind === "after" && d.ready ? " · ready" : ""}` }))];
       const other = this.sortKey(kind === "before" ? this.after : this.before);
       return rows
         .map((r) => {
@@ -147,7 +146,7 @@ export class DatePicker {
         })
         .join("");
     };
-    this.pop.innerHTML = `${head}<div class="pop-body"><p class="muted">Dates with clear imagery over the area (cloud and coverage from STAC metadata). Pick one for each side.</p><div class="dt-cols"><div><h4>Before</h4><div class="dt-list" role="radiogroup" aria-label="Before date">${list("before")}</div></div><div><h4>After</h4><div class="dt-list" role="radiogroup" aria-label="After date">${list("after")}</div></div></div><div class="pop-foot"><button type="button" class="btn ghost sm" data-act="reset">Use provided pair</button><button type="button" class="btn primary" data-act="run" ${this.valid() ? "" : "disabled"}>Compare</button></div></div>`;
+    this.pop.innerHTML = `${head}<div class="pop-body"><p class="muted">One clear Sentinel-2 scene per month since the provided pair, downloaded and cloud-checked in advance. Pairs from the provided before date are ready instantly; other pairs take about a minute.</p><div class="dt-cols"><div><h4>Before</h4><div class="dt-list" role="radiogroup" aria-label="Before date">${list("before")}</div></div><div><h4>After</h4><div class="dt-list" role="radiogroup" aria-label="After date">${list("after")}</div></div></div><div class="pop-foot"><button type="button" class="btn ghost sm" data-act="reset">Use provided pair</button><button type="button" class="btn primary" data-act="run" ${this.valid() ? "" : "disabled"}>Compare</button></div></div>`;
     for (const list of this.pop.querySelectorAll<HTMLElement>(".dt-list")) {
       list.querySelector<HTMLElement>('[aria-checked="true"]')?.scrollIntoView({ block: "nearest" });
     }
@@ -237,7 +236,7 @@ export class DatePicker {
     const abs = (o: { url: string; bounds: CompareResult["overlays"]["before"]["bounds"] }) => ({ url: apiUrl(api, o.url), bounds: o.bounds });
     const before = abs(r.overlays.before);
     const after = abs(r.overlays.after);
-        return {
+    return {
       id: r.pair,
       dates: { before: this.label(this.before).replace(" (nominal)", ""), after: this.label(this.after).replace(" (nominal)", "") },
       nominal: this.before === PROVIDED_BEFORE || this.after === PROVIDED_AFTER,

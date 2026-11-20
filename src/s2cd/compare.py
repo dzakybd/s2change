@@ -9,8 +9,8 @@
     db.sqlite         the pipeline's SpatiaLite output (change_runs, change_features, facilities, facility_changes)
 
 Results are cached per pair: ``summary.json`` is written last, so its presence means the pair is complete.
-A label is ``provided-before`` / ``provided-after`` (the assignment rasters) or ``YYYY-MM-DD``; dates other than those are
-fetched with ``scenes.fetch_scene``, which needs the ``stac`` extra and the network, and refuses cloudy or uncovered dates.
+A label is ``provided-before`` / ``provided-after`` (the assignment rasters) or a ``YYYY-MM-DD`` from the date catalogue
+(``s2cd.catalog``): scenes downloaded and cloud-checked in advance, so a comparison never touches the network.
 Only B02/B03/B04 are used throughout.
 """
 
@@ -24,7 +24,7 @@ from pathlib import Path
 import matplotlib
 import numpy as np
 
-from . import pipeline, scenes, viz
+from . import catalog, pipeline, viz
 from .io import parse_date
 
 ROOT = Path("data/compare")
@@ -52,6 +52,9 @@ def parse_label(label: str) -> date:
 def validate_pair(before: str, after: str, today: date | None = None) -> tuple[date, date]:
     """Parse both labels; the dates must not be in the future and ``after`` must be later than ``before``."""
     d_before, d_after = parse_label(before), parse_label(after)
+    for label in (before, after):
+        if label not in PROVIDED:
+            catalog.folder(label)  # only catalogue dates: their scenes are on disk
     if d_after > (today or date.today()):
         raise ValueError(f"{d_after} is in the future.")
     if d_after <= d_before:
@@ -64,7 +67,7 @@ def pair_id(d_before: date, d_after: date) -> str:
 
 
 def _folder(label: str, day: date) -> Path:
-    return PROVIDED[label] if label in PROVIDED else scenes.fetch_scene(day)
+    return PROVIDED[label] if label in PROVIDED else catalog.folder(label)
 
 
 def _overlays(p: pipeline.Products, out: Path) -> dict:

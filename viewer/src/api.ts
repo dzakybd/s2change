@@ -133,7 +133,7 @@ export const dbQuery = (s: ReadyApi, sql: string, signal?: AbortSignal) => call<
 /* ---------- area of interest and other dates ---------- */
 
 export const aoiStats = (s: ReadyApi, geometry: unknown) => call<AoiStats>(s, "POST", "/api/aoi/stats", { geometry });
-export const compareDates = (s: ReadyApi, start: string, end: string) => call<CompareDate[]>(s, "GET", `/api/compare/dates?start=${start}&end=${end}`);
+export const compareDates = (s: ReadyApi) => call<CompareDate[]>(s, "GET", "/api/compare/dates");
 export const compareStart = (s: ReadyApi, before: string, after: string) => call<CompareJob>(s, "POST", "/api/compare", { before, after });
 export const compareStatus = (s: ReadyApi, jobId: string) => call<CompareJob>(s, "GET", `/api/compare/${encodeURIComponent(jobId)}`);
 
