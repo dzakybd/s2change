@@ -92,7 +92,10 @@ function showDialog(apiPromise: Promise<ApiState>): Promise<boolean> {
       resolve(ok);
     });
     dlg.addEventListener("click", (e) => {
-      const r = dlg.getBoundingClientRect(); // a click outside the box lands on the dialog element itself (the backdrop)
+      // Only a click on the dialog element itself is the backdrop. Pressing Enter fires a synthetic click on the submit
+      // button at (0, 0), which a coordinate test would mistake for a click outside and cancel the unlock.
+      if (e.target !== dlg) return;
+      const r = dlg.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
     });
     dlg.querySelector("[data-act=cancel]")!.addEventListener("click", () => dlg.close());
