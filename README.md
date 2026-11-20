@@ -31,6 +31,7 @@ Full write-up: **[report.md](report.md)**: method, results, interpretation with 
 uv sync && uv run s2cd run      # ~30 s, offline: stacks, change maps, polygons, SQLite DB, figures
 uv run s2cd provenance          # optional, online: STAC source scenes + seam map (B02-B04 only)
 uv run python -m s2cd.sensitivity   # threshold sweep
+uv run --extra stac python -m s2cd.catalog   # optional, online: one clear scene per month for the date picker
 ```
 
 PostGIS locally: `make db-up && make run-postgis` (docker compose, PostGIS 16). Production publishing: `python -m app.publish` (see `app/README.md`).
@@ -72,7 +73,7 @@ src/s2cd/
   rgb.py                 visible-band indices and rules (greenness, redness, water, bare)
   register.py            facility register: outlines from imagery, change per facility
   interpret.py           change type + brief category + explanation per polygon
-  scenes.py, compare.py  other dates for the app's date picker
+  scenes.py, catalog.py, compare.py   other dates: monthly clear-scene catalogue + precomputed comparisons
   sensitivity.py
   pipeline.py, cli.py, viz.py, db.py, site.py
 configs/                 thresholds (default.yaml), facility register
