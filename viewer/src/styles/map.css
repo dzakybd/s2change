@@ -154,7 +154,7 @@
 .fac-label[hidden] { display: none; }
 
 /* MapLibre chrome, restyled */
-.maplibregl-ctrl-group { background: var(--glass) !important; -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-radius: var(--r-sm) !important; box-shadow: var(--shadow-2) !important; overflow: hidden; }
+.maplibregl-ctrl-group { background: var(--glass) !important; -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-radius: var(--r-md) !important; box-shadow: var(--shadow-2) !important; overflow: hidden; }
 .maplibregl-ctrl-group button { width: 36px; height: 36px; background-color: transparent !important; border: 0 !important; }
 .maplibregl-ctrl-group button + button { box-shadow: 0 -1px 0 rgb(15 23 42 / 0.08); }
 .maplibregl-ctrl-scale { background: var(--glass); color: var(--text-2); border: 0; box-shadow: 0 0 0 1px rgb(15 23 42 / 0.14) inset; font-size: 11px; }

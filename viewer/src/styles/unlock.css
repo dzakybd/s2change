@@ -1,7 +1,11 @@
 /* Access-code dialog and the top-bar indicator. Same tokens as base.css; motion is one short fade and a 4 px rise. */
 .unlock { width: min(380px, calc(100vw - 32px)); padding: var(--s-5); border: 0; border-radius: var(--r-lg); background: var(--surface); color: var(--text); box-shadow: var(--shadow-2); }
 .unlock[open] { animation: unlock-in 180ms var(--ease-out) both; }
-.unlock::backdrop { background: rgb(15 23 42 / 0.28); animation: unlock-fade 180ms ease-out both; }
+.unlock::backdrop { background: rgb(15 23 42 / 0.32); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); animation: unlock-fade 180ms ease-out both; }
+/* Exit is faster than enter, and only for pointer dismissals (Escape closes at once). */
+.unlock.closing { animation: unlock-out 120ms var(--ease-out) both; }
+.unlock.closing::backdrop { animation: unlock-fade 120ms ease-out reverse both; }
+@keyframes unlock-out { to { opacity: 0; transform: scale(0.97); } }
 @keyframes unlock-in { from { opacity: 0; transform: translateY(4px) scale(0.97); } }
 @keyframes unlock-fade { from { opacity: 0; } }
 .unlock-form { display: grid; gap: var(--s-3); }

@@ -150,7 +150,7 @@ async function footprintArt(host: HTMLElement): Promise<void> {
 export async function createOverview(_ctx: AppContext): Promise<View> {
   const el = document.createElement("div");
   el.className = "view";
-  el.innerHTML = `<div class="page ov"><div class="ov-loading muted"><span class="spinner"></span> Loading results…</div></div>`;
+  el.innerHTML = `<div class="page ov"><div class="skel-hero" role="status"><span class="sr-only">Loading results…</span><div class="skel-col"><i class="skel s-eyebrow"></i><i class="skel s-h"></i><i class="skel s-h w2"></i><i class="skel s-p"></i><i class="skel s-p w2"></i></div><i class="skel s-art"></i></div></div>`;
   const page = q(el, ".page");
   let rendered = false;
 

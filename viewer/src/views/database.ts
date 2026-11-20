@@ -101,7 +101,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       const numeric = r.columns.map((_c, i) => r.rows.some((row) => row[i] != null) && r.rows.every((row) => row[i] == null || isNumeric(row[i])));
       const geo = r.geojson && r.geojson.features.length > 0 ? r.geojson : null;
       const head = r.columns.map((c, i) => `<th class="${numeric[i] ? "num" : ""}">${esc(c)}</th>`).join("");
-      const rows = r.rows.map((row) => `<tr>${row.map((v, i) => `<td class="${numeric[i] ? "num" : ""}${v == null ? " nul" : ""}">${v == null ? "null" : esc(cellText(v))}</td>`).join("")}</tr>`).join("");
+      const rows = r.rows.map((row) => `<tr>${row.map((v, i) => `<td class="${numeric[i] ? "num" : ""}${v == null ? " nul" : ""}"${v != null && cellText(v).length > 40 ? ` title="${esc(cellText(v))}"` : ""}>${v == null ? "null" : esc(cellText(v))}</td>`).join("")}</tr>`).join("");
       result.innerHTML = `<div class="res-bar"><span class="num"><b>${fmtInt(r.rows.length)}</b> row${r.rows.length === 1 ? "" : "s"} · ${r.elapsed_ms} ms${r.truncated ? ' · <span class="warn">truncated at 500 rows</span>' : ""}</span><span class="res-actions">${geo ? '<button type="button" class="btn sm primary" data-act="map">Show on map</button>' : ""}<button type="button" class="btn sm" data-act="csv">CSV</button>${geo ? '<button type="button" class="btn sm" data-act="geojson">GeoJSON</button>' : ""}</span></div>
       ${r.rows.length ? `<div class="table-wrap res-table"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="muted empty">The query returned no rows.</p>'}`;
     };

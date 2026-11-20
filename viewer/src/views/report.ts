@@ -9,7 +9,7 @@ import type { Route } from "../router";
 export async function createReport(_ctx: AppContext): Promise<View> {
   const el = document.createElement("div");
   el.className = "view";
-  el.innerHTML = `<div class="page rp"><div class="muted rp-load"><span class="spinner"></span> Loading the report…</div></div>`;
+  el.innerHTML = `<div class="page rp"><div class="skel-doc" role="status"><span class="sr-only">Loading the report…</span><i class="skel s-title"></i><i class="skel s-p"></i><i class="skel s-p"></i><i class="skel s-p w2"></i></div></div>`;
   const page = q(el, ".page");
   let loaded: Promise<void> | null = null;
   let spy: IntersectionObserver | null = null;

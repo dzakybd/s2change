@@ -77,7 +77,7 @@ function showDialog(apiPromise: Promise<ApiState>): Promise<boolean> {
       <h2 id="unlock-title">Enter the access code</h2>
       <p class="muted">This feature needs the access code (sent with the submission).</p>
       <label class="sr-only" for="unlock-code">Access code</label>
-      <input id="unlock-code" class="unlock-input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="200" placeholder="Access code" required />
+      <input id="unlock-code" class="unlock-input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="200" enterkeyhint="go" placeholder="Access code" required />
       <p class="unlock-error" role="alert" hidden></p>
       <div class="unlock-actions"><button type="button" class="btn ghost" data-act="cancel">Not now</button><button type="submit" class="btn primary">Unlock</button></div>
     </form>`;
@@ -91,14 +91,21 @@ function showDialog(apiPromise: Promise<ApiState>): Promise<boolean> {
       dlg.remove();
       resolve(ok);
     });
+    // Pointer dismissals fade out quickly; Escape (keyboard) and the success path close at once.
+    const dismiss = () => {
+      if (dlg.classList.contains("closing")) return;
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return dlg.close();
+      dlg.classList.add("closing");
+      setTimeout(() => dlg.close(), 120);
+    };
     dlg.addEventListener("click", (e) => {
       // Only a click on the dialog element itself is the backdrop. Pressing Enter fires a synthetic click on the submit
       // button at (0, 0), which a coordinate test would mistake for a click outside and cancel the unlock.
       if (e.target !== dlg) return;
       const r = dlg.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dismiss();
     });
-    dlg.querySelector("[data-act=cancel]")!.addEventListener("click", () => dlg.close());
+    dlg.querySelector("[data-act=cancel]")!.addEventListener("click", dismiss);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = input.value;
