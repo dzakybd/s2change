@@ -79,7 +79,7 @@ Why no machine learning: there are no labels, only three bands and two dates. Wi
 | Eastern waste dumps | 435 ha | 36 ha (8 %) | waste dumping |
 | North-west pit complex | 1,117 ha | 34 ha (3 %) | waste dumping |
 | Process plant | 195 ha | 5 ha | infrastructure |
-| Settlement, camp, fresh-water dam | 1,859 ha | 1 ha | — |
+| Settlement, camp, fresh-water dam | 1,815 ha | 0.4 ha | — |
 
 ![facility register](docs/figures/09_facility_register.png)
 

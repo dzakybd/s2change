@@ -57,4 +57,4 @@ facilities:
     name: South-west settlement
     class: settlement
     cover: bare
-    box: [368500, 8637800, 375000, 8641200]
+    box: [368500, 8637800, 374800, 8641200]
