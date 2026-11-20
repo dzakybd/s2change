@@ -80,10 +80,19 @@ def build(end: date | None = None) -> dict:
     return doc
 
 
+def priority(entries: list[dict]) -> list[dict]:
+    """Order for precomputing: the same month as the provided before date each year (a season-matched yearly view) and the
+    latest date first, then the rest newest first. Those first pairs are what the app links to."""
+    month = "08"  # nominal before date 2023-08-12
+    first = [e for e in entries if e["date"][5:7] == month] + [e for e in entries[-1:] if e["date"][5:7] != month]
+    rest = sorted((e for e in entries if e not in first), key=lambda e: e["date"], reverse=True)
+    return first + rest
+
+
 def precompute(entries: list[dict]) -> None:
     from . import compare  # compare imports this module
 
-    for e in entries:
+    for e in priority(entries):
         log.info("compare provided-before -> %s", e["date"])
         compare.run("provided-before", e["date"])
 
