@@ -21,9 +21,9 @@ Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two d
 > [!TIP]
 > **Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report and the downloads. No setup is needed.
 
-<p align="center"><img src="docs/figures/demo.gif" alt="s2change: overview, before/after swipe, other-date comparison, oblique view" width="860"></p>
+<p align="center"><img src="docs/figures/demo.gif" alt="s2change: overview, before/after swipe, other-date comparison, analyst driving the map" width="860"></p>
 
-<p align="center"><i>Overview, before/after swipe, other-date comparison and oblique view.</i></p>
+<p align="center"><i>Overview, before/after swipe, other-date comparison, and the analyst opening a facility on the map.</i></p>
 
 ## Findings (nominal 2023-08-12 → 2023-09-02)
 
