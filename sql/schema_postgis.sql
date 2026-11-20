@@ -62,7 +62,9 @@ CREATE INDEX IF NOT EXISTS change_features_dates_idx ON change_features (date_be
 CREATE INDEX IF NOT EXISTS change_features_run_idx ON change_features (run_id);
 
 -- Web clients (MapLibre, Leaflet, pg_featureserv) want lon/lat.
-CREATE OR REPLACE VIEW change_features_wgs84 AS
+-- Dropped first: CREATE OR REPLACE cannot reorder the columns of a view made by an earlier version (grants are reapplied by schema_app.sql).
+DROP VIEW IF EXISTS change_features_wgs84;
+CREATE VIEW change_features_wgs84 AS
 SELECT id, run_id, date_before, date_after, method, area_m2, confidence, change_direction,
        in_disturbed_area, change_type, facility_id, d_brightness, ST_Transform(geometry, 4326) AS geometry
 FROM change_features;

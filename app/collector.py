@@ -6,7 +6,6 @@ the endpoint returns it next to the answer text. Inputs are validated here becau
 
 from __future__ import annotations
 
-import re
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 
@@ -19,7 +18,7 @@ class Collector:
     charts: list[dict] = field(default_factory=list)
     tables: list[dict] = field(default_factory=list)
 
-    def add_action(self, type: str, bbox=None, run_id=None, ids=None, month=None) -> dict:
+    def add_action(self, type: str, bbox=None, run_id=None, ids=None) -> dict:
         if len(self.actions) >= MAX_ITEMS:
             raise ValueError("Too many map actions in one answer.")
         if type == "fly_to":
@@ -36,12 +35,8 @@ class Collector:
             if not run_id:
                 raise ValueError("show_run needs run_id.")
             action = {"type": type, "run_id": str(run_id)}
-        elif type == "set_month":
-            if not month or not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", str(month)):
-                raise ValueError("set_month needs month as YYYY-MM.")
-            action = {"type": type, "month": str(month)}
         else:
-            raise ValueError("type must be one of fly_to, highlight, show_run, set_month.")
+            raise ValueError("type must be one of fly_to, highlight, show_run.")
         self.actions.append(action)
         return action
 

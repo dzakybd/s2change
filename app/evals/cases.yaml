@@ -10,7 +10,6 @@
 #   charts / tables: minimum number returned
 #   refusal: polite refusal (no tools, refusal wording)        blocked: refusal wording and unchanged row counts
 #   declines: refusal/"cannot" wording only (tools allowed)   tools_all: all of these tools were called
-#   requires_timeline: skipped if timeline_months is empty
 defs:
   RUN: "(SELECT run_id FROM change_runs WHERE method = 'robust_cva' ORDER BY date_before, run_id LIMIT 1)"
   BASE: "(SELECT run_id FROM change_runs WHERE method = 'euclidean_baseline' ORDER BY date_before, run_id LIMIT 1)"
@@ -28,14 +27,23 @@ cases:
     numbers: [n]
     tools_any: [area_summary, list_runs, readonly_sql]
 
-  - id: top_cause
-    question: Which likely cause covers the most area in the assignment run, and how many hectares is that?
+  - id: top_change_type
+    question: Which change type covers the most area in the assignment run, and how many hectares is that?
     truth:
-      cause: "SELECT likely_cause FROM change_features WHERE run_id = {RUN} GROUP BY 1 ORDER BY sum(area_m2) DESC LIMIT 1"
-      ha: "SELECT round((sum(area_m2) / 1e4)::numeric, 2) FROM change_features WHERE run_id = {RUN} GROUP BY likely_cause ORDER BY sum(area_m2) DESC LIMIT 1"
-    contains: [cause]
+      type: "SELECT change_type FROM change_features WHERE run_id = {RUN} GROUP BY 1 ORDER BY sum(area_m2) DESC LIMIT 1"
+      ha: "SELECT round((sum(area_m2) / 1e4)::numeric, 2) FROM change_features WHERE run_id = {RUN} GROUP BY change_type ORDER BY sum(area_m2) DESC LIMIT 1"
+    contains: [type]
     numbers: [ha]
-    tools_any: [area_summary, readonly_sql]
+    tools_any: [change_type_summary, area_summary, readonly_sql]
+
+  - id: top_facility
+    question: Which facility has the most changed area, and how many hectares changed there?
+    truth:
+      name: "SELECT f.name FROM facilities f JOIN facility_changes c USING (facility_id) ORDER BY c.changed_ha DESC LIMIT 1"
+      ha: "SELECT round(changed_ha::numeric, 1) FROM facility_changes ORDER BY changed_ha DESC LIMIT 1"
+    contains: [name]
+    numbers: [ha]
+    tools_any: [facility_summary, readonly_sql]
 
   - id: footprint_share
     question: What percentage of the changed area in the assignment run lies inside the mine footprint?
@@ -85,16 +93,6 @@ cases:
     numbers: [ha]
     tools_any: [explain_change]
     contains_any: [magnitude, not a probability, not calibrated, not an accuracy, not a measure of accuracy]
-
-  - id: timeline_2024
-    question: How did the mine footprint evolve in 2024?
-    requires_timeline: true
-    truth:
-      # first/last *clear* months of 2024 (2024-01 is cloudy, so it has no value)
-      first: "SELECT footprint_ha FROM timeline_months WHERE month LIKE '2024-%' AND status = 'ok' ORDER BY month LIMIT 1"
-      last: "SELECT footprint_ha FROM timeline_months WHERE month LIKE '2024-%' AND status = 'ok' ORDER BY month DESC LIMIT 1"
-    numbers: [first, last]
-    tools_any: [timeline_stats, readonly_sql]
 
   - id: caveat_gap
     question: How many days apart are the two image dates really?

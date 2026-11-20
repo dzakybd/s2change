@@ -1,59 +1,43 @@
--- App layer on top of schema_postgis.sql: enrichment context, monthly timeline, read-only role for the analyst API.
+-- App layer on top of schema_postgis.sql: the facility register and a read-only role for the API and the analyst.
 -- Idempotent. Run after schema_postgis.sql (`python -m app.publish` does both). The role password is set by publish.py.
 
-ALTER TABLE change_features ADD COLUMN IF NOT EXISTS likely_cause text;
+-- Retired by earlier designs: per-polygon enrichment, the monthly timeline and the rule-based likely_cause.
+DROP TABLE IF EXISTS change_context;
+DROP TABLE IF EXISTS timeline_months;
+ALTER TABLE change_features DROP COLUMN IF EXISTS likely_cause;
 
-CREATE TABLE IF NOT EXISTS change_context (
-    id                   bigint PRIMARY KEY REFERENCES change_features (id) ON DELETE CASCADE,
-    ndvi_before          real, ndvi_after  real, nbr_before   real, nbr_after   real,
-    mndwi_before         real, mndwi_after real,
-    d_ndvi               real,   -- after - before
-    d_nbr                real,   -- before - after (burn: positive)
-    d_mndwi              real,   -- after - before
-    aot_before           real, aot_after real, d_aot real,
-    scl_artifact_before  real, scl_water_before real, scl_cloud_before real,   -- share of polygon pixels per SCL class
-    scl_artifact_after   real, scl_water_after  real, scl_cloud_after  real,
-    source_before        text, source_after text,          -- STAC scene(s) the polygon's pixels came from
-    seam_mix             real,                             -- share of the polygon on a mosaic seam
-    likely_cause         text
-);
-ALTER TABLE change_context ADD COLUMN IF NOT EXISTS source_before text;
-ALTER TABLE change_context ADD COLUMN IF NOT EXISTS source_after text;
-ALTER TABLE change_context ADD COLUMN IF NOT EXISTS seam_mix real;
+-- The facility tables changed shape (evidence/label/confidence columns are gone); an old copy is dropped and republished.
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'facilities' AND column_name = 'evidence') THEN
+        DROP TABLE IF EXISTS facility_changes;
+        DROP TABLE facilities;
+    END IF;
+END
+$$;
 
-CREATE TABLE IF NOT EXISTS timeline_months (
-    month                   text PRIMARY KEY,          -- 'YYYY-MM'
-    status                  text,
-    clear_fraction          real,
-    ndvi_mean               real, nbr_mean real, mndwi_mean real, bsi_mean real,
-    bare_ha                 real, water_ha real, footprint_ha real,
-    changed_ha              real, changed_ha_in_footprint real
-);
-
--- Rule-based mine facility inventory (python -m s2cd.facilities): one row per facility, RGB-only evidence, and the change
--- between the two dates inside it.
+-- Facility register (configs/facility_register.yaml): analyst-defined regions, outlined from the imagery.
 CREATE TABLE IF NOT EXISTS facilities (
-    facility_id  text PRIMARY KEY,                    -- 'PIT-1', 'WD-3', 'TSF-1', ...
-    class        text NOT NULL,                       -- open_pit, waste_dump, tailings_beach, tailings_pond, pit_lake, ...
-    confidence   real,                                -- 0-1, how strongly the class rules are met
+    facility_id  text PRIMARY KEY,                    -- 'PIT-NW', 'WD-E', 'TSF', ...
+    name         text NOT NULL,
+    class        text NOT NULL,                       -- pit_dump_complex, waste_dump, tailings, water_reservoir, plant, camp, settlement
+    cover        text NOT NULL,                       -- surface that defines the outline: bare, water or any
     area_ha      real,
-    label        text,                                -- 'waste_dump 0.92'
-    evidence     jsonb,                               -- feature values, rule memberships, rules that fired, rival classes
     geometry     geometry(MultiPolygon, 32735) NOT NULL
 );
 CREATE INDEX IF NOT EXISTS facilities_geom_idx ON facilities USING gist (geometry);
 
+-- Change inside each facility between the two dates of the default comparison (robust_cva polygons).
 CREATE TABLE IF NOT EXISTS facility_changes (
-    facility_id        text PRIMARY KEY REFERENCES facilities (facility_id) ON DELETE CASCADE,
-    area_before_ha     real,                          -- bare (water for water bodies) extent in a 30 m envelope, before date
-    area_after_ha      real,
-    delta_ha           real,                          -- after - before (includes residual haze)
-    changed_ha         real,                          -- area inside the robust_cva change polygons
-    dominant_direction text,                          -- brightening | darkening | spectral shift | none
-    summary            text
+    facility_id    text PRIMARY KEY REFERENCES facilities (facility_id) ON DELETE CASCADE,
+    changed_ha     real,
+    changed_share  real,                              -- changed_ha / facility area
+    change_types   jsonb,                             -- {change_type: ha}, largest first
+    summary        text
 );
 
-CREATE INDEX IF NOT EXISTS change_features_cause_idx ON change_features (run_id, likely_cause);
+CREATE INDEX IF NOT EXISTS change_features_type_idx ON change_features (run_id, change_type);
 
 DO $$
 BEGIN
@@ -67,8 +51,7 @@ REVOKE ALL ON ALL TABLES IN SCHEMA public FROM s2cd_reader;
 GRANT USAGE ON SCHEMA public TO s2cd_reader;
 -- Needed where CONNECT was revoked from PUBLIC (production does this).
 DO $$ BEGIN EXECUTE format('GRANT CONNECT ON DATABASE %I TO s2cd_reader', current_database()); END $$;
-GRANT SELECT ON change_runs, change_features, change_context, timeline_months, change_features_wgs84 TO s2cd_reader;
-GRANT SELECT ON facilities, facility_changes TO s2cd_reader;
+GRANT SELECT ON change_runs, change_features, change_features_wgs84, facilities, facility_changes TO s2cd_reader;
 ALTER ROLE s2cd_reader SET statement_timeout = '5s';
 ALTER ROLE s2cd_reader SET default_transaction_read_only = on;
 
@@ -82,8 +65,7 @@ BEGIN
         ALTER ROLE s2cd_reader SET search_path = public, extensions;
     END IF;
     IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
-        REVOKE ALL ON change_runs, change_features, change_context, timeline_months, change_features_wgs84 FROM anon, authenticated;
-        REVOKE ALL ON facilities, facility_changes FROM anon, authenticated;
+        REVOKE ALL ON change_runs, change_features, change_features_wgs84, facilities, facility_changes FROM anon, authenticated;
         REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
         ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
         ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated;

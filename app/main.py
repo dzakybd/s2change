@@ -1,4 +1,4 @@
-"""FastAPI app: map/timeline data endpoints and the analyst chat. Run: uvicorn app.main:app"""
+"""FastAPI app: results, database explorer, AOI stats, date comparison and the analyst chat. Run: uvicorn app.main:app"""
 
 from __future__ import annotations
 
@@ -6,23 +6,27 @@ import json
 import logging
 import os
 import threading
-from datetime import date
+from datetime import date, timedelta
+from functools import lru_cache
 from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
-from sqlalchemy.exc import OperationalError, ProgrammingError
+from sqlalchemy.exc import DBAPIError, OperationalError
 
-from app import agent, db
+from app import agent, compare_jobs, db, explorer, results
+from app.guard import SqlRejected
+from s2cd import compare
 
 load_dotenv()
 log = logging.getLogger("s2cd.app")
 MAX_CHARS, KEEP_MESSAGES = 2000, 10
+MAX_DATE_RANGE_DAYS = 400
 
 
 def client_ip(request: Request) -> str:
@@ -51,8 +55,11 @@ class DailyCap:
 limiter = Limiter(key_func=client_ip)
 daily = DailyCap(int(os.environ.get("AGENT_DAILY_CAP", "300")))
 RATE = os.environ.get("AGENT_RATE", "6/minute")
+DB_RATE = os.environ.get("DB_RATE", "30/minute")  # explorer queries: cheap, read-only, 5 s timeout
+COMPARE_RATE = os.environ.get("COMPARE_RATE", "10/minute")  # date lookups and job submissions
+jobs = compare_jobs.CompareJobs(int(os.environ.get("COMPARE_DAILY_CAP", "12")))
 
-app = FastAPI(title="s2cd analyst API")
+app = FastAPI(title="s2change API")
 app.state.limiter = limiter
 app.add_middleware(
     CORSMiddleware,
@@ -87,34 +94,146 @@ def runs():
     )
 
 
+def bad_request(e: ValueError) -> HTTPException:
+    return HTTPException(422, str(e))
+
+
 @app.get("/api/changes")
 def changes(run_id: str, min_confidence: float = Query(0, ge=0, le=1), limit: int = Query(5000, ge=1, le=20000)):
     if not db.query("SELECT 1 FROM change_runs WHERE run_id = :r", r=run_id):
         raise HTTPException(404, f"Unknown run_id {run_id!r}")
     rows = db.query(
-        "SELECT id, area_m2, confidence, change_direction, in_disturbed_area, likely_cause, "
-        "ST_AsGeoJSON(ST_Transform(geometry, 4326), 6) AS geom FROM change_features "
+        "SELECT id, area_m2, confidence, neglog10_p, change_direction, change_type, brief_category, explanation, facility_id, "
+        "touches_aoi_edge, ST_AsGeoJSON(ST_Transform(geometry, 4326), 6) AS geom FROM change_features "
         "WHERE run_id = :r AND confidence >= :c ORDER BY area_m2 DESC, id LIMIT :n",
         r=run_id, c=min_confidence, n=limit,
     )  # fmt: skip
-    features = []
-    for r in rows:
-        geom = json.loads(r.pop("geom"))
-        props = {k: v for k, v in r.items() if v is not None or k != "likely_cause"}
-        features.append({"type": "Feature", "id": r["id"], "geometry": geom, "properties": props})
+    features = [{"type": "Feature", "id": r["id"], "geometry": json.loads(r.pop("geom")), "properties": r} for r in rows]
     return {"type": "FeatureCollection", "features": features}
 
 
-@app.get("/api/timeline")
-def timeline():
-    cols = (
-        "month, status, clear_fraction, ndvi_mean, nbr_mean, mndwi_mean, bsi_mean, "
-        "bare_ha, water_ha, footprint_ha, changed_ha, changed_ha_in_footprint"
-    )
+@app.get("/api/facilities")
+def facilities():
+    return results.facilities_geojson()
+
+
+@app.get("/api/brief")
+def brief(run_id: str | None = None):
     try:
-        return db.query(f"SELECT {cols} FROM timeline_months ORDER BY month")
-    except ProgrammingError:  # table absent (older publish)
-        return []
+        return {"markdown": results.brief(run_id)}
+    except ValueError as e:
+        raise HTTPException(404, str(e)) from None
+
+
+# ---- Database explorer ---------------------------------------------------------------------------------------------
+
+
+@app.get("/api/db/schema")
+def db_schema():
+    return explorer.schema()
+
+
+@app.get("/api/db/examples")
+def db_examples(run_id: str | None = None):
+    try:
+        return explorer.examples(results.resolve_run(run_id))
+    except ValueError as e:
+        raise HTTPException(404, str(e)) from None
+
+
+class SqlRequest(BaseModel):
+    sql: str = Field(min_length=1, max_length=5000)
+
+
+@app.post("/api/db/query")
+@limiter.limit(lambda: DB_RATE)
+def db_query(request: Request, body: SqlRequest):
+    try:
+        return explorer.run_query(body.sql)
+    except SqlRejected as e:
+        raise bad_request(e) from None
+    except DBAPIError as e:  # the user's SQL failed in the database: a bad column, a timeout, ...
+        raise HTTPException(400, f"The database rejected the query: {str(e.orig).splitlines()[0][:200]}") from None
+
+
+# ---- Area of interest ----------------------------------------------------------------------------------------------
+
+
+class AoiRequest(BaseModel):
+    geometry: dict
+    run_id: str | None = None
+
+
+@app.post("/api/aoi/stats")
+def aoi_stats(body: AoiRequest):
+    try:
+        return results.aoi_stats(body.geometry, body.run_id)
+    except ValueError as e:
+        raise bad_request(e) from None
+
+
+# ---- Other dates ---------------------------------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=32)
+def _available_dates(start: date, end: date, day: date) -> list[dict]:
+    """STAC lookups are slow and the catalogue changes daily: cache per (range, calendar day)."""
+    from s2cd import scenes
+
+    keys = ("date", "aoi_coverage", "tile_cloud_max")
+    return [{k: d[k] for k in keys} for d in scenes.available_dates(start, end)]
+
+
+@app.get("/api/compare/dates")
+@limiter.limit(lambda: COMPARE_RATE)
+def compare_dates(request: Request, start: date | None = None, end: date | None = None):
+    end = end or date.today()
+    start = start or end - timedelta(days=180)
+    if start > end or (end - start).days > MAX_DATE_RANGE_DAYS:
+        raise HTTPException(422, f"start must not be after end, and the range is limited to {MAX_DATE_RANGE_DAYS} days.")
+    try:
+        return _available_dates(start, end, date.today())
+    except ImportError:
+        raise HTTPException(503, "Date search is not installed on this server.") from None
+    except Exception:
+        log.exception("available_dates failed")
+        raise HTTPException(502, "The imagery catalogue is not reachable right now. Please try again.") from None
+
+
+class CompareRequest(BaseModel):
+    before: str = Field(max_length=20)
+    after: str = Field(max_length=20)
+
+
+@app.post("/api/compare")
+@limiter.limit(lambda: COMPARE_RATE)
+def compare_start(request: Request, body: CompareRequest):
+    try:
+        job = jobs.submit(body.before, body.after)
+    except ValueError as e:
+        raise bad_request(e) from None
+    except compare_jobs.Refused as e:
+        raise HTTPException(429, str(e)) from None
+    return {"job_id": job.job_id, "status": job.status}
+
+
+@app.get("/api/compare/files/{pair}/{file}")
+def compare_file(pair: str, file: str):
+    path = jobs.root / pair / file
+    if not compare.PAIR.fullmatch(pair) or file not in compare_jobs.FILES or not path.is_file():
+        raise HTTPException(404, "No such file.")
+    return FileResponse(path, media_type=compare_jobs.FILES[file], headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/api/compare/{job_id}")
+def compare_status(job_id: str):
+    job = jobs.get(job_id)
+    if job is None:
+        raise HTTPException(404, "Unknown job. It may have expired; submit the comparison again.")
+    return job.public()
+
+
+# ---- Analyst -------------------------------------------------------------------------------------------------------
 
 
 class Message(BaseModel):

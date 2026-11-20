@@ -1,5 +1,5 @@
 {
-  "answer": "**1,345 ha** of the Lumwana scene changed between 2023-08-12 and 2023-09-02 (538 polygons), about **7%** of the area of interest.\n\n- **70%** (945 ha) falls inside the disturbed mine footprint, mostly pit-wall and waste-dump activity (brightening).\n- Darkening (231 polygons) is concentrated outside the footprint and is more likely vegetation, moisture or shadow than excavation.\n- A global IR-MAD or Euclidean baseline reports ~10,600 ha because whole detector stripes shift in brightness. The stripe-aware robust CVA removes that artefact.\n\nSee the chart for the split by direction.",
+  "answer": "**413 ha** changed between nominal 2023-08-12 and 2023-09-02 (215 polygons), about **1.56%** of the area of interest.\n\n- **81%** of it lies inside the mine footprint; the tailings facility alone accounts for 194 ha.\n- The largest classes are tailings deposition (185 ha), waste dumping (129 ha) and seasonal vegetation or burn (36 ha).\n- The provided Euclidean baseline flags 11,143 ha because mosaic seams and haze read as change; the two maps overlap only 3% (IoU).\n\nThe chart splits the changed area by type.",
   "actions": [
     {
       "type": "show_run",
@@ -9,19 +9,33 @@
   "charts": [
     {
       "type": "bar",
-      "title": "Polygons by change direction",
+      "title": "Changed area by type (ha)",
       "x": [
-        "brightening",
-        "darkening",
-        "spectral shift"
+        "tailings deposition",
+        "waste dumping",
+        "seasonal vegetation or burn",
+        "pit excavation",
+        "water level change",
+        "noise or artifact",
+        "unexplained",
+        "infrastructure or settlement",
+        "land clearing",
+        "mine expansion clearing"
       ],
       "series": [
         {
-          "name": "polygons",
+          "name": "ha",
           "y": [
-            269,
-            231,
-            38
+            185.3,
+            128.9,
+            36.4,
+            25.8,
+            18.3,
+            8.9,
+            4.5,
+            4.0,
+            1.0,
+            0.2
           ]
         }
       ]
@@ -38,9 +52,9 @@
         {
           "name": "ha",
           "y": [
-            1345,
-            10623,
-            11078
+            413.3,
+            10824.45,
+            11143.36
           ]
         }
       ]
@@ -48,31 +62,43 @@
   ],
   "tables": [
     {
-      "title": "Changed area, inside vs outside the mine footprint",
+      "title": "Facilities by changed area",
       "columns": [
-        "Region",
-        "Polygons",
-        "Area (ha)",
-        "Share"
+        "Facility",
+        "Class",
+        "Changed (ha)",
+        "Share of facility"
       ],
       "rows": [
         [
-          "Inside footprint",
-          391,
-          945.2,
-          "70%"
+          "Tailings storage facility",
+          "tailings",
+          193.6,
+          0.086
         ],
         [
-          "Outside footprint",
-          147,
-          400.0,
-          "30%"
+          "South pit complex",
+          "pit_dump_complex",
+          37.7,
+          0.019
         ],
         [
-          "Total",
-          538,
-          1345.2,
-          "100%"
+          "Eastern waste dumps",
+          "waste_dump",
+          36.2,
+          0.083
+        ],
+        [
+          "North-west pit complex",
+          "pit_dump_complex",
+          33.6,
+          0.03
+        ],
+        [
+          "Process plant and central yard",
+          "plant",
+          4.9,
+          0.025
         ]
       ]
     }
@@ -85,10 +111,10 @@
       }
     },
     {
-      "name": "area_by_region",
+      "name": "query_facilities",
       "args": {
-        "run_id": "assignment",
-        "group_by": "in_disturbed_area"
+        "order_by": "changed_ha desc",
+        "limit": 5
       }
     }
   ]

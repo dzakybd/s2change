@@ -1,157 +1,137 @@
-# Report: Sentinel-2 change analysis, open-pit copper mine, NW Zambia
+# Report: what changed at an open-pit copper mine in NW Zambia?
 
-**AOI:** 25.79–25.94 °E, 12.18–12.32 °S, 16.7 × 16.0 km. From its location and layout this looks like the Lumwana copper mine in North-Western Province, with two pit complexes, a tailings storage facility and a fresh-water dam. That identification is my inference; the assignment only says "open-pit mining site in Zambia".
-**Nominal dates:** 2023-08-12 (T1) → 2023-09-02 (T2). As section 0 shows, each "date" is really a two-scene mosaic, and the effective intervals are 52–60 days in the dry season.
-**Data:** Sentinel-2 L2A, B02/B03/B04, 10 m, EPSG:32735.
+**AOI:** 25.79–25.94 °E, 12.18–12.32 °S (16.7 × 16.0 km, EPSG:32735, 10 m). Its layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is an inference.
+**Data:** Sentinel-2 L2A **B02, B03, B04 only**, the bands the brief provides. Nothing else is used: no NIR/SWIR, no scene classification layer, no elevation model.
+**Dates:** nominal 2023-08-12 → 2023-09-02. Each is a two-scene mosaic (section 0), so the true acquisitions are 2023-07-01/07-04 → 2023-08-25/09-02.
 
 ## TL;DR
 
-- **Data:** each provided "date" is a mosaic of two Sentinel-2 scenes (verified pixel-exact against STAC), so radiometry steps along slanted seams and the effective gap is 52–60 days, not 21.
-- **Method:** detect the seam zones from the data, normalize each zone on pseudo-invariant pixels, then score change with a robust change vector analysis (Mahalanobis d² under a χ² noise model). Thresholds are false-alarm rates (1e-3 / 1e-5), not tuned constants.
-- **Result:** 1,345 ha in 538 polygons, against 11,078 ha for the provided Euclidean baseline, which mostly maps the seams and haze. 70 % of the change lies in the mine footprint: the tailings facility, waste dumps and pit benches.
-- **Interpretation:** mostly operational mining (tailings deposition, dumping, excavation). Change outside the mine is seasonal wetland/water dynamics, plus a little burning. No footprint expansion is visible at the 0.2 ha scale in this pair.
-- **Not proven:** there is no reference data, so confidence is a magnitude score, not an accuracy (section 4).
+- **The data has a trap.** Each provided "date" is a mosaic of two Sentinel-2 scenes from different orbits; I verified it pixel-exact against the STAC catalogue. Radiometry therefore steps along slanted seams, and the gap between the dates is 52–60 days, not 21. The provided Euclidean baseline mostly maps these seams and haze: **11,143 ha**, 42 % of the AOI.
+- **Method:** normalize each source-scene zone on stable pixels, then run a robust change vector analysis with a **brightness-aware, empirically calibrated** noise model. The realised false-alarm rate is **0.10 %** at the 0.1 % target, measured on held-out stable pixels; the uncalibrated model gave 2.2 %.
+- **Result:** **413 ha in 215 polygons** (1.6 % of the AOI). **74 %** of it lies inside the mine's named facilities.
+- **Interpretation:** this is operational mining, not expansion.
+  - Tailings deposition on the TSF: 185 ha.
+  - Waste dumping: 129 ha.
+  - Pit-floor and bench activity: 26 ha.
+  - Seasonal vegetation or burning outside the mine: 36 ha.
+  - No new clearing beyond the mine footprint at the 0.2 ha scale.
+- **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The accuracy assessment by stratified random sampling is in section 5.
 
-## 0. Data finding: each "date" is a mosaic of two acquisitions
+## 0. The data finding: each "date" is a mosaic
 
-![zones](docs/figures/02_stripe_zones.png)
+![provenance](docs/figures/06_provenance.png)
 
-**What the data showed.** Before any change detection, the T2 − T1 difference contains **straight, parallel radiometric steps at 12.6°**. A model that is constant within each zone explains 56 % of the difference image's variance, with blue offsets of +0.044 / +0.041 / +0.025 / +0.019 across four zones. The dark-object blue reflectance (1st percentile) rises from 0.030 to 0.050, which indicates a hazier T2.
+The before/after difference contains straight, parallel brightness steps at 12.6°. A model that is constant between the steps explains 56 % of the blue-band difference.
 
-**First hypothesis, then the test.** My first reading was Sentinel-2 detector-footprint striping made visible by haze. I tested it against provenance: `s2cd enrich` searches Planetary Computer's STAC catalogue and compares every pixel. Every provided pixel matches a Planetary Computer L2A item exactly: **100 % identical DN on all 2.65 M valid pixels, in all three bands**. The hypothesis was wrong in an informative way:
+**Hypothesis.** My first reading was detector striping under haze.
 
-| Provided "date" | Source scene (tile 35LLG, baseline N05.09) | Share of AOI |
+**Test.** `s2cd provenance` searches Planetary Computer for the source items and compares every pixel.
+- **Result:** B02, B03 and B04 match **100 % exactly** (2.65 M pixels per band). The hypothesis was wrong in an informative way.
+
+| Nominal date | Source scenes (tile 35LLG, baseline N05.09) | Solar zenith / azimuth |
 |---|---|---|
-| 2023-08-12 | S2B 2023-07-04, relative orbit 121 | 44 % (W) |
-| | S2B 2023-07-01, relative orbit 78 | 56 % (E) |
-| 2023-09-02 | S2B 2023-09-02, relative orbit 121 | 39 % (W) |
-| | S2A 2023-08-25, relative orbit 78 | 61 % (E) |
+| 2023-08-12 | S2B 2023-07-04 R121 (W, 44 %) + S2B 2023-07-01 R078 (E, 56 %) | 42.5° / 34° and 44.1° / 37° |
+| 2023-09-02 | S2B 2023-09-02 R121 (W, 39 %) + S2A 2023-08-25 R078 (E, 61 %) | 30.8° / 50° and 34.9° / 50° |
 
-There is no clear acquisition on 2023-08-12 itself; the nearest item, 08-13, is 40 % cloudy and does not match.
+The steps are the seams along the swath edge of orbit R078. The detection uses three zones, each a single before→after scene pair: 07-04→09-02, 07-04→08-25 and 07-01→08-25. My blind, data-driven zone detection had put 99.3 % of its pixels inside one of these zones, so the method held up even though the first explanation did not.
 
-The steps are **seams along the slanted swath edge of orbit 78**. The two dates have different seam positions, which creates a narrow strip where the scene pairing differs. The blind, data-driven zone detection recovered those seams: **99.2–100 % of each zone's pixels come from a single source-scene pair** (`enrichment_summary.json`). The effective comparison is therefore piecewise:
-
-| Zone | Pixels | Before → after | Interval |
-|---|---:|---|---:|
-| 0–1 (west) | 39 % | 07-04 → 09-02 | 60 d |
-| 2 (strip between seams) | 4 % | 07-04 → 08-25 | 52 d |
-| 3 (east) | 56 % | 07-01 → 08-25 | 55 d |
-
-The fourth boundary, between zones 0 and 1, lies inside a single scene pair and probably reflects a haze gradient. L2A aerosol optical thickness (AOT) averages 0.103 before and 0.186 after, so the after date is hazier in every zone, but AOT is too smooth to resolve a step there.
-
-**Why it matters.** Any method that assumes one radiometric relation between the "dates" reads mosaic seams, different sun angles and different haze as land change. The provided baseline flags **94 %** of the westernmost zone. Treating radiometry as piecewise by zone was the key design decision, and it holds whatever the cause of the steps. In production, the source-scene map from STAC (or `MSK_DETFOO` for real detector stripes) would replace estimating the zones from the data.
+**Consequences, all handled in the pipeline:**
+1. Radiometry is normalized per zone.
+2. Pixels within 90 m of a seam are excluded (2.4 % of the AOI).
+3. Dates are labelled "nominal" everywhere, and the true acquisitions are stored in the outputs.
+4. Sun angle differs by about 10° in zenith and 15° in azimuth between the dates. Pit walls and dump faces therefore change illumination, a known confounder (section 3).
 
 ## 1. Method
 
-**Chosen algorithm: zone-aware relative normalization, then robust change vector analysis (CVA) with a statistical noise model.**
+| Step | What | Why |
+|---|---|---|
+| Load & check | Stack B02–B04 per date; assert identical CRS, transform and shape; nodata 0; DN → reflectance with the L2A −1000 offset (detected robustly, with a warning fallback) | Part 1 |
+| Zones | Source-scene zones from STAC provenance (fallback: data-driven seam detection) | Different scenes have different radiometry |
+| Normalization | Per zone and band, orthogonal regression `T1 = a + b·T2` on pseudo-invariant pixels, iterated with 2.5σ rejection (adapted from Canty & Nielsen 2008) | Both dates are noisy; haze lowers contrast on T2 (slopes 1.1–1.8) |
+| Change statistic | Change vector `Δ = T2_norm − T1` (CVA, Malila 1980); squared Mahalanobis distance d² under a per-zone, **per-brightness-stratum** noise model fitted on stable pixels | Noise grows with brightness: one global model gave bright mine surfaces 10–25× too many false alarms |
+| Calibration | Thresholds from the 99.9th / 99.999th percentiles of d² on **held-out** stable pixels, per stratum | The χ² assumption is off (heavy tails, spatial autocorrelation). Calibrated, the realised rate is 0.092–0.107 % in every stratum |
+| Binary map | Hysteresis (Canny 1986): grow at 1e-3, seed at 1e-5; seam buffer; 1-px opening; minimum mapping unit 0.2 ha | Keeps coherent change and removes speckle |
+| Polygons | 8-connected regions, made valid, stored as MultiPolygon EPSG:32735 with area, magnitude, −log10 p and direction | Part 3 |
+| Interpretation | **Facility register** of 8 named facilities, outlined from the imagery; **change type** per polygon from RGB evidence + facility; one-line "why" | Part 5: from "pixels changed" to "what happened" |
 
-1. **Radiometric zones.** On the blue T2 − T1 difference (8 × 8 block medians, outliers clipped), a grid search finds the orientation whose 1-D profile explains the most variance. Weighted binary segmentation then splits that profile into zones (minimum step 0.006 reflectance, minimum width 40 px). If no orientation explains at least 5 % of the variance, there is a single zone, so clean scene pairs pass through unchanged.
-2. **Relative radiometric normalization per zone.** For each band, an orthogonal-regression line `T1 = a + b·T2` is fitted and refitted 5 times, each time rejecting pixels whose residual exceeds 2.5 robust σ in any band. The survivors are pseudo-invariant features (PIFs, 86 % of pixels). Orthogonal rather than ordinary least squares is used because both dates are noisy. This is the automatic radiometric normalization idea of Canty & Nielsen, applied separately in each zone.
-3. **Change statistic.** `Δ = T2_norm − T1`. In each zone the PIF change vectors define "no change": mean μ and covariance Σ, which cover sensor noise, sub-pixel misregistration and small phenology. Each pixel's squared Mahalanobis distance `d² = (Δ−μ)ᵀ Σ⁻¹ (Δ−μ)` is χ²(3)-distributed under no change. This gives a change probability `chi2.cdf(d²)` and thresholds with a meaning (false-alarm rate). The Q-Q plot confirms the fit on the PIFs, though that is in-sample, so it is a consistency check rather than validation.
-4. **Binary map.** Hysteresis thresholding: regions grow at FAR 1e-3 (d² > 16.3), and a region is kept only if it contains a seed at FAR 1e-5 (d² > 25.9). This suppresses isolated noise without eroding real change. The cleanup then removes 2 px around zone seams (mosaic edge artefacts), applies a 1 px opening, a minimum mapping unit of 0.2 ha, and hole filling.
-5. **Polygons.** Change regions are vectorized with 8-connectivity. Each polygon gets area, perimeter, compactness, a confidence score, Δ per band, direction (brightening / darkening / spectral shift, with ±2σ_noise on Δbrightness), and `in_disturbed_area`. That flag is a heuristic mine/industrial footprint: bright bare surfaces at T1, Otsu threshold, closed and buffered by 100 m.
-
-**Why this method rather than the alternatives:**
-
-| Method | Changed area | Changed share per zone (0/1/2/3) | Verdict |
-|---|---:|---|---|
-| Provided Euclidean distance + Otsu | 11,078 ha | 94 % / 75 % / 41 % / 16 % | Measures mosaic seams and haze, not land change |
-| Zone-wise IR-MAD (Nielsen 2007) | 10,623 ha | 34 % / 32 % / 36 % / 46 % | Stripe-free, but over-detects (below) |
-| **Robust CVA (this work)** | **1,345 ha** | **3.0 % / 3.7 % / 2.7 % / 6.3 %** | Stripe-free and spatially coherent |
+The cleanup (1-px opening + 0.2 ha minimum mapping unit) deliberately drops features narrower than about 20 m or smaller than 0.2 ha, such as haul-road edges and single noisy pixels.
 
 ![methods](docs/figures/03_method_comparison.png)
 
-- **The Euclidean baseline** is run unchanged from `inputs/example_change_detection.py`. It has no radiometric model, so its output follows the seams and haze, and min-max normalization makes the scale depend on a handful of extreme pixels.
-- **IR-MAD** is invariant to affine radiometric differences, so running it per zone removes the seams. With only three highly correlated visible bands, though, its reweighting converges on the dominant land cover (savanna woodland, canonical correlations ρ ≈ 0.99). The no-change variance `2(1−ρ)` then becomes tiny, and every surface whose date-to-date relation differs from the woodland's is flagged: bright tailings, water, roads, grassland. It would suit more bands (NIR/SWIR) or a smaller, more homogeneous AOI better.
-- **CVA after normalization** keeps the physical meaning of Δ (direction and magnitude in reflectance), which the interpretation step needs. Learning the noise model from PIFs per zone makes the threshold adapt to each zone's noise level.
-- **Not used:** NDVI (no NIR band was provided; see enrichment), supervised ML (no labels, and one scene pair is not a training set), and log-ratio (meant for SAR speckle; for additive haze on dark targets it amplifies noise).
+| Method | Changed area | Why it behaves this way |
+|---|---:|---|
+| Provided Euclidean distance + Otsu | 11,143 ha (79 / 43 / 16 % per zone) | No radiometric model: it maps seams and haze |
+| Zone-wise IR-MAD (Nielsen 2007) | 10,824 ha | It converges on woodland (ρ ≈ 0.99). With only three correlated visible bands, every other cover then looks "changed" |
+| **Robust CVA, calibrated (this work)** | **413 ha (1.1 / 1.0 / 2.0 % per zone)** | Seam-free, mine-concentrated |
+
+Why no machine learning: there are no labels, only three bands and two dates. With labelled polygons, a Siamese U-Net or a change transformer on multi-date stacks would be the next step, and this pipeline would become its data and QA layer.
 
 ## 2. Results
 
-![polygons](docs/figures/04_change_polygons.png)
+![change types](docs/figures/10_change_types.png)
 
-- **538 change polygons, 1,345 ha** (5.0 % of the valid AOI). The median polygon is 0.48 ha and the largest is 114 ha.
-- **70 % of the changed area (945 ha) lies inside the mine's disturbed footprint**, which covers 31 % of the AOI. Change is about 2.3× more concentrated there than it would be if spread uniformly.
-- By direction:
+**Per facility** (outlines from the data inside analyst-defined regions; `configs/facility_register.yaml`):
 
-| Direction | Inside disturbed area | Outside | Typical location |
+| Facility | Area | Changed | Mostly |
 |---|---:|---:|---|
-| Brightening | 627 ha | 41 ha | Tailings beaches, dam crest and haul roads, waste-dump faces, pit benches |
-| Darkening | 231 ha | 358 ha | Wet tailings deposition (inside); water body, drainage lines and dambos (outside) |
-| Spectral shift | 87 ha | 1 ha | Waste dumps and stockpiles E of the southern pit, where colour changes but brightness does not |
+| Tailings storage facility (TSF) | 2,244 ha | **194 ha (9 %)** | tailings deposition |
+| South pit complex | 2,009 ha | 38 ha (2 %) | pit / bench activity |
+| Eastern waste dumps | 435 ha | 36 ha (8 %) | waste dumping |
+| North-west pit complex | 1,117 ha | 34 ha (3 %) | waste dumping |
+| Process plant | 195 ha | 5 ha | infrastructure |
+| Settlement, camp, fresh-water dam | 1,859 ha | 1 ha | — |
 
-Spatial pattern:
-- **Tailings storage facility (north-centre):** the largest and most confident cluster. It is a mosaic of brightening (drying, bleaching beach) and darkening (fresh wet slurry) patches, plus a continuous brightening arc along the embankment crest.
-- **Pit complexes (NW and S):** bench-scale brightening and darkening at pit edges and ramps, consistent with excavation fronts.
-- **Waste dumps east of the southern pit:** brightening with a strong red increase (Δred +0.11). Fresh, iron-stained material is being tipped onto areas that were darker at T1.
-- **Freshwater dam (NE) and drainage lines:** the largest single polygon (114 ha) is the dam surface darkening (reflectance 0.058 → 0.020). Elongated darkening patches follow the dambo (seasonal wetland) network.
-- **Settlement (SW):** only 20 small polygons (10.6 ha) survive the 0.2 ha MMU. The speckle there comes from sub-pixel misregistration of small roofs, and most of it is filtered, as intended.
+![facility register](docs/figures/09_facility_register.png)
+
+**Per change type** (mapped onto the brief's categories):
+
+| Change type | Brief category | Polygons | Area |
+|---|---|---:|---:|
+| Tailings deposition | mining activity | 61 | 185 ha |
+| Waste dumping | mining activity | 55 | 129 ha |
+| Seasonal vegetation or burn | seasonal variation / vegetation | 18 | 36 ha |
+| Pit excavation | mining activity | 26 | 26 ha |
+| Water level change | water change | 8 | 18 ha |
+| Noise or artifact | noise or artifacts | 27 | 9 ha |
+| Infrastructure / settlement | urban expansion | 9 | 4 ha |
+| Unexplained | — | 6 | 5 ha |
+| Land clearing (incl. at the mine edge) | land clearing | 5 | 1 ha |
 
 ## 3. Interpretation
 
-| Pattern | Most likely explanation | My confidence (judgement, no ground truth) | How to confirm |
-|---|---|---|---|
-| Patchy bright/dark mosaic on the tailings facility | **Operational tailings deposition**: spigotting moves the wet beach around, and dry beaches bleach | High | Deposition records; multi-date sequence (beaches cycle) |
-| Brightening arc on the TSF embankment | **Vegetation stripped from the embankment face** (enrichment: `vegetation_loss`, NDVI −0.30, dNBR +0.22 on the 51 ha arc), consistent with preparing a raise or crest works | Medium | VHR imagery; dam-raise schedule |
-| Red-shifted brightening on waste dumps | **Active dumping of fresh, oxidized waste rock** | High | Trend over more dates; DEM differencing |
-| Bench-scale changes in pits | **Excavation and haulage**, plus shadow differences: solar zenith goes from about 43° (early July) to about 31–35° (late Aug / early Sep) | Medium | Sun-angle-matched pairs; SAR coherence |
-| Dam / wetland surface darkening (largest polygon, 114 ha) | **More open water, less floating or emergent vegetation.** Enrichment shows MNDWI +0.27 and NDVI −0.15, but SCL classified it as water on neither date, so it is a vegetated wetland surface becoming wetter. It is not turbidity or glint alone | Medium | Shoreline position on more dates; field or VHR check |
-| Darkening along dambos and drainage outside the mine | **Seasonal wetland dynamics plus some burning, not mining.** Enrichment labels most of it `water_change`; only 33 ha meet the burn-scar rule | Medium | VIIRS active fires; more dates |
-| Residual small polygons along roads and field edges | Sub-pixel misregistration and noise | n/a | Already filtered by the 0.2 ha MMU; tighten FAR if needed |
+| Pattern | Most likely meaning | Confidence | Confounders (RGB-only) | How to confirm |
+|---|---|---|---|---|
+| Moving bright/dark patches on the TSF beaches | Tailings deposition: wet slurry moving between spigot points while dry beaches bleach | Medium–high | Surface drying with the season | Later dates: the TSF outline stays put while patches move |
+| Brighter **and redder** faces at dumps and pit-complex edges | Fresh, oxidized waste rock tipped | Medium | Illumination change on slopes (sun 10° higher, 15° further north-east), dust | A later same-season date; very-high-resolution imagery |
+| Bench-scale changes inside pits | Excavation and haulage | Low–medium | Shadow changes from sun geometry | Sun-matched pairs; elevation data (not in this brief) |
+| Small water-edge changes | Pond and pit-lake level shifts | Medium | Haze lowers T2 brightness; water needs both-date evidence | The water rule on more dates |
+| Darker or browner patches outside the mine | Dry-season grass senescence or burning | Medium | Burnt vegetation vs. wetness cannot be separated in RGB | Fire records; recovery after the rains |
+| Polygons on or near seams | Artifacts | High | — | The source-scene map |
 
-In short, mining operations drive most of the real change between early July and late August / early September 2023. The change sits on the tailings facility, the waste dumps and the pit benches, all inside the disturbed footprint. Most change outside the footprint is seasonal (fire, dambos, water) rather than an expansion of the mine. I see **no evidence of new land clearing or footprint expansion** at the 0.2 ha scale in this period. The largest brightening outside the footprint is only 41 ha in total, made of scattered small patches.
+**What happened, in one paragraph.** Between early July and late August / early September 2023, the measurable change is operational. Tailings were deposited across the TSF (194 ha changed, 9 % of the facility). Waste rock was tipped at the eastern dumps and at the edges of both pit complexes (129 ha labelled waste dumping). Activity continued inside the pits. Outside the mine, change is small and seasonal. **I see no evidence of mine expansion into new ground at the 0.2 ha / 20 m detection limit**: only 1 ha qualifies as clearing. Every label is a hypothesis built from RGB evidence and facility context, and each polygon carries its "why".
 
-## 4. Limitations and next steps
+## 4. Sensitivity
 
-- **Three visible bands and two dates** cannot separate burning from wetting, or turbidity from depth. The enrichment and the timeline add SWIR/NIR and many dates as a check, but the core answer uses only what the brief provided.
-- **No reference data:** confidence is a magnitude score, not accuracy. Next step: label a stratified random sample (about 100 polygons, plus about 100 points in the no-change stratum) on VHR imagery and report precision, recall and area-adjusted accuracy (Olofsson et al. 2014). `solafune_tools.metrics` already has the IoU and F1 utilities needed.
-- **Shadows:** pit walls are sun-angle dependent. Pairing scenes with similar solar geometry (or using a DEM shadow mask) would remove some bench "changes".
-- **For production monitoring**, which is what ShigenAI-style products need:
-  - Run on every clear Sentinel-2 L2A scene from Planetary Computer, with an SCL mask.
-  - Never compare mosaics blindly. Carry per-pixel source-scene provenance (as `s2cd enrich` reconstructs it) and compare scene to scene, or use per-pixel composites with recorded dates. Keep the data-driven zone check as a QA gate.
-  - Add Sentinel-1 coherence so cloudy-season monitoring keeps working.
-  - Store results per scene pair in PostGIS (the schema is already run- and date-keyed) and serve them through a tile/feature API to the viewer.
+![sensitivity](docs/figures/11_sensitivity.png)
 
-## Appendix: optional extensions beyond the brief
+I re-ran the binary rule over per-pixel false-alarm rates from 1e-2 to 1e-5 and minimum mapping units from 0.1 to 1 ha (16 settings):
+- **Changed area** ranges over **210–682 ha**, versus 11,143 ha for the baseline.
+- **Share inside the mine's facilities** stays between **61 % and 77 %**, and rises as the test gets stricter: the strongest changes are the mining ones.
 
-These use extra Planetary Computer data (SWIR/NIR, SCL, more dates) to check the interpretation above. The required answer in sections 1–3 uses only the three provided bands.
+The conclusions do not depend on one threshold choice.
 
-### A. Checking the interpretation with SWIR/NIR (`s2cd enrich`)
+## 5. Accuracy assessment
 
-The assignment gives only visible bands. To test the readings above, I pulled B08, B11, B12, SCL and AOT for the *same source scenes, pixel by pixel* (section 0) from Planetary Computer. From these I computed dNDVI, dNBR and dMNDWI, and assigned every polygon a `likely_cause` with transparent rules (first match wins, thresholds in `enrichment_summary.json`):
+*Design:* stratified random sampling (Olofsson et al. 2014). The strata are the four combinations of our map and the baseline (both change / ours only / baseline only / neither). There are 30 points per stratum, labelled blind from before/after RGB chips in the app (Label tab). Estimates are weighted by stratum area: overall accuracy, user's and producer's accuracy for "change", and the error-adjusted change area with a 95 % CI, **for both maps**.
 
-| likely_cause | Polygons | Area | Rule (simplified) |
-|---|---:|---:|---|
-| active_mining_or_tailings | 294 | 713 ha | Inside the disturbed footprint, no other rule fired |
-| water_change | 126 | 486 ha | |dMNDWI| > 0.2, an MNDWI sign change, or SCL water |
-| vegetation_loss | 66 | 100 ha | dNDVI < −0.1 |
-| burn_scar | 43 | 33 ha | dNBR > 0.1 with an NBR drop, outside the footprint |
-| unexplained | 9 | 13 ha | none of the above |
-| cloud / shadow / haze artifact | 0 | 0 ha | SCL cloud/shadow/cirrus > 30 % |
+*Results:* to be filled from `data/processed/validation/accuracy.json` once labelling is complete.
 
-![enrichment](docs/figures/06_enrichment.png)
+## 6. Limitations and next steps
 
-Caveats I would raise myself:
-- **dNBR is mostly seasonal.** AOI-mean NBR falls steadily from 0.25 to 0.09 between June and early September (`docs/figures/07_timeline.png`). A fixed dNBR threshold over a 55–60 day dry-season interval therefore over-calls burns, which is why `burn_scar` also requires being outside the footprint.
-- **MNDWI also shows the mosaic seam** (vertical step in the dMNDWI panel). `water_change` is a candidate list, not a verdict.
-- **23 polygons (52 ha) straddle a source-scene seam.** They are flagged in `change_context.seam_mix` and should be treated as suspect.
+- **RGB only.** No vegetation-health, burn-severity or mineral indices. Water, shadow and dark wet soil can be confused, so the water rule requires both dates. The thresholds in `rgb.py` are tuned to this AOI.
+- **Two mosaicked dates.** Sun and view geometry differ between orbits (BRDF). Normalization removes a per-zone linear difference but not cover-specific angular effects. Measured co-registration error is small: ≤ 0.05 px mean shift per zone, ≤ 0.25 px in any window.
+- **No elevation.** Pits and dumps cannot be separated reliably, and no volumes can be computed. Stereo VHR imagery or LiDAR would be the next data for that.
+- **Facility register.** The regions are analyst-defined boxes (human-in-the-loop); outlines come from the imagery. For production, use licence boundaries or a maintained facility database.
+- **For production monitoring:** carry per-pixel acquisition provenance instead of nominal mosaic dates; use same-season pairs; calibrate thresholds per scene pair as done here; validate with VHR samples; store per-pair runs in PostGIS (the schema is already run-keyed).
 
-### B. Multi-year context: monthly composites, Jan 2023 – Oct 2026 (`python -m s2cd.timeline`)
-
-One scene pair cannot tell persistent mining from seasonal change. So I built 46 monthly composites from Planetary Computer: SCL cloud/shadow masking, then a per-pixel median. 39 months have at least 90 % clear coverage; the 7 that don't are mostly Dec–Jan and are kept as gaps, not filled. The same zone-aware CVA then runs between consecutive good months.
-
-![timeline](docs/figures/08_timeline_kpis.png)
-
-- **The mine footprint grows.** The footprint is bare surface (BSI > 0.1, NDVI < 0.12, not water), closed, with patches over 1 ha. It also swings 20–40 % with the dry season, so I compare the same month across years:
-
-| Month | 2023 | 2024 | 2025 | 2026 |
-|---|---:|---:|---:|---:|
-| February | 3,687 ha | 4,174 ha | 4,136 ha | 4,508 ha |
-| October | 4,588 ha | 5,444 ha | 5,803 ha | 6,392 ha |
-
-  October to October, that is +1,800 ha in three years (≈ +13 % per year). This is the KPI a mine-monitoring product should report. It also puts the assignment pair in context: Aug–Sep 2023 sits on the normal dry-season rise, and I see no step change there.
-- **Water** (MNDWI > 0) bottoms out each Oct–Nov and recovers in Jan–Feb. The 2024-03 low (647 ha) is a one-month anomaly that I have not investigated.
-- **The month-to-month "changed area" is mostly phenology.** It peaks at the Mar–May green-up, at up to 7,000 ha. Even inside the footprint it is a magnitude index, not a count of mining events. This is the main reason a production system should model seasonality, for example by comparing against the same month of the previous year or fitting a harmonic baseline, rather than thresholding consecutive months.
-- **Caveats:** month areas count only observed pixels (no gap filling). Wet-season composites with 2–3 clear looks per pixel keep a few patches of cloud shadow. The footprint thresholds are heuristic and documented in `timeline.Rules`.
-
-Timelapse: `docs/web/monthly/timelapse.mp4`; interactive in the viewer's *Timeline* tab.
+**References.** Malila (1980) change vector analysis; Otsu (1979); Canny (1986) hysteresis; Nielsen (2007) IR-MAD; Canty & Nielsen (2008) *Remote Sens. Environ.* 112:1025 (automatic radiometric normalization); Richardson et al. (2007) / Sonnentag et al. (2012) green chromatic coordinate (here on BOA reflectance, not camera DN); Olofsson et al. (2014) *Remote Sens. Environ.* 148:42.

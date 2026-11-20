@@ -51,10 +51,6 @@ def run_case(case: dict, defs: dict, conn, client: httpx.Client) -> dict:
         values[k] = sql(q)
     truth = {k: sql(q) for k, q in case.get("truth", {}).items()}
     question = case["question"].format(**values)
-    if case.get("requires_timeline") and (not conn.execute(text("SELECT count(*) FROM timeline_months")).scalar()):
-        return {"id": case["id"], "status": "skipped", "reason": "no timeline data"}
-    if case.get("requires_timeline") and any(v is None for v in truth.values()):
-        return {"id": case["id"], "status": "skipped", "reason": "timeline months missing"}
 
     t0 = time.perf_counter()
     try:

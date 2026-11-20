@@ -1,53 +1,88 @@
 {
-  "answer": "No strong burn-scar candidates: **NBR drops are small** across the scene. The most plausible are **darkening polygons outside the footprint** with a low post-event brightness, such as #17 (13.5 ha) and #30 (8.2 ha).\n\nBurn scars should show a sharp NBR decrease with a *dark* NIR/SWIR signature, which these only weakly match. Treat them as candidates for a field or higher-resolution check.",
+  "answer": "18 polygons (36 ha) are classified as seasonal vegetation or burn, all outside the mine register. They are darker and less red than their surroundings, which fits burn scars and the dry-season vegetation cycle. With three visible bands this cannot be separated from moisture or shadow, so treat the label as a hypothesis.",
   "actions": [
     {
       "type": "fly_to",
       "bbox": [
-        25.8895,
-        -12.3196,
-        25.9349,
-        -12.1916
+        25.8393,
+        -12.2718,
+        25.9438,
+        -12.2433
       ]
     },
     {
       "type": "highlight",
       "run_id": "assignment",
       "ids": [
-        17,
-        30,
-        41
+        10,
+        15,
+        24,
+        39,
+        45,
+        46,
+        52,
+        55
       ]
     }
   ],
   "charts": [],
   "tables": [
     {
-      "title": "Burn-scar candidates",
+      "title": "Largest seasonal / burn polygons",
       "columns": [
-        "Polygon id",
+        "Polygon",
         "Area (ha)",
-        "d_brightness",
-        "Confidence"
+        "Confidence",
+        "Explanation"
       ],
       "rows": [
         [
-          17,
-          13.5,
-          -0.032,
-          0.13
+          10,
+          8.9,
+          0.041,
+          "greenness +0.078, darker; not bare, outside the mine"
         ],
         [
-          30,
-          8.2,
-          -0.033,
-          0.12
+          15,
+          7.6,
+          0.158,
+          "greenness -0.022, darker; not bare, outside the mine"
         ],
         [
-          41,
-          6.7,
-          -0.033,
-          0.15
+          24,
+          3.6,
+          0.036,
+          "greenness +0.072, darker; not bare, outside the mine"
+        ],
+        [
+          39,
+          2.4,
+          0.029,
+          "greenness +0.079, darker; not bare, outside the mine"
+        ],
+        [
+          45,
+          2.1,
+          0.307,
+          "greenness +0.034, darker; not bare, outside the mine"
+        ],
+        [
+          46,
+          2.0,
+          0.071,
+          "greenness -0.026, darker; not bare, outside the mine"
+        ],
+        [
+          52,
+          1.7,
+          0.042,
+          "greenness +0.059, darker; not bare, outside the mine"
+        ],
+        [
+          55,
+          1.5,
+          0.072,
+          "greenness +0.099, darker; not bare, outside the mine"
         ]
       ]
     }
@@ -56,21 +91,8 @@
     {
       "name": "query_changes",
       "args": {
-        "run_id": "assignment",
-        "change_direction": "darkening",
-        "in_disturbed_area": false,
-        "order_by": "d_brightness asc"
-      }
-    },
-    {
-      "name": "index_stats",
-      "args": {
-        "index": "nbr",
-        "polygon_ids": [
-          17,
-          30,
-          41
-        ]
+        "change_type": "seasonal_vegetation_or_burn",
+        "limit": 8
       }
     }
   ]

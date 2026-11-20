@@ -1,97 +1,73 @@
 {
-  "answer": "The five largest changes in the mine footprint are mostly **brightening** polygons (one darkening, one spectral shift), together **~312 ha**. The largest (#1, 88 ha) sits on the central waste-dump slope, where exposed material raises reflectance.\n\nI highlighted them on the map and zoomed to their extent.",
+  "answer": "The five largest changes are shown below and highlighted on the map. Together they cover 107 ha, 26% of all change.",
   "actions": [
     {
       "type": "fly_to",
       "bbox": [
-        25.8689,
-        -12.2566,
-        25.9438,
-        -12.2109
+        25.802,
+        -12.2479,
+        25.8977,
+        -12.2016
       ]
     },
     {
       "type": "highlight",
       "run_id": "assignment",
       "ids": [
+        0,
         1,
         2,
         3,
-        4,
-        5
+        4
       ]
     }
   ],
-  "charts": [
-    {
-      "type": "bar",
-      "title": "Area of the 5 largest in-footprint changes (ha)",
-      "x": [
-        "#1",
-        "#2",
-        "#3",
-        "#4",
-        "#5"
-      ],
-      "series": [
-        {
-          "name": "area ha",
-          "y": [
-            88.1,
-            68.6,
-            60.5,
-            51.1,
-            43.3
-          ]
-        }
-      ]
-    }
-  ],
+  "charts": [],
   "tables": [
     {
-      "title": "Top 5 changes in the mine footprint",
+      "title": "Five largest changes",
       "columns": [
-        "Rank",
-        "Polygon id",
+        "Polygon",
+        "Type",
         "Area (ha)",
-        "Confidence",
-        "Direction"
+        "Facility",
+        "Confidence"
       ],
       "rows": [
         [
+          0,
+          "waste dumping",
+          38.8,
+          "TSF",
+          0.343
+        ],
+        [
           1,
-          1,
-          88.1,
-          0.34,
-          "brightening"
+          "waste dumping",
+          19.3,
+          "PIT-NW",
+          0.222
         ],
         [
           2,
-          2,
-          68.6,
-          0.41,
-          "brightening"
+          "tailings deposition",
+          16.8,
+          "TSF",
+          0.344
         ],
         [
           3,
-          3,
-          60.5,
-          0.39,
-          "darkening"
+          "tailings deposition",
+          16.7,
+          "TSF",
+          0.115
         ],
         [
           4,
-          4,
-          51.1,
-          0.43,
-          "brightening"
-        ],
-        [
-          5,
-          5,
-          43.3,
-          0.29,
-          "spectral shift"
+          "tailings deposition",
+          15.5,
+          "TSF",
+          0.157
         ]
       ]
     }
@@ -101,7 +77,6 @@
       "name": "query_changes",
       "args": {
         "run_id": "assignment",
-        "in_disturbed_area": true,
         "order_by": "area_m2 desc",
         "limit": 5
       }
@@ -110,11 +85,11 @@
       "name": "map_actions",
       "args": {
         "highlight": [
+          0,
           1,
           2,
           3,
-          4,
-          5
+          4
         ]
       }
     }

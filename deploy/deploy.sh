@@ -24,8 +24,8 @@ if [ -z "${S2CD_DEPLOY_REEXEC:-}" ]; then
   S2CD_DEPLOY_REEXEC=1 exec bash "$REPO/deploy/deploy.sh" "$@"
 fi
 
-log "uv sync (app extra)"
-uv sync --frozen --no-dev --extra app
+log "uv sync (app + stac extras; the date comparison needs stac)"
+uv sync --frozen --no-dev --extra app --extra stac
 
 log "build viewer"
 (cd viewer && npm ci --no-audit --no-fund && npm run build:site)

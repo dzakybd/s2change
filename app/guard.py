@@ -8,7 +8,7 @@ from __future__ import annotations
 import sqlglot
 from sqlglot import exp
 
-ALLOWED_TABLES = {"change_runs", "change_features", "change_context", "timeline_months", "change_features_wgs84"}
+ALLOWED_TABLES = {"change_runs", "change_features", "change_features_wgs84", "facilities", "facility_changes"}
 MAX_ROWS = 200
 BANNED_FUNCTION_PREFIXES = ("pg_", "lo_", "dblink", "set_config", "current_setting", "query_to_xml", "txid_", "ts_debug")
 

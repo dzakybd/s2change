@@ -1,5 +1,4 @@
-import type { FeatureCollection, Polygon } from "geojson";
-import type { ChangeCollection, Manifest, MonthlyManifest } from "./types";
+import type { AoiCollection, ChangeCollection, Dataset, FacilityCollection, Manifest, MineralsManifest, Overview } from "./types";
 
 /**
  * Where the exported web assets live. Resolution order: `?data=` query parameter,
@@ -11,45 +10,70 @@ export function dataBase(): URL {
   return new URL(raw.endsWith("/") ? raw : `${raw}/`, location.href);
 }
 
-async function getJson<T>(url: URL): Promise<T> {
+export async function getJson<T>(url: URL | string): Promise<T> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`${url.pathname}: HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`${new URL(url, location.href).pathname}: HTTP ${res.status}`);
   return (await res.json()) as T;
 }
 
-export interface Data {
-  base: URL;
-  manifest: Manifest;
-  changes: ChangeCollection;
-  aoi: FeatureCollection<Polygon>;
+/** Fetch once, share the promise. A failed fetch is forgotten so the next caller retries. */
+function memo<T>(load: () => Promise<T>): () => Promise<T> {
+  let p: Promise<T> | null = null;
+  return () => {
+    p ??= load().catch((err: unknown) => {
+      p = null;
+      throw err;
+    });
+    return p;
+  };
 }
 
-export async function loadData(): Promise<Data> {
-  const base = dataBase();
-  const manifest = await getJson<Manifest>(new URL("manifest.json", base));
-  const [changes, aoi] = await Promise.all([
-    getJson<ChangeCollection>(new URL(manifest.vectors.changes, base)),
-    getJson<FeatureCollection<Polygon>>(new URL(manifest.vectors.aoi, base)),
-  ]);
-  changes.features.forEach((f, i) => {
-    f.properties.fid = i;
-  });
-  return { base, manifest, changes, aoi };
-}
+const base = dataBase();
+export const dataUrl = (path: string): URL => new URL(path, base);
 
-/**
- * Monthly timeline manifest (`monthly/manifest.json` next to the assignment data). Returns null when it is
- * absent or malformed so the Timeline tab can show an empty state instead of breaking the viewer. A dev
- * server's SPA fallback answers missing files with index.html, which fails JSON parsing and lands here too.
- */
-export async function loadMonthly(base: URL): Promise<MonthlyManifest | null> {
+export const loadManifest = memo(() => getJson<Manifest>(dataUrl("manifest.json")));
+export const loadOverview = memo(() => getJson<Overview>(dataUrl("overview.json")));
+export const loadAoi = memo(() => getJson<AoiCollection>(dataUrl("aoi.geojson")));
+export const loadFacilities = memo(async () => {
+  const m = await loadManifest();
+  return getJson<FacilityCollection>(dataUrl(m.vectors.facilities ?? "facilities.geojson"));
+});
+export const loadChanges = memo(async () => {
+  const m = await loadManifest();
+  return indexed(await getJson<ChangeCollection>(dataUrl(m.vectors.changes)));
+});
+
+/** The optional redness (B04/B02) overlays; null when the export has none. */
+export const loadMinerals = memo(async (): Promise<MineralsManifest | null> => {
   try {
-    const res = await fetch(new URL("monthly/manifest.json", base));
+    const res = await fetch(dataUrl("minerals/manifest.json"));
     if (!res.ok) return null;
-    const m = (await res.json()) as Partial<MonthlyManifest>;
-    if (!Array.isArray(m.months) || m.months.length === 0 || !Array.isArray(m.bounds)) return null;
-    return m as MonthlyManifest;
+    const m = (await res.json()) as Partial<MineralsManifest>;
+    return m.layers?.before && m.layers.after ? (m as MineralsManifest) : null;
   } catch {
     return null;
   }
+});
+
+/** Give every feature a sequential `fid`: the key for hover/selection feature-state. */
+export function indexed(fc: ChangeCollection): ChangeCollection {
+  fc.features.forEach((f, i) => {
+    f.properties.fid = i;
+    f.properties.facility_id ??= null;
+  });
+  return fc;
+}
+
+export async function loadDefaultDataset(): Promise<Dataset> {
+  const [manifest, changes] = await Promise.all([loadManifest(), loadChanges()]);
+  const rasters = Object.fromEntries(
+    (Object.keys(manifest.rasters) as (keyof Manifest["rasters"])[]).map((k) => [k, { url: dataUrl(manifest.rasters[k].url).href, bounds: manifest.rasters[k].bounds }]),
+  ) as Dataset["rasters"];
+  return {
+    id: "provided",
+    dates: { before: manifest.date_before, after: manifest.date_after },
+    nominal: true,
+    rasters,
+    changes,
+  };
 }

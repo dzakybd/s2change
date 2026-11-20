@@ -1,0 +1,49 @@
+{
+  "answer": "**Tailings storage facility** changed the most: 194 ha (9% of the facility), mostly tailings deposition. The eastern waste dumps changed the largest share of their area (8%).",
+  "actions": [
+    {
+      "type": "show_run",
+      "run_id": "assignment"
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "Changed area by facility (ha)",
+      "x": [
+        "TSF",
+        "PIT-S",
+        "WD-E",
+        "PIT-NW",
+        "PLANT",
+        "TOWN",
+        "CAMP",
+        "DAM"
+      ],
+      "series": [
+        {
+          "name": "ha",
+          "y": [
+            193.6,
+            37.7,
+            36.2,
+            33.6,
+            4.9,
+            1.3,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "tool_calls": [
+    {
+      "name": "query_facilities",
+      "args": {
+        "order_by": "changed_ha desc"
+      }
+    }
+  ]
+}

@@ -6,16 +6,13 @@ import { defineConfig } from "vite";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 const webDir = resolve(here, "../docs/web");
-// Dev-only fixtures (monthly manifest + placeholder frames). They stand in for ../docs/web/monthly until the
-// real files exist; S2CD_FIXTURES=1 prefers them even when the real ones do. Never part of a build.
-const fixturesDir = resolve(here, "fixtures");
-const preferFixtures = process.env["S2CD_FIXTURES"] === "1";
 
 const MIME: Record<string, string> = {
   ".json": "application/json",
   ".geojson": "application/geo+json",
   ".webp": "image/webp",
   ".png": "image/png",
+  ".md": "text/markdown; charset=utf-8",
 };
 
 /**
@@ -28,9 +25,8 @@ function serveDocsWeb(): Plugin {
     const url = (req.url ?? "").split("?")[0] ?? "";
     if (!url.startsWith("/web/")) return next();
     const rel = decodeURIComponent(url.slice(5));
-    const roots = rel.startsWith("monthly/") && preferFixtures ? [fixturesDir, webDir] : rel.startsWith("monthly/") ? [webDir, fixturesDir] : [webDir];
-    const file = roots.map((r) => ({ r, f: normalize(join(r, rel)) })).find(({ r, f }) => f.startsWith(r + sep) && existsSync(f) && statSync(f).isFile())?.f;
-    if (!file) return next();
+    const file = normalize(join(webDir, rel));
+    if (!file.startsWith(webDir + sep) || !existsSync(file) || !statSync(file).isFile()) return next();
     res.setHeader("Content-Type", MIME[extname(file)] ?? "application/octet-stream");
     createReadStream(file).pipe(res);
   };

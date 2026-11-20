@@ -1,0 +1,328 @@
+{
+  "generated": "2026-11-20T02:09:28+00:00",
+  "pair": {
+    "before": "2023-08-12",
+    "after": "2023-09-02",
+    "note": "Nominal dates: each is a mosaic of two Sentinel-2 scenes.",
+    "acquisitions": {
+      "2023-08-12": {
+        "nominal": "2023-08-12",
+        "source_dates": [
+          "2023-07-01",
+          "2023-07-04"
+        ],
+        "source_items": [
+          "S2B_MSIL2A_20230701T080609_R078_T35LLG_20230701T134619",
+          "S2B_MSIL2A_20230704T081609_R121_T35LLG_20230704T142502"
+        ]
+      },
+      "2023-09-02": {
+        "nominal": "2023-09-02",
+        "source_dates": [
+          "2023-08-25",
+          "2023-09-02"
+        ],
+        "source_items": [
+          "S2A_MSIL2A_20230825T080611_R078_T35LLG_20230825T175054",
+          "S2B_MSIL2A_20230902T081609_R121_T35LLG_20230902T164949"
+        ]
+      }
+    },
+    "compared_gap_days": [
+      52,
+      55,
+      60
+    ]
+  },
+  "headline": {
+    "changed_ha": 413.3,
+    "n_polygons": 215,
+    "aoi_ha": 26717.8,
+    "changed_pct_of_aoi": 1.56,
+    "baseline_ha": 11143.36,
+    "baseline_n_polygons": 1561,
+    "irmad_ha": 10824.45,
+    "share_in_mine_footprint": 0.739,
+    "share_in_register_mine_classes": 0.738,
+    "agreement_iou_with_baseline": 0.031,
+    "n_zones": 3,
+    "runtime_s": 32.1
+  },
+  "change_type_ha": {
+    "tailings_deposition": 185.3,
+    "waste_dumping": 128.9,
+    "seasonal_vegetation_or_burn": 36.4,
+    "pit_excavation": 25.8,
+    "water_level_change": 18.3,
+    "noise_or_artifact": 8.9,
+    "unexplained": 4.5,
+    "infrastructure_or_settlement": 4.0,
+    "land_clearing": 1.0,
+    "mine_expansion_clearing": 0.2
+  },
+  "facilities": [
+    {
+      "facility_id": "TSF",
+      "name": "Tailings storage facility",
+      "class": "tailings",
+      "cover": "any",
+      "area_ha": 2244.2,
+      "changed_ha": 193.6,
+      "changed_share": 0.086,
+      "change_types": {
+        "tailings_deposition": 175.7,
+        "waste_dumping": 8.5,
+        "water_level_change": 6.2,
+        "noise_or_artifact": 2.3,
+        "infrastructure_or_settlement": 1.0
+      },
+      "summary": "Tailings storage facility: 194 ha changed (9% of 2244 ha); mostly tailings deposition"
+    },
+    {
+      "facility_id": "PIT-S",
+      "name": "South pit complex",
+      "class": "pit_dump_complex",
+      "cover": "any",
+      "area_ha": 2009.2,
+      "changed_ha": 37.7,
+      "changed_share": 0.019,
+      "change_types": {
+        "pit_excavation": 20.3,
+        "waste_dumping": 8.7,
+        "water_level_change": 8.4,
+        "noise_or_artifact": 0.3
+      },
+      "summary": "South pit complex: 38 ha changed (2% of 2009 ha); mostly pit excavation"
+    },
+    {
+      "facility_id": "WD-E",
+      "name": "Eastern waste dumps",
+      "class": "waste_dump",
+      "cover": "bare",
+      "area_ha": 435.3,
+      "changed_ha": 36.2,
+      "changed_share": 0.083,
+      "change_types": {
+        "waste_dumping": 35.5,
+        "noise_or_artifact": 0.4,
+        "pit_excavation": 0.2,
+        "mine_expansion_clearing": 0.1
+      },
+      "summary": "Eastern waste dumps: 36 ha changed (8% of 435 ha); mostly waste dumping"
+    },
+    {
+      "facility_id": "PIT-NW",
+      "name": "North-west pit complex",
+      "class": "pit_dump_complex",
+      "cover": "any",
+      "area_ha": 1116.9,
+      "changed_ha": 33.6,
+      "changed_share": 0.03,
+      "change_types": {
+        "waste_dumping": 27.9,
+        "pit_excavation": 5.2,
+        "noise_or_artifact": 0.5
+      },
+      "summary": "North-west pit complex: 34 ha changed (3% of 1117 ha); mostly waste dumping"
+    },
+    {
+      "facility_id": "PLANT",
+      "name": "Process plant and central yard",
+      "class": "plant",
+      "cover": "bare",
+      "area_ha": 195.2,
+      "changed_ha": 4.9,
+      "changed_share": 0.025,
+      "change_types": {
+        "infrastructure_or_settlement": 3.6,
+        "waste_dumping": 1.3
+      },
+      "summary": "Process plant and central yard: 5 ha changed (2% of 195 ha); mostly infrastructure or settlement"
+    },
+    {
+      "facility_id": "TOWN",
+      "name": "South-west settlement",
+      "class": "settlement",
+      "cover": "bare",
+      "area_ha": 1168.5,
+      "changed_ha": 1.3,
+      "changed_share": 0.001,
+      "change_types": {
+        "pit_excavation": 1.0,
+        "infrastructure_or_settlement": 0.3
+      },
+      "summary": "South-west settlement: 1 ha changed (0% of 1168 ha); mostly pit excavation"
+    },
+    {
+      "facility_id": "CAMP",
+      "name": "Eastern camp",
+      "class": "camp",
+      "cover": "bare",
+      "area_ha": 181.1,
+      "changed_ha": 0.0,
+      "changed_share": 0.0,
+      "change_types": {},
+      "summary": "Eastern camp: 0 ha changed (0% of 181 ha)"
+    },
+    {
+      "facility_id": "DAM",
+      "name": "Fresh-water dam",
+      "class": "water_reservoir",
+      "cover": "water",
+      "area_ha": 509.7,
+      "changed_ha": 0.0,
+      "changed_share": 0.0,
+      "change_types": {},
+      "summary": "Fresh-water dam: 0 ha changed (0% of 510 ha)"
+    }
+  ],
+  "sensitivity": [
+    {
+      "far_low": 0.01,
+      "mmu_ha": 0.1,
+      "changed_ha": 681.6,
+      "changed_pct_of_aoi": 2.58,
+      "share_in_mine_footprint": 0.676,
+      "share_in_register_mine_classes": 0.623,
+      "is_default": false
+    },
+    {
+      "far_low": 0.01,
+      "mmu_ha": 0.2,
+      "changed_ha": 660.1,
+      "changed_pct_of_aoi": 2.5,
+      "share_in_mine_footprint": 0.674,
+      "share_in_register_mine_classes": 0.624,
+      "is_default": false
+    },
+    {
+      "far_low": 0.01,
+      "mmu_ha": 0.5,
+      "changed_ha": 617.9,
+      "changed_pct_of_aoi": 2.34,
+      "share_in_mine_footprint": 0.668,
+      "share_in_register_mine_classes": 0.62,
+      "is_default": false
+    },
+    {
+      "far_low": 0.01,
+      "mmu_ha": 1.0,
+      "changed_ha": 576.5,
+      "changed_pct_of_aoi": 2.18,
+      "share_in_mine_footprint": 0.662,
+      "share_in_register_mine_classes": 0.611,
+      "is_default": false
+    },
+    {
+      "far_low": 0.001,
+      "mmu_ha": 0.1,
+      "changed_ha": 427.9,
+      "changed_pct_of_aoi": 1.62,
+      "share_in_mine_footprint": 0.808,
+      "share_in_register_mine_classes": 0.738,
+      "is_default": false
+    },
+    {
+      "far_low": 0.001,
+      "mmu_ha": 0.2,
+      "changed_ha": 413.3,
+      "changed_pct_of_aoi": 1.56,
+      "share_in_mine_footprint": 0.809,
+      "share_in_register_mine_classes": 0.738,
+      "is_default": true
+    },
+    {
+      "far_low": 0.001,
+      "mmu_ha": 0.5,
+      "changed_ha": 384.5,
+      "changed_pct_of_aoi": 1.45,
+      "share_in_mine_footprint": 0.812,
+      "share_in_register_mine_classes": 0.744,
+      "is_default": false
+    },
+    {
+      "far_low": 0.001,
+      "mmu_ha": 1.0,
+      "changed_ha": 353.7,
+      "changed_pct_of_aoi": 1.34,
+      "share_in_mine_footprint": 0.806,
+      "share_in_register_mine_classes": 0.745,
+      "is_default": false
+    },
+    {
+      "far_low": 0.0001,
+      "mmu_ha": 0.1,
+      "changed_ha": 323.2,
+      "changed_pct_of_aoi": 1.22,
+      "share_in_mine_footprint": 0.848,
+      "share_in_register_mine_classes": 0.765,
+      "is_default": false
+    },
+    {
+      "far_low": 0.0001,
+      "mmu_ha": 0.2,
+      "changed_ha": 312.7,
+      "changed_pct_of_aoi": 1.18,
+      "share_in_mine_footprint": 0.849,
+      "share_in_register_mine_classes": 0.767,
+      "is_default": false
+    },
+    {
+      "far_low": 0.0001,
+      "mmu_ha": 0.5,
+      "changed_ha": 288.8,
+      "changed_pct_of_aoi": 1.09,
+      "share_in_mine_footprint": 0.848,
+      "share_in_register_mine_classes": 0.768,
+      "is_default": false
+    },
+    {
+      "far_low": 0.0001,
+      "mmu_ha": 1.0,
+      "changed_ha": 259.6,
+      "changed_pct_of_aoi": 0.98,
+      "share_in_mine_footprint": 0.838,
+      "share_in_register_mine_classes": 0.761,
+      "is_default": false
+    },
+    {
+      "far_low": 1e-05,
+      "mmu_ha": 0.1,
+      "changed_ha": 262.9,
+      "changed_pct_of_aoi": 0.99,
+      "share_in_mine_footprint": 0.849,
+      "share_in_register_mine_classes": 0.754,
+      "is_default": false
+    },
+    {
+      "far_low": 1e-05,
+      "mmu_ha": 0.2,
+      "changed_ha": 253.9,
+      "changed_pct_of_aoi": 0.96,
+      "share_in_mine_footprint": 0.845,
+      "share_in_register_mine_classes": 0.751,
+      "is_default": false
+    },
+    {
+      "far_low": 1e-05,
+      "mmu_ha": 0.5,
+      "changed_ha": 231.6,
+      "changed_pct_of_aoi": 0.88,
+      "share_in_mine_footprint": 0.839,
+      "share_in_register_mine_classes": 0.743,
+      "is_default": false
+    },
+    {
+      "far_low": 1e-05,
+      "mmu_ha": 1.0,
+      "changed_ha": 209.6,
+      "changed_pct_of_aoi": 0.79,
+      "share_in_mine_footprint": 0.823,
+      "share_in_register_mine_classes": 0.735,
+      "is_default": false
+    }
+  ],
+  "accuracy": {
+    "status": "pending"
+  }
+}

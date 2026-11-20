@@ -27,10 +27,10 @@ from app.guard import SqlRejected, guard_sql  # noqa: E402
     "sql",
     [
         "SELECT count(*) FROM change_features",
-        "select likely_cause, sum(area_m2) / 1e4 from change_features f join change_context c using (id) group by 1",
+        "select change_type, sum(area_m2) / 1e4 from change_features f join facilities c using (facility_id) group by 1",
         "WITH t AS (SELECT id FROM change_features) SELECT * FROM t",
         "SELECT ST_Area(geometry), ST_AsText(ST_Transform(geometry, 4326)) FROM change_features WHERE area_m2 > 1000",
-        "SELECT * FROM timeline_months ORDER BY month",
+        "SELECT * FROM facility_changes ORDER BY changed_ha DESC",
         "SELECT run_id FROM change_runs WHERE run_id LIKE '%cva%'",
     ],
 )
@@ -52,6 +52,7 @@ def test_guard_accepts(sql):
         "SELECT * FROM pg_catalog.pg_tables",
         "SELECT * FROM information_schema.tables",
         "SELECT * FROM spatial_ref_sys",
+        "SELECT * FROM timeline_months",
         "SELECT pg_sleep(10)",
         "SELECT pg_read_file('/etc/passwd')",
         "SELECT set_config('statement_timeout', '0', false)",
@@ -87,17 +88,15 @@ def test_collector_validates_actions():
     assert c.add_action("fly_to", bbox=[25.8, -12.3, 25.9, -12.2])["bbox"] == [25.8, -12.3, 25.9, -12.2]
     assert c.add_action("highlight", run_id="r", ids=[3, 1, 3])["ids"] == [1, 3]
     assert c.add_action("show_run", run_id="r") == {"type": "show_run", "run_id": "r"}
-    assert c.add_action("set_month", month="2024-05")["month"] == "2024-05"
     for bad in (
         {"type": "fly_to", "bbox": [1, 2, 3]},
         {"type": "fly_to", "bbox": [30, -12, 25, -11]},
         {"type": "highlight", "run_id": "r", "ids": []},
-        {"type": "set_month", "month": "2024-13"},
         {"type": "teleport"},
     ):
         with pytest.raises(ValueError):
             c.add_action(**bad)
-    assert len(c.actions) == 4
+    assert len(c.actions) == 3
 
 
 def test_collector_charts_and_tables():
