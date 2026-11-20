@@ -4,6 +4,7 @@ import type { Feature, Polygon, Position } from "geojson";
 import type { MapGeoJSONFeature } from "maplibre-gl";
 import type { AppContext, View } from "../app";
 import { aoiStats, fetchRun, STATIC_RUN_IDS } from "../api";
+import { authState, isLocked, markLocked, requestUnlock } from "../unlock";
 import { loadAoi, loadDefaultDataset, loadFacilities, loadMinerals, dataUrl } from "../data";
 import { q } from "../domain";
 import { aoiStatsFromPolygons } from "../map/geo";
@@ -117,15 +118,20 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       showInspector(`<div class="ins-wait"><span class="spinner"></span> Measuring change inside the area…</div>`, "aoi");
       const api = await ctx.api;
       let stats: AoiStats | null = null;
+      let locked = false; // database-exact stats need the access code; without it the browser estimate stands in, quietly
       if (api.kind === "ready" && !api.mock && ds.id === provided.id) {
-        try {
-          stats = { ...(await aoiStats(api, aoiShape)), source: "api" };
-        } catch {
-          stats = null; // fall back to the browser estimate
+        if (authState().enabled && !authState().authenticated) locked = true;
+        else {
+          try {
+            stats = { ...(await aoiStats(api, aoiShape)), source: "api" };
+          } catch (err) {
+            stats = null; // fall back to the browser estimate
+            if (isLocked(err)) (markLocked(), (locked = true));
+          }
         }
       }
       stats ??= aoiStatsFromPolygons(aoiShape, ds.changes);
-      if (inspecting === "aoi") showInspector(aoiCard(stats), "aoi");
+      if (inspecting === "aoi") showInspector(aoiCard(stats, locked), "aoi");
     };
 
     /* ---------- stage ---------- */
@@ -318,7 +324,12 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     inspector.addEventListener("click", (e) => {
       const act = (e.target as HTMLElement).closest<HTMLElement>("[data-act]")?.dataset["act"];
       if (act === "close") closeInspector();
-      else if (act === "redraw") {
+      else if (act === "unlock") {
+        const ring = aoiShape?.coordinates[0];
+        void requestUnlock(ctx.api).then((ok) => {
+          if (ok && ring && inspecting === "aoi") void onAoi(ring);
+        });
+      } else if (act === "redraw") {
         closeInspector();
         st.startDraw();
       }

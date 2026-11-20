@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -17,8 +18,9 @@ from fastapi.testclient import TestClient  # noqa: E402
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 
 from app import agent as agent_mod  # noqa: E402
-from app import collector, main, tools  # noqa: E402
+from app import auth, collector, compare_jobs, main, tools  # noqa: E402
 from app.guard import SqlRejected, guard_sql  # noqa: E402
+from s2cd import compare  # noqa: E402
 
 # --- SQL guard ----------------------------------------------------------------------------------------------------
 
@@ -155,6 +157,7 @@ class FakeAgent:
 def client(monkeypatch):
     fake = FakeAgent()
     monkeypatch.setattr(agent_mod, "get_agent", lambda: fake)
+    monkeypatch.delenv("ACCESS_CODE_HASH", raising=False)  # a developer's .env must not close the gate under test
     monkeypatch.setattr(main, "daily", main.DailyCap(300))
     monkeypatch.setattr(main, "RATE", "6/minute")
     main.limiter.reset()
@@ -227,3 +230,156 @@ def test_cors_allows_viewer_origins(client):
         r = client.get("/api/health", headers={"Origin": origin})
         assert r.headers["access-control-allow-origin"] == origin
     assert "access-control-allow-origin" not in client.get("/api/health", headers={"Origin": "https://evil.example"}).headers
+
+
+# --- Access code --------------------------------------------------------------------------------------------------
+
+CODE = "open-sesame-2024"
+
+
+@pytest.fixture
+def locked(client, monkeypatch, tmp_path):
+    """The same app with the gate closed; https base URL because the session cookie is Secure."""
+    monkeypatch.setenv("ACCESS_CODE_HASH", auth.hash_code(CODE, iterations=1000))
+    monkeypatch.setenv("SESSION_SECRET", "s" * 40)
+    monkeypatch.setattr(main, "LOGIN_RATE", "5/minute")
+    monkeypatch.setattr(
+        main, "jobs", compare_jobs.CompareJobs(12, root=tmp_path, run=lambda *a: (_ for _ in ()).throw(ValueError("stub")))
+    )
+    c = TestClient(main.app, base_url="https://testserver")
+    c.fake, c.root = client.fake, tmp_path
+    return c
+
+
+def login(c, code=CODE, ip="7.7.7.7"):
+    return c.post("/api/auth/login", json={"code": code}, headers={"X-Forwarded-For": ip})
+
+
+def cached_pair(root):
+    pair = compare.pair_id(compare.parse_label("provided-before"), compare.parse_label("provided-after"))
+    (root / pair).mkdir()
+    (root / pair / "summary.json").write_text('{"changed_ha": 1, "by_change_type": {}, "by_facility": {}, "date_labels": {}}')
+    (root / pair / "manifest.json").write_text('{"overlays": {}}')
+
+
+def test_hash_roundtrip_and_malformed_hashes():
+    stored = auth.hash_code("correct horse", iterations=1000)
+    assert stored.startswith("pbkdf2_sha256$1000$") and "correct horse" not in stored
+    assert auth.verify_code("correct horse", stored) and not auth.verify_code("wrong", stored)
+    assert auth.hash_code("correct horse", iterations=1000) != stored  # random salt
+    for bad in ("", "x", "a$b$c$d", "pbkdf2_sha256$x$AA==$AA==", "pbkdf2_sha256$1000$***$AA==", "scrypt$1000$AA==$AA=="):
+        assert not auth.verify_code("correct horse", bad)
+
+
+def test_gate_is_open_when_no_hash_is_set(client):
+    assert client.get("/api/auth/status").json() == {"enabled": False, "authenticated": True}
+    assert chat(client).status_code == 200
+
+
+def test_status_and_login(locked):
+    assert locked.get("/api/auth/status").json() == {"enabled": True, "authenticated": False}
+    bad = login(locked, "nope")
+    assert bad.status_code == 401 and "set-cookie" not in bad.headers and CODE not in bad.text
+    ok = login(locked)
+    assert ok.status_code == 200 and ok.json() == {"enabled": True, "authenticated": True}
+    assert locked.get("/api/auth/status").json() == {"enabled": True, "authenticated": True}
+
+
+def test_session_cookie_flags(locked):
+    cookie = login(locked).headers["set-cookie"].lower()
+    assert cookie.startswith("s2c_session=")
+    for flag in ("httponly", "secure", "samesite=strict", "path=/api", f"max-age={7 * 24 * 3600}"):
+        assert flag in cookie
+
+
+def test_logout_clears_the_session(locked):
+    login(locked)
+    r = locked.post("/api/auth/logout")
+    assert r.status_code == 200 and "max-age=0" in r.headers["set-cookie"].lower()
+    assert locked.get("/api/auth/status").json()["authenticated"] is False
+
+
+def gated_calls(c):
+    return {
+        "chat": lambda: chat(c),
+        "sql": lambda: c.post("/api/db/query", json={"sql": "SELECT 1"}),
+        "aoi": lambda: c.post("/api/aoi/stats", json={"geometry": {}}),
+        "compare": lambda: c.post("/api/compare", json={"before": "provided-before", "after": "provided-after"}),
+    }
+
+
+def test_gated_endpoints_need_the_cookie(locked):
+    for name, call in gated_calls(locked).items():
+        r = call()
+        assert r.status_code == 401 and r.json() == {"detail": "This feature needs the access code."}, name
+    assert locked.fake.seen == []  # the agent was never reached
+
+
+def test_gated_endpoints_work_with_the_cookie(locked, monkeypatch):
+    monkeypatch.setattr(main.explorer, "run_query", lambda sql: {"columns": [], "rows": []})
+    monkeypatch.setattr(main.results, "aoi_stats", lambda geometry, run_id: {"area_ha": 1})
+    login(locked)
+    assert chat(locked).status_code == 200
+    assert locked.post("/api/db/query", json={"sql": "SELECT 1"}).json() == {"columns": [], "rows": []}
+    assert locked.post("/api/aoi/stats", json={"geometry": {}}).json() == {"area_ha": 1}
+    assert gated_calls(locked)["compare"]().status_code == 200  # uncached pair, queued for the stub worker
+
+
+def test_public_endpoints_stay_open(locked, monkeypatch):
+    monkeypatch.setattr(main.db, "ping", lambda: True)
+    assert locked.get("/api/health").status_code == 200
+    assert locked.get("/api/compare/nope").status_code == 404  # reached the handler, not the gate
+
+
+def test_tampered_foreign_and_expired_cookies_are_refused(locked, monkeypatch):
+    monkeypatch.setattr(main.explorer, "run_query", lambda sql: {})
+    good = auth.make_session()
+    issued, sig = good.split(".")
+    forged = {
+        "tampered signature": f"{issued}.{'0' * len(sig)}",
+        "tampered timestamp": f"{int(issued) + 1}.{sig}",
+        "other secret": good.replace(sig, auth.hmac.new(b"x" * 40, f"s2c1.{issued}".encode(), "sha256").hexdigest()),
+        "expired": auth.make_session(time.time() - auth.MAX_AGE - 5),
+        "future": auth.make_session(time.time() + 3600),
+        "garbage": "not-a-cookie",
+        "empty": "",
+    }
+    for why, value in forged.items():
+        r = locked.post("/api/db/query", json={"sql": "SELECT 1"}, headers={"Cookie": f"s2c_session={value}"})
+        assert r.status_code == 401, why
+    assert locked.post("/api/db/query", json={"sql": "SELECT 1"}, headers={"Cookie": f"s2c_session={good}"}).status_code == 200
+    assert not auth.session_valid("\u00b2.\u00e9")  # non-ASCII digits and signature: refused, not a 500
+
+
+def test_cached_compare_pair_is_public_new_pair_is_not(locked):
+    call = gated_calls(locked)["compare"]
+    assert call().status_code == 401  # nothing cached yet
+    cached_pair(locked.root)
+    r = call()
+    assert r.status_code == 200 and r.json()["status"] == "done"
+    bad = locked.post("/api/compare", json={"before": "provided-after", "after": "provided-before"})
+    assert bad.status_code == 422  # bad dates are reported before the gate
+
+
+def test_login_is_rate_limited_per_ip(locked):
+    assert [login(locked, "nope", ip="6.6.6.6").status_code for _ in range(5)] == [401] * 5
+    assert login(locked, ip="6.6.6.6").status_code == 429  # even the right code, until the minute is over
+    assert login(locked, ip="6.6.6.7").status_code == 200
+
+
+@pytest.mark.parametrize(
+    "env",
+    [{"ACCESS_CODE_HASH": "plaintext", "SESSION_SECRET": "s" * 40}, {"ACCESS_CODE_HASH": auth.hash_code("x", iterations=1)}],
+)
+def test_half_configured_gate_refuses_to_start(monkeypatch, env):
+    monkeypatch.delenv("SESSION_SECRET", raising=False)
+    for k, v in env.items():
+        monkeypatch.setenv(k, v)
+    with pytest.raises(RuntimeError):
+        auth.check_config()
+
+
+def test_missing_hash_warns_and_starts(monkeypatch, caplog):
+    monkeypatch.delenv("ACCESS_CODE_HASH", raising=False)
+    auth.check_config()
+    assert "DISABLED" in caplog.text

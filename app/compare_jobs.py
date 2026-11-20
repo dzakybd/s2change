@@ -92,6 +92,11 @@ class CompareJobs:
             self._start_worker()
             return job
 
+    def is_cached(self, before: str, after: str) -> bool:
+        """True when the pair's result is already on disk (ValueError for bad dates, like ``submit``)."""
+        d_before, d_after = compare.validate_pair(before, after)
+        return (self.root / compare.pair_id(d_before, d_after) / "summary.json").exists()
+
     def get(self, job_id: str) -> Job | None:
         return self._jobs.get(job_id)
 

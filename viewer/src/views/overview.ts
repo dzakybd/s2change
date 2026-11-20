@@ -67,6 +67,17 @@ function brief(): string {
   ).join("")}</ol>`;
 }
 
+/** The multi-year, same-season view (precomputed yearly comparisons from the monthly catalogue; report section 3). */
+const BUSINESS = [
+  { n: "20.2 km²", t: "of waste moved in three years", d: "Waste dumping grows 5.7 → 14.5 → 20.2 km² from August 2023 to August 2024, 2025 and 2026: a mine in sustained development, an independent activity signal for investors and lenders.", href: hrefFor("map", { before: "provided-before", after: "2026-08-14" }), cta: "Compare Aug 2023 → Aug 2026" },
+  { n: "18.2 km²", t: "of change outside the named facilities", d: "Up from 5.6 km² after one year. A spreading footprint is the first thing a regulator checks against licence boundaries (which this dataset does not have).", href: hrefFor("map", { before: "provided-before", after: "2025-08-07" }), cta: "Compare Aug 2023 → Aug 2025" },
+  { n: "Monthly", t: "at no data cost", d: "One clear Sentinel-2 scene a month, compared with the last month and the same month a year earlier; alerts for change outside registered facilities. The analyst explains what each change means for whom.", href: hrefFor("analyst"), cta: "Ask the analyst" },
+];
+
+function business(): string {
+  return BUSINESS.map((c, i) => `<article class="finding card" style="--i:${i}"><div class="f-n num">${esc(c.n)}</div><h3>${esc(c.t)}</h3><p>${esc(c.d)}</p><a class="f-link" href="${c.href}">${esc(c.cta)} <span aria-hidden="true">→</span></a></article>`).join("");
+}
+
 const STEPS: [string, string, string][] = [
   ["Provenance", "Match pixels to", "STAC scenes"],
   ["Zones", "Seams become", "radiometric zones"],
@@ -157,7 +168,7 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
       <div class="hero-copy">
         <div class="hero-brand">${logoSvg(44, "hero")}<span class="eyebrow">Sentinel-2 · B02 B03 B04 · 10 m</span></div>
         <h1>What changed at an open-pit copper mine in Zambia?</h1>
-        <p class="lede">s2change finds, types and explains change between two Sentinel-2 dates using only the visible bands, then lets you query it. Default pair: <b class="num">${esc(o.pair.before)} → ${esc(o.pair.after)}</b>, nominal dates (each is a mosaic of two scenes).</p>
+        <p class="lede">Free satellite images show this mine <b>working normally</b> over two months and <b>growing</b> over three years. s2change finds each change, says what it most likely is, and who should act on it. Default pair: <b class="num">${esc(o.pair.before)} → ${esc(o.pair.after)}</b>, nominal dates (each is a mosaic of two scenes).</p>
         <div class="cta"><a class="btn primary" href="${hrefFor("map")}">Open the map</a><a class="btn" href="${hrefFor("report")}">Read the report</a></div>
         <dl class="hero-stats"><div><dt>Changed</dt><dd class="num">${fmtKm2(h.changed_ha)}</dd></div><div><dt>Polygons</dt><dd class="num">${fmtInt(h.n_polygons)}</dd></div><div><dt>Run time</dt><dd class="num">${Math.round(h.runtime_s)} s</dd></div></dl>
       </div>
@@ -167,6 +178,8 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
     <section aria-labelledby="h-find"><h2 id="h-find">Headline findings</h2><div class="findings">${findings(o)}</div></section>
 
     <section aria-labelledby="h-types"><h2 id="h-types">What changed</h2><div class="card types">${typesBar(o)}</div></section>
+
+    <section aria-labelledby="h-biz"><h2 id="h-biz">What it means, and who acts on it</h2><p class="sub">Two months show a mine operating; one to three years (same season) show it growing. Indicators to confirm, not proof.</p><div class="findings biz">${business()}</div></section>
 
     <section aria-labelledby="h-brief"><h2 id="h-brief">The brief, and where to see it</h2>${brief()}</section>
 

@@ -5,6 +5,7 @@ import { chartElement } from "../charts";
 import { LIVE_URL } from "../domain";
 import { esc, renderMarkdown } from "../markdown";
 import { renderRich } from "../rich";
+import { withUnlock } from "../unlock";
 import type { AgentAction, AgentResponse, AgentTable } from "../types";
 
 export const SUGGESTIONS = [
@@ -239,9 +240,14 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
     syncControls();
     scrollDown();
     controller = new AbortController();
-    const timeout = window.setTimeout(() => controller?.abort(), 120_000);
+    const [live, signal] = [api, controller.signal];
+    let timeout = 0;
     try {
-      const res = await chat(api, history.slice(-20), controller.signal);
+      const res = await withUnlock(apiPromise, () => {
+        window.clearTimeout(timeout); // the 120 s budget starts when the request does, not while the code is being typed
+        timeout = window.setTimeout(() => controller?.abort(), 120_000);
+        return chat(live, history.slice(-20), signal);
+      });
       history.push({ role: "assistant", content: res.answer });
       const answer = renderAnswer(res);
       pending.replaceWith(answer);

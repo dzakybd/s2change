@@ -10,7 +10,7 @@ from datetime import date
 from typing import Literal
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
@@ -18,7 +18,7 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import DBAPIError, OperationalError
 
-from app import agent, compare_jobs, db, explorer, results
+from app import agent, auth, compare_jobs, db, explorer, results
 from app.guard import SqlRejected
 from s2cd import compare
 
@@ -55,6 +55,7 @@ daily = DailyCap(int(os.environ.get("AGENT_DAILY_CAP", "300")))
 RATE = os.environ.get("AGENT_RATE", "6/minute")
 DB_RATE = os.environ.get("DB_RATE", "30/minute")  # explorer queries and AOI stats: read-only, 5 s timeout
 COMPARE_RATE = os.environ.get("COMPARE_RATE", "10/minute")  # comparison job submissions
+LOGIN_RATE = os.environ.get("LOGIN_RATE", "5/minute")  # access-code attempts, per client IP
 jobs = compare_jobs.CompareJobs(int(os.environ.get("COMPARE_DAILY_CAP", "12")))
 
 app = FastAPI(title="s2change API")
@@ -76,6 +77,11 @@ async def too_many(request: Request, exc: RateLimitExceeded):
 @app.exception_handler(OperationalError)
 async def db_down(request: Request, exc: OperationalError):
     return JSONResponse({"detail": "The database is not reachable right now."}, status_code=503)
+
+
+@app.on_event("startup")
+def check_auth() -> None:
+    auth.check_config()  # warns when the access code is not configured, refuses a half-configured one
 
 
 @app.get("/api/health")
@@ -123,6 +129,38 @@ def brief(run_id: str | None = None):
         raise HTTPException(404, str(e)) from None
 
 
+# ---- Access code ---------------------------------------------------------------------------------------------------
+
+
+class LoginRequest(BaseModel):
+    code: str = Field(max_length=200)
+
+
+def auth_state(request: Request) -> dict:
+    return {"enabled": auth.enabled(), "authenticated": auth.authenticated(request)}
+
+
+@app.get("/api/auth/status")
+def auth_status(request: Request):
+    return auth_state(request)
+
+
+@app.post("/api/auth/login")
+@limiter.limit(lambda: LOGIN_RATE)
+def auth_login(request: Request, body: LoginRequest, response: Response):
+    if auth.enabled():
+        if not auth.verify_code(body.code, os.environ["ACCESS_CODE_HASH"]):
+            raise HTTPException(401, "That access code is not right.")
+        response.set_cookie(auth.COOKIE, auth.make_session(), **auth.cookie_kwargs())
+    return {"enabled": auth.enabled(), "authenticated": True}
+
+
+@app.post("/api/auth/logout")
+def auth_logout(response: Response):
+    response.delete_cookie(auth.COOKIE, path="/api", secure=True, httponly=True, samesite="strict")
+    return {"enabled": auth.enabled(), "authenticated": not auth.enabled()}
+
+
 # ---- Database explorer ---------------------------------------------------------------------------------------------
 
 
@@ -143,7 +181,7 @@ class SqlRequest(BaseModel):
     sql: str = Field(min_length=1, max_length=5000)
 
 
-@app.post("/api/db/query")
+@app.post("/api/db/query", dependencies=[Depends(auth.require_access)])
 @limiter.limit(lambda: DB_RATE)
 def db_query(request: Request, body: SqlRequest):
     try:
@@ -162,7 +200,7 @@ class AoiRequest(BaseModel):
     run_id: str | None = None
 
 
-@app.post("/api/aoi/stats")
+@app.post("/api/aoi/stats", dependencies=[Depends(auth.require_access)])
 @limiter.limit(lambda: DB_RATE)
 def aoi_stats(request: Request, body: AoiRequest):
     try:
@@ -200,6 +238,8 @@ class CompareRequest(BaseModel):
 @limiter.limit(lambda: COMPARE_RATE)
 def compare_start(request: Request, body: CompareRequest):
     try:
+        if not jobs.is_cached(body.before, body.after):
+            auth.require_access(request)  # cached pairs are free to serve; a new run costs compute
         job = jobs.submit(body.before, body.after)
     except ValueError as e:
         raise bad_request(e) from None
@@ -243,7 +283,7 @@ def warm_analyst() -> None:
         threading.Thread(target=agent.warm, name="analyst-warm", daemon=True).start()
 
 
-@app.post("/api/agent/chat")
+@app.post("/api/agent/chat", dependencies=[Depends(auth.require_access)])
 @limiter.limit(lambda: RATE)
 def chat(request: Request, body: ChatRequest):
     messages = [m.model_dump() for m in body.messages[-KEEP_MESSAGES:]]

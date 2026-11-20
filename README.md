@@ -2,7 +2,7 @@
 
 <h1 align="center">s2change</h1>
 
-<p align="center"><b>What changed at an open-pit copper mine in Zambia?</b><br>Sentinel-2 change detection from three visible bands and two dates.</p>
+<p align="center"><b>What changed at an open-pit copper mine in Zambia?</b><br>Free satellite images, two dates: what changed, what it means, who should act.</p>
 
 <p align="center">
 
@@ -16,7 +16,9 @@
 
 </p>
 
-Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two dates**, as the brief provides. The pipeline finds the change, types it ("tailings deposition", "waste dumping"…), stores it in PostGIS and explains it.
+**In one paragraph.** Between the two 2023 dates the mine was working normally: 4.1 km² changed, three quarters inside known facilities (tailings spread on the tailings dam, waste rock dumped, pits dug), with no new clearing outside it. Over three years, same season, it is growing: waste moved rises from 5.7 to 20.2 km² and change outside the known facilities from 5.6 to 18.2 km², which a regulator would check against the licence and an investor reads as an active operation. The supplied images hide a trap (each is stitched from two satellite passes); a standard method reports 27× more "change", mostly stitching. Data is free; one run takes about 30 seconds.
+
+*How:* Sentinel-2 **B02/B03/B04 only**, two dates, as the brief provides. The pipeline finds the change, types it ("tailings deposition", "waste dumping"…), stores it in PostGIS and explains it.
 
 > [!TIP]
 > **Open the app: [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id).** It has the map, a live read-only SQL console on the database, the report and the downloads. No setup is needed.
@@ -32,6 +34,7 @@ Sentinel-2 change detection for one mine, using **only B02/B03/B04** and **two d
 
 - **Calibrated change: 4.13 km²** in 215 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
 - **It is mining, not expansion.** **74 %** of the change lies inside the named facilities: the tailings facility (1.94 km²), the waste dumps and pit edges (1.29 km² of dumping), and pit benches. There is no clearing beyond the mine footprint at the 2,000 m² scale.
+- **So what (multi-year, same season):** from August 2023 to August 2024 / 2025 / 2026, waste movement grows 5.7 → 14.5 → 20.2 km² and change outside the named facilities 5.6 → 12.9 → 18.2 km²: a mine in sustained development with a spreading footprint, the signal a regulator or investor would want. See [who acts on it](report.md#what-it-means-and-who-acts-on-it).
 - **Robust:** the result holds across 16 threshold settings (2.10–6.82 km², 61–77 % inside the mine).
 
 Full write-up: **[report.md](report.md)**: method, results, interpretation with RGB-only confounders, sensitivity, limitations.

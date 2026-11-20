@@ -31,15 +31,16 @@ export function facilityCard(p: FacilityProps): string {
   <p class="note">${esc(p.summary)}</p>`;
 }
 
-export function aoiCard(s: AoiStats): string {
+export function aoiCard(s: AoiStats, locked = false): string {
   const types = Object.entries(s.by_change_type).sort((a, b) => b[1] - a[1]);
   const facs = Object.entries(s.by_facility).sort((a, b) => b[1] - a[1]);
   const src = s.source === "api" ? "Computed in PostGIS by the live API." : "Estimated in your browser from the change polygons on the map (10 m sampling).";
+  const hint = locked ? ` <button type="button" class="linkbtn" data-act="unlock">Sign in for database-exact stats</button>` : "";
   return `<header class="ins-head"><i class="swatch lg" style="background:#5eead4"></i><div><h3>Selected area</h3><p class="muted">${fmtKm2(s.area_ha)} drawn</p></div>${closeBtn}</header>
   <div class="tiles"><div><b class="num">${fmtKm2(s.changed_ha)}</b><span>changed</span></div><div><b class="num">${fmtPct(s.changed_share, s.changed_share < 0.1 ? 1 : 0)}</b><span>of the area</span></div><div><b class="num">${fmtInt(s.n_polygons)}</b><span>${s.n_polygons === 1 ? "polygon" : "polygons"}</span></div></div>
   ${types.length ? `<h4>By change type</h4>${bars(types, types[0]?.[1] ?? 0, (k) => typeInfo(k).color, (k) => typeInfo(k).label)}` : '<p class="note">No change detected inside the area you drew.</p>'}
   ${facs.length ? `<h4>By facility</h4>${bars(facs, facs[0]?.[1] ?? 0, () => "#5eead4", (k) => k)}` : ""}
-  <p class="note">${src}</p>
+  <p class="note">${src}${hint}</p>
   <div class="row-actions"><button type="button" class="btn sm" data-act="redraw">Draw again</button><button type="button" class="btn ghost sm" data-act="close">Clear</button></div>`;
 }
 

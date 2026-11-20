@@ -26,6 +26,7 @@
 
 /* findings */
 .findings { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-3); }
+.findings.biz { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .finding { display: flex; flex-direction: column; padding: var(--s-5); animation: rise 420ms var(--ease-out) both; animation-delay: calc(var(--i) * 55ms + 80ms); }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
 .f-n { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; color: var(--accent-ink); }
@@ -89,7 +90,7 @@
 @media (max-width: 720px) {
   .ov section { margin-top: var(--s-7); }
   .hero h1 { max-width: none; }
-  .findings { grid-template-columns: 1fr; }
+  .findings, .findings.biz { grid-template-columns: 1fr; }
   .tleg { grid-template-columns: 1fr; }
   .method .m-h { display: none; }
   .method .m-v { display: block; }

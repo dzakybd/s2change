@@ -4,6 +4,7 @@ import { logoSvg } from "./brand";
 import { resolveApi } from "./api";
 import type { Route, RouteName } from "./router";
 import { onRoute } from "./router";
+import { initAuth, mountAuthChip } from "./unlock";
 
 const TITLES: Record<RouteName, string> = {
   overview: "s2change · Sentinel-2 change detection at a Zambian copper mine",
@@ -38,6 +39,8 @@ function toast(message: string): void {
 }
 
 const ctx: AppContext = { api: resolveApi(), queryResult: null, toast };
+void initAuth(ctx.api);
+mountAuthChip(document.getElementById("auth-chip") as HTMLElement, ctx.api);
 const views = new Map<string, Promise<View>>();
 let current: View | null = null;
 let token = 0;

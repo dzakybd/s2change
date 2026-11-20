@@ -1,6 +1,7 @@
 import type { ApiState, ReadyApi } from "../api";
 import { ApiError, apiUrl, compareDates, compareStart, compareStatus, friendlyError } from "../api";
 import { getJson, indexed } from "../data";
+import { withUnlock } from "../unlock";
 import { CHEVRON, CLOSE, LIVE_URL, esc, q } from "../domain";
 import type { ChangeCollection, CompareDate, CompareResult, Dataset } from "../types";
 
@@ -45,7 +46,7 @@ export class DatePicker {
     this.trigger.addEventListener("click", () => (this.pop.hidden ? this.open() : this.close()));
     this.pop.addEventListener("click", (e) => this.onClick(e));
     document.addEventListener("pointerdown", (e) => {
-      if (!this.pop.hidden && !this.root.contains(e.target as Node)) this.close();
+      if (!this.pop.hidden && !this.root.contains(e.target as Node) && !(e.target as Element).closest?.("dialog.unlock")) this.close();
     });
     this.root.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !this.pop.hidden) {
@@ -210,7 +211,8 @@ export class DatePicker {
     this.render();
     const started = Date.now();
     try {
-      let job = await compareStart(api, this.before, this.after);
+      const [before, after] = [this.before, this.after];
+      let job = await withUnlock(this.opts.api, () => compareStart(api, before, after));
       const id = job.job_id;
       while (job.status !== "done") {
         if (token !== this.runToken) return;

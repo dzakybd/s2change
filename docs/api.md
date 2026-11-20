@@ -2,6 +2,8 @@
 
 The app is the single place to inspect the solution, so evaluators never need a database client. All database access goes through the read-only role `s2cd_reader` (5 s statement timeout), and the query, AOI, compare and chat endpoints are rate-limited per client IP.
 
+Reading is public. Four endpoints need the **access code** (marked "access code" below): the analyst chat, the SQL console, drawn-area stats and starting a new (uncached) comparison. Without a valid session cookie they answer `401 {"detail": "This feature needs the access code."}`. See "Access code" below.
+
 ## Results of the default comparison (the provided pair)
 
 | Method & path | Returns |
@@ -18,20 +20,20 @@ The app is the single place to inspect the solution, so evaluators never need a 
 |---|---|
 | `GET /api/db/schema` | `[{table, rows, columns: [{name, type}], geometry: {column, srid, type} \| null}]` |
 | `GET /api/db/examples` | `[{title, description, sql}]` (from `sql/queries_postgis.sql`) |
-| `POST /api/db/query {sql}` | `{columns, rows, truncated, elapsed_ms, geojson \| null}`. Accepts one SELECT over the allow-listed tables, max 500 rows. Geometry columns come back as a GeoJSON FeatureCollection in EPSG:4326, so results can be drawn on the map |
+| `POST /api/db/query {sql}` (access code) | `{columns, rows, truncated, elapsed_ms, geojson \| null}`. Accepts one SELECT over the allow-listed tables, max 500 rows. Geometry columns come back as a GeoJSON FeatureCollection in EPSG:4326, so results can be drawn on the map |
 
 ## Area of interest
 
 | Method & path | Returns |
 |---|---|
-| `POST /api/aoi/stats {geometry, run_id?}` | `{area_ha, changed_ha, changed_share, n_polygons, by_change_type{}, by_facility{}}` for a GeoJSON polygon (EPSG:4326) drawn by the user |
+| `POST /api/aoi/stats {geometry, run_id?}` (access code) | `{area_ha, changed_ha, changed_share, n_polygons, by_change_type{}, by_facility{}}` for a GeoJSON polygon (EPSG:4326) drawn by the user |
 
 ## Other dates (date picker)
 
 | Method & path | Returns |
 |---|---|
 | `GET /api/compare/dates` | `[{date, aoi_cloud, ready}]`: the date catalogue (`python -m s2cd.catalog`), one clear scene per month after the provided pair, downloaded and cloud-checked in advance. `ready`: the pair from `provided-before` is precomputed |
-| `POST /api/compare {before, after}` | `{job_id, status, message, result?}` (a cached pair comes back `done` with its result). `before`/`after` is `"provided-before"`, `"provided-after"` or a catalogue date `YYYY-MM-DD`; nothing is downloaded at request time. Results are cached per pair; one job runs at a time |
+| `POST /api/compare {before, after}` (access code unless the pair is already cached) | `{job_id, status, message, result?}` (a cached pair comes back `done` with its result). `before`/`after` is `"provided-before"`, `"provided-after"` or a catalogue date `YYYY-MM-DD`; nothing is downloaded at request time. Results are cached per pair; one job runs at a time |
 | `GET /api/compare/{job_id}` | `{status: queued\|running\|done\|error, message, result?}`. `result = {pair, summary: {changed_ha, by_change_type, by_facility}, changes_url, overlays: {before, after, intensity: {url, bounds}}}` |
 | `GET /api/compare/files/{pair}/{file}` | Cached GeoJSON/WebP for a finished comparison |
 
@@ -39,7 +41,17 @@ The app is the single place to inspect the solution, so evaluators never need a 
 
 | Method & path | Returns |
 |---|---|
-| `POST /api/agent/chat {messages}` | `{answer, actions, charts, tables, tool_calls}` (see `app/README.md`) |
+| `POST /api/agent/chat {messages}` (access code) | `{answer, actions, charts, tables, tool_calls}` (see `app/README.md`) |
+
+## Access code
+
+| Method & path | Returns |
+|---|---|
+| `GET /api/auth/status` | `{enabled, authenticated}`. `enabled` is false when the server has no `ACCESS_CODE_HASH` (everything is open) |
+| `POST /api/auth/login {code}` | `{enabled, authenticated: true}` and a `Set-Cookie: s2c_session=...; HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=604800`. A wrong code is a generic `401`; 5 attempts per minute per IP, then `429` |
+| `POST /api/auth/logout` | `{enabled, authenticated}`; clears the cookie |
+
+The cookie value is `<issued-at>.<HMAC-SHA256>` and is valid for 7 days. Send it back with `credentials: "same-origin"` (browsers do this by default for same-origin `fetch`); with curl use `-c`/`-b` cookie files.
 
 ## Static assets (also on GitHub Pages)
 

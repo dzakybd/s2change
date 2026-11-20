@@ -58,6 +58,9 @@ Production data lives in Supabase PostGIS. Publish runs from a workstation with 
 | `DB_RATE` | API | `30/minute` per client IP for `POST /api/db/query` |
 | `COMPARE_RATE` | API | `10/minute` per client IP for comparison submissions |
 | `COMPARE_DAILY_CAP` | API | `12` new (uncached) comparisons per day, whole service |
+| `ACCESS_CODE_HASH` | API | PBKDF2 hash of the access code (see Access code). Unset: no gate, everything open |
+| `SESSION_SECRET` | API | 32+ random characters signing the session cookie; required when `ACCESS_CODE_HASH` is set |
+| `LOGIN_RATE` | API | `5/minute` per client IP for `POST /api/auth/login` |
 | `EVAL_API_URL` | evals | `http://127.0.0.1:8000`; start the API with a high `AGENT_RATE` for evals |
 
 ## API
@@ -83,12 +86,26 @@ See `docs/api.md` for every endpoint and its shape. By module:
 | Read-only role | `s2cd_reader`: `SELECT` on 5 relations only (`change_runs`, `change_features`, `change_features_wgs84`, `facilities`, `facility_changes`), `statement_timeout=5s`, `default_transaction_read_only=on`. Writes and `pg_sleep(6)` fail. This is the real boundary. |
 | REST roles | On Supabase, `anon` and `authenticated` have no privileges on these tables, so the auto-generated REST API answers 401/permission denied. |
 | SQL guard (`app/guard.py`) | Shared by the agent and the explorer. sqlglot parse: exactly one `SELECT` (CTEs ok), no INTO/locking/DDL/DML anywhere in the tree, tables must be in the allow-list (no schema-qualified names, so no `pg_catalog`/`information_schema`), `pg_*`, `lo_*`, `dblink`, `set_config`, `current_setting` functions refused, `LIMIT` forced to at most 200 (agent) or 500 (explorer). |
-| Input limits | Chat: 2,000 chars per message, last 10 messages, tool inputs validated. Explorer: 5,000 chars of SQL. AOI: valid lon/lat polygon, at most 2,000 vertices. Compare: dates parsed strictly, files served from a fixed list under `data/compare/<pair>/` with the pair matched against `\d{8}_\d{8}`. |
-| Rate limits | slowapi per client IP keyed on the **last** `X-Forwarded-For` entry (the one Caddy appends, which a client cannot forge): chat 6/min plus a daily cap (`AGENT_DAILY_CAP`), explorer 30/min, compare 10/min. New uncached comparisons are capped per day (`COMPARE_DAILY_CAP`) and at most 5 wait in the queue; identical pairs share one job. Caps are in memory: they reset on restart and are per process (run one worker). |
+| Input limits | Chat: 2,000 chars per message, last 20 messages, tool inputs validated. Explorer: 5,000 chars of SQL. AOI: valid lon/lat polygon, at most 2,000 vertices. Compare: dates parsed strictly, files served from a fixed list under `data/compare/<pair>/` with the pair matched against `\d{8}_\d{8}`. |
+| Access code | Chat, SQL console, drawn-area stats and new comparisons need a signed `HttpOnly; Secure; SameSite=Strict` session cookie earned with the access code (PBKDF2-SHA256 hash in the server `.env`, login limited to 5/min per IP). Public reads stay open. See Access code. |
+| Rate limits | slowapi per client IP keyed on the **last** `X-Forwarded-For` entry (the one Caddy appends, which a client cannot forge): chat 6/min plus a daily cap (`AGENT_DAILY_CAP`), explorer 30/min, compare 10/min, login 5/min. New uncached comparisons are capped per day (`COMPARE_DAILY_CAP`) and at most 5 wait in the queue; identical pairs share one job. Caps are in memory: they reset on restart and are per process (run one worker). |
 | Compare cost | One job at a time; scenes are cached in `data/scenes/`, results in `data/compare/` (both git-ignored). Only B02/B03/B04 are fetched. |
 | Prompt injection | The agent has no write or file tools, so a successful injection can at worst produce a wrong read-only answer. Prompt tells it to treat user and tool text as data. |
 | Secrets | Keys and passwords come from the environment only; `.env.example` has placeholders; errors returned to clients are generic (details go to the server log). |
 | CORS | `http://localhost:5173` and `https://s2change.dzaky.ai.id` only. |
+
+## Access code
+
+Reading is public: the overview, the map (the provided pair and every already computed date pair), the report, downloads, the database schema and examples, and every other `GET`. Four things cost compute, LLM budget or database time and need the access code: the analyst chat (`POST /api/agent/chat`), the SQL console (`POST /api/db/query`), drawn-area stats (`POST /api/aoi/stats`) and starting a **new** (uncached) comparison (`POST /api/compare`; a pair that is already cached is served without the code). The code goes to evaluators with the submission.
+
+How it works (`app/auth.py`, standard library only): `POST /api/auth/login {code}` checks the code in constant time against `ACCESS_CODE_HASH` and sets the cookie `s2c_session` = `<issued-at>.<HMAC-SHA256>` (signed with `SESSION_SECRET`; `HttpOnly; Secure; SameSite=Strict; Path=/api`, 7 days). A gated endpoint without a valid cookie answers `401 {"detail": "This feature needs the access code."}`. Logins are limited to `LOGIN_RATE` per IP; a wrong code returns one generic 401. `POST /api/auth/logout` clears the cookie and `GET /api/auth/status` returns `{enabled, authenticated}`. The cookie is `Secure`, so use HTTPS (browsers also accept it on `http://localhost`).
+
+```bash
+uv run python -m app.auth hash      # asks twice for the code (never echoed), prints ACCESS_CODE_HASH='pbkdf2_sha256$600000$<salt>$<hash>'
+uv run python -m app.auth secret    # prints SESSION_SECRET=<random>
+```
+
+Put both lines in the server `.env` (keep the single quotes around the hash: it contains `$`), then restart the API. Rotating `SESSION_SECRET` signs everyone out; changing the hash changes the code. With `ACCESS_CODE_HASH` unset the API logs a warning at start-up and leaves everything open, which is what local development and the tests use. A set hash with a missing or short `SESSION_SECRET` (or a malformed hash) stops the API at start-up.
 
 ## Evals
 
@@ -98,4 +115,4 @@ Results: the evals were not re-run after the move to `change_type` and the facil
 
 ## Tests
 
-`uv run --all-extras pytest tests/test_app.py -q`: SQL guard accept/reject lists, collector validation and per-request isolation, the chat contract with a fake agent, input limits, per-IP rate limit, daily cap, CORS, and friendly 502s. No network, LLM or database needed. The explorer, AOI, brief and compare endpoints have no automated tests; they were exercised by hand against Supabase.
+`uv run --all-extras pytest tests/test_app.py -q`: SQL guard accept/reject lists, collector validation and per-request isolation, the chat contract with a fake agent, input limits, per-IP rate limit, daily cap, CORS, friendly 502s, and the access code (hash round trip, login and cookie flags, the four gated endpoints with and without the cookie, tampered/expired/future cookies, cached compare pairs staying public, login rate limit, start-up configuration checks). No network, LLM or database needed. The explorer, AOI, brief and compare endpoints have no automated tests; they were exercised by hand against Supabase.

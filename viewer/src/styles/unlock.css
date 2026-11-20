@@ -1,0 +1,31 @@
+/* Access-code dialog and the top-bar indicator. Same tokens as base.css; motion is one short fade and a 4 px rise. */
+.unlock { width: min(380px, calc(100vw - 32px)); padding: var(--s-5); border: 0; border-radius: var(--r-lg); background: var(--surface); color: var(--text); box-shadow: var(--shadow-2); }
+.unlock[open] { animation: unlock-in 180ms var(--ease-out) both; }
+.unlock::backdrop { background: rgb(15 23 42 / 0.28); animation: unlock-fade 180ms ease-out both; }
+@keyframes unlock-in { from { opacity: 0; transform: translateY(4px) scale(0.97); } }
+@keyframes unlock-fade { from { opacity: 0; } }
+.unlock-form { display: grid; gap: var(--s-3); }
+.unlock h2 { font-size: var(--fs-md); letter-spacing: -0.01em; }
+.unlock p { margin: 0; font-size: var(--fs-sm); line-height: 1.5; }
+.unlock-input { width: 100%; min-height: 40px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); box-shadow: var(--ring); font: inherit; font-size: 16px; transition: box-shadow 140ms ease, background-color 140ms ease; }
+.unlock-input:focus-visible { outline: none; background: var(--surface); box-shadow: 0 0 0 2px var(--accent); }
+.unlock-input:disabled { opacity: 0.6; }
+.unlock .unlock-error { color: var(--danger); }
+.unlock-actions { display: flex; justify-content: flex-end; gap: var(--s-2); margin-top: var(--s-1); }
+
+.auth-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 var(--s-1) 0 var(--s-3); border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: 560; color: var(--text-3); box-shadow: var(--ring); white-space: nowrap; }
+.auth-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); opacity: 0.6; }
+.auth-chip[data-state="unlocked"]::before { background: var(--ok); opacity: 1; }
+.auth-chip[data-state="unlocked"] .auth-label { color: var(--text-2); }
+.auth-sep { opacity: 0.5; }
+.auth-btn { height: 26px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-pill); background: transparent; color: var(--text); font: inherit; font-weight: 600; transition: background-color 140ms ease, transform 160ms var(--ease-out); }
+.auth-btn:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .auth-btn:hover { background: var(--surface-3); } }
+@media (max-width: 720px) {
+  .auth-chip { margin-left: auto; height: 30px; }
+  .auth-chip:not([hidden]) + .gh { margin-left: 0; }
+}
+
+/* A text-button inside running copy (the "Sign in for database-exact stats" hint). */
+.linkbtn { padding: 0; border: 0; background: none; color: var(--accent-ink); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgb(180 85 12 / 0.4); cursor: pointer; }
+.linkbtn:active { opacity: 0.7; }

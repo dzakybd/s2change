@@ -22,9 +22,37 @@ s2change.dzaky.ai.id {
         file_server
     }
 
+    # Security headers on every response (static files, /web assets and the API).
     header {
+        # Browsers must use HTTPS for a year, subdomains included.
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        # Do not guess a different MIME type than the one served (blocks script-from-upload tricks).
         X-Content-Type-Options nosniff
+        # Cross-site requests get only our origin, not full URLs.
         Referrer-Policy strict-origin-when-cross-origin
+        # The app never needs these sensors, so no page or embedded frame may ask for them.
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        # Legacy twin of frame-ancestors: nobody may embed the site in a frame (clickjacking).
+        X-Frame-Options DENY
+        # What the page may load. Origins found in viewer/src: server.arcgisonline.com (Esri World Imagery tiles, fetched by
+        # the MapLibre worker) and cdn.simpleicons.org (technology logos in the report). Fonts are system fonts, scripts
+        # are bundled files (no inline script, no eval).
+        #   default-src 'self'                   anything not listed below must come from this site
+        #   script-src 'self'                    only the bundled JS
+        #   style-src 'self' 'unsafe-inline'     bundled CSS plus style="..." attributes the viewer sets on elements
+        #   img-src ... data: blob:              overlays and icons, MapLibre decodes tiles from blob: and data: URLs
+        #   connect-src 'self' <tile host>       fetch/XHR: the API, GeoJSON and the Esri tiles
+        #   worker-src 'self' blob:              MapLibre web workers
+        #   object-src 'none'                    no plugins
+        #   base-uri 'self'                      an injected <base> cannot redirect relative URLs
+        #   form-action 'self'                   forms can only post back to this site
+        #   frame-ancestors 'none'               nobody may frame the site (CSP version of X-Frame-Options)
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://server.arcgisonline.com https://cdn.simpleicons.org; connect-src 'self' https://server.arcgisonline.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    }
+
+    # Do not announce the server software. `defer` so it also removes the header the upstream API (uvicorn) sets.
+    header {
         -Server
+        defer
     }
 }

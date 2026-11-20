@@ -1,6 +1,7 @@
 import "../styles/database.css";
 import type { AppContext, View } from "../app";
 import { dbExamples, dbQuery, dbSchema, friendlyError } from "../api";
+import { withUnlock } from "../unlock";
 import { BLOB_URL, LIVE_URL, download, esc, fmtInt, q } from "../domain";
 import { hrefFor } from "../router";
 import type { DbExample, DbQueryResult, DbTable } from "../types";
@@ -85,7 +86,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       btn.disabled = true;
       result.innerHTML = `<p class="muted"><span class="spinner"></span> Running…</p>`;
       try {
-        last = await dbQuery(api, text, abort.signal);
+        last = await withUnlock(ctx.api, () => dbQuery(api, text, abort!.signal));
         render(last);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;

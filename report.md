@@ -2,18 +2,32 @@
 
 # Report: what changed at an open-pit copper mine in NW Zambia?
 
-**Sentinel-2 change detection from three visible bands and two dates: the change is found, typed, stored in PostGIS and explained.** [Live app](https://s2change.dzaky.ai.id) · [Repository](https://github.com/dzakybd/s2change)
+**Free satellite images, two dates, one copper mine: what changed, what it means, and who should act on it.** [Live app](https://s2change.dzaky.ai.id) · [Repository](https://github.com/dzakybd/s2change)
+
+
+> [!NOTE]
+> **RGB only.** The data is Sentinel-2 L2A B02, B03 and B04, the bands the brief provides. Nothing else is used: no NIR/SWIR, no scene classification layer, no elevation model. The AOI layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is an inference. Each date is a two-scene mosaic (section 0), so the true acquisitions are 2023-07-01/07-04 → 2023-08-25/09-02.
+
+**Contents:** [In plain terms](#in-plain-terms) · [Technical summary](#technical-summary) · [0 Data finding](#0-the-data-finding-each-date-is-a-mosaic) · [1 Method](#1-method) · [2 Results](#2-results) · [3 Interpretation](#3-interpretation) · [4 Sensitivity](#4-sensitivity) · [5 System and stack](#5-system-and-stack) · [6 Limitations](#6-limitations-and-next-steps)
+
+## In plain terms
+
+| | |
+|---|---|
+| **What we looked at** | A 16 × 16 km area around an open-pit copper mine in north-west Zambia, seen by the free Sentinel-2 satellite in ordinary colour (red, green, blue), on two dates in the 2023 dry season. |
+| **What happened** | The mine was **working normally**: 4.1 km² of ground changed, three quarters of it inside known mine facilities. Tailings (processing waste) were spread on the tailings dam, waste rock was dumped, pits were dug. **No new land was cleared outside the mine.** |
+| **Over three years** | Comparing the same season each year, the mine is **growing**: waste rock moved rises from 5.7 to 20.2 km², and change outside the known facilities from 5.6 to 18.2 km². |
+| **Why it matters** | A regulator can see where the mine spreads and check it against the licence. An investor or insurer gets an independent signal that the operation is running and expanding. ESG teams see clearing and water changes early. |
+| **A trap we avoided** | The two images supplied are each stitched from two satellite passes. A standard method mistakes the stitching for change and reports **111 km², 27× the calibrated result**, mostly stitching and haze, which would send a client chasing false alarms. We detected it, proved it, and corrected for it. |
+| **How much to trust it** | False alarms are measured at about 1 in 1,000 pixels, and the conclusions hold across 16 settings. The type of each change (e.g. "waste dumping") is a well-founded hypothesis to confirm, not a verdict. |
+| **What it costs to run** | The images are free and arrive every 5 days; the analysis takes about 30 seconds per pair. Run monthly, it becomes an alert service: [the app](https://s2change.dzaky.ai.id) already shows every yearly comparison and answers questions in plain language. |
+
+## Technical summary
 
 | AOI | Data | Dates (nominal) | Method | Result |
 |---|---|---|---|---|
 | 25.79–25.94 °E, 12.18–12.32 °S; 16.7 × 16.0 km, EPSG:32735, 10 m | Sentinel-2 L2A **B02, B03, B04** | 2023-08-12 → 2023-09-02 | Per-zone normalization, robust CVA, calibrated thresholds | **4.13 km²** in 215 polygons (1.6 % of the AOI) |
 
-> [!NOTE]
-> **RGB only.** The data is Sentinel-2 L2A B02, B03 and B04, the bands the brief provides. Nothing else is used: no NIR/SWIR, no scene classification layer, no elevation model. The AOI layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is an inference. Each date is a two-scene mosaic (section 0), so the true acquisitions are 2023-07-01/07-04 → 2023-08-25/09-02.
-
-**Contents:** [TL;DR](#tldr) · [0 Data finding](#0-the-data-finding-each-date-is-a-mosaic) · [1 Method](#1-method) · [2 Results](#2-results) · [3 Interpretation](#3-interpretation) · [4 Sensitivity](#4-sensitivity) · [5 System and stack](#5-system-and-stack) · [6 Limitations](#6-limitations-and-next-steps)
-
-## TL;DR
 
 > [!IMPORTANT]
 > **The data has a trap.** Each provided "date" is a mosaic of two Sentinel-2 scenes from different orbits; I verified it pixel-exact against the STAC catalogue. Radiometry therefore steps along slanted seams, and the gap between the dates is 52–60 days, not 21. The provided Euclidean baseline mostly maps these seams and haze: **111.4 km²**, 42 % of the AOI.
@@ -26,6 +40,7 @@
   - Pit-floor and bench activity: 0.26 km².
   - Seasonal vegetation or burning outside the mine: 0.36 km².
   - No new clearing beyond the mine footprint at the 2,000 m² scale.
+- **So what:** over one to three years (same season) waste movement grows from 5.7 to 20.2 km² and change outside the named facilities from 5.6 to 18.2 km²: sustained development with a spreading footprint, the signal a regulator or investor would want (section 3).
 - **How sure:** the conclusions hold over 16 threshold settings (sensitivity, section 4). The false-alarm rate is measured; omission and per-class accuracy are not, because there is no reference data (section 6).
 
 ## 0. The data finding: each "date" is a mosaic
@@ -141,6 +156,25 @@ Each pattern is a hypothesis with its confounders and the evidence that would co
 > [!WARNING]
 > **Confidence is not accuracy.** "Confidence" here is a change-magnitude score, and every label is a hypothesis built from RGB evidence and facility context. There is no reference data, so accuracy is not assessed (section 6).
 
+### What it means, and who acts on it
+
+> [!TIP]
+> **Business reading.** Over two months the mine is *operating* (tailings deposited, waste tipped, pits worked) and not spreading. Over one to three years, using the same dry season each time, the picture changes: **waste movement keeps growing (5.7 → 14.5 → 20.2 km²)** and **more and more change sits outside the eight named facilities (5.6 → 12.9 → 18.2 km²)**. That points to a mine in sustained development whose footprint is spreading, which is exactly what a regulator or investor would want flagged.
+
+![multi-year](docs/figures/13_multi_year.png)
+
+*Change from the provided before date (nominal 2023-08-12) to later August scenes from the app's monthly catalogue, so the season matches. Outside = not in any of the 8 register facilities. Area of change is not new disturbed area: re-worked ground counts too. The before date is a two-scene mosaic and the later ones are single scenes; thresholds are calibrated per pair.*
+
+| Who | Their question | What this gives them | What it cannot say |
+|---|---|---|---|
+| Government / regulator (the users ShigenAI targets) | Is the mine operating within its licence? | Footprint growth outside known facilities, located and sized monthly at no data cost (Sentinel-2 is free, 5-day revisit) | Legality: no licence boundaries here |
+| Tailings / dam-safety oversight | Is the tailings facility managed as planned? | Where deposition and ponding move on the facility (5.8–8.8 km² of its 22.4 km² changed between yearly dates) | Stability, freeboard, seepage |
+| Investors, lenders, insurers | Is the operation running and growing? | Independent activity indicators: waste movement, tailings deposition, pit work | Production, grade or tonnes |
+| ESG and community teams | Is clearing or water change spreading? | Clearing and water change outside the register; settlement growth | Social or health impacts |
+| The operator | Does the record match the plan? | A consistent, queryable change record in PostGIS | Survey-grade volumes (no elevation) |
+
+**As a service:** one clear scene a month, compared with the previous month and the same month a year earlier; change outside registered facilities or above a size threshold raises an alert with the polygon, its type and its "why", which an analyst confirms on very-high-resolution imagery. The database is already keyed by run, so each comparison is one more run. In the app, the analyst answers these questions ("what does this mean for a regulator?") and the date picker shows every yearly pair.
+
 ## 4. Sensitivity
 
 Does the answer depend on one threshold choice?
@@ -237,6 +271,21 @@ sequenceDiagram
 | Analyst | <img src="https://cdn.simpleicons.org/langchain" alt="" height="16"> LangChain deepagents, <img src="https://cdn.simpleicons.org/googlegemini" alt="" height="16"> langchain-google-genai, <img src="https://cdn.simpleicons.org/openrouter" alt="" height="16"> langchain-openai (OpenRouter) | An agent restricted to typed tools plus knowledge notes, on Gemini (directly or via OpenRouter) |
 | Viewer | <img src="https://cdn.simpleicons.org/vite" alt="" height="16"> Vite, <img src="https://cdn.simpleicons.org/typescript" alt="" height="16"> TypeScript, <img src="https://cdn.simpleicons.org/maplibre" alt="" height="16"> MapLibre GL, marked, DOMPurify, <img src="https://cdn.simpleicons.org/mermaid" alt="" height="16"> Mermaid | Static bundle, no server rendering; this report is rendered in the app from the same markdown |
 | Delivery | <img src="https://cdn.simpleicons.org/caddy" alt="" height="16"> Caddy, <img src="https://cdn.simpleicons.org/pm2" alt="" height="16"> PM2, <img src="https://cdn.simpleicons.org/githubactions" alt="" height="16"> GitHub Actions, <img src="https://cdn.simpleicons.org/docker" alt="" height="16"> Docker Compose, Dockerfile | TLS and static files from one binary; CI runs ruff, pytest, the viewer build and the image; Compose gives a local PostGIS |
+
+### Security
+
+The public site is read-only by construction; the few features that cost compute or LLM budget sit behind an access code.
+
+| Control | What it does |
+|---|---|
+| Read-only database role | The API and the agent connect as `s2cd_reader`: `SELECT` on five relations, `default_transaction_read_only`, 5 s statement timeout. Writes fail in the database itself, whatever the application does |
+| SQL guard | The console and the agent's `readonly_sql` tool pass the same sqlglot check: one `SELECT`, an allow-list of tables, no DDL/DML, no `pg_*`/`dblink`/`set_config` functions, `LIMIT` forced |
+| Rate limits and caps | Per client IP (the proxy-appended address): chat 6/min, SQL and area stats 30/min, comparisons 10/min, login 5/min. Whole-service daily caps: 300 chat calls, 12 new comparisons; at most 5 jobs queued |
+| Access code | Chat, SQL console, drawn-area stats and new (uncached) comparisons need a code. It is checked against a salted PBKDF2-SHA256 hash and earns a signed `HttpOnly; Secure; SameSite=Strict` session cookie (7 days). Overview, map, report, downloads and every cached comparison stay public |
+| Secrets | API keys, database passwords, the code hash and the cookie-signing secret live only in the server's `.env`, never in git; error responses are generic and details go to the server log |
+| Transport and headers | TLS at Caddy, plus HSTS, a Content-Security-Policy limited to this site, the Esri tile host and the logo CDN, `nosniff`, `X-Frame-Options: DENY`, a strict referrer policy, and no `Server` banner. API request bodies are capped at 64 KB |
+| LLM hardening | The model sees only 12 typed tools; deepagents' built-in planning, file, shell and sub-agent tools are switched off; the prompt tells it to treat user and tool text as data; no tool writes anything, so an injection can at worst yield a wrong read-only answer |
+| CORS and input limits | CORS allows only the site origin and the local dev server. Chat messages 2,000 characters, 20 turns kept; SQL 5,000 characters, 500 rows; drawn areas must be valid lon/lat polygons of at most 2,000 vertices; comparison dates are parsed strictly and must be catalogue dates; result files come from a fixed name list |
 
 ## 6. Limitations and next steps
 

@@ -57,6 +57,7 @@ async function call<T>(state: ReadyApi, method: "GET" | "POST", path: string, bo
   try {
     res = await fetch(`${state.base}${path}`, {
       method,
+      credentials: "same-origin", // the access-code session cookie is scoped to /api on this origin
       headers: { Accept: "application/json", ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       ...(signal ? { signal } : {}),
@@ -83,6 +84,18 @@ async function call<T>(state: ReadyApi, method: "GET" | "POST", path: string, bo
     throw new ApiError("The server returned an unreadable response", res.status);
   }
 }
+
+/* ---------- access code ---------- */
+
+export interface AuthState {
+  enabled: boolean;
+  authenticated: boolean;
+}
+
+/** Whether the server has an access code at all and whether this browser holds a valid session. Mock/static hosts: open. */
+export const authStatus = (s: ReadyApi): Promise<AuthState> => (s.mock ? Promise.resolve({ enabled: false, authenticated: true }) : call<AuthState>(s, "GET", "/api/auth/status"));
+export const login = (s: ReadyApi, code: string) => call<AuthState>(s, "POST", "/api/auth/login", { code });
+export const logout = (s: ReadyApi) => call<AuthState>(s, "POST", "/api/auth/logout", {});
 
 /* ---------- agent ---------- */
 
