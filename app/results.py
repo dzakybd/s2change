@@ -12,6 +12,7 @@ from app import db
 
 # The default comparison: robust CVA on the provided pair. Nominal dates, see NOMINAL_DATES_NOTE.
 DEFAULT_RUN = {"method": "robust_cva", "date_before": date(2023, 8, 12), "date_after": date(2023, 9, 2)}
+NO_CHANGE_TYPE_NOTE = "This run carries no change_type: only the robust_cva run is interpreted."
 NOMINAL_DATES_NOTE = (
     "The two dates are nominal mosaic dates. The 2023-08-12 raster is built from scenes of 2023-07-01/07-04 and the "
     "2023-09-02 raster from scenes of 2023-08-25/09-02, so the effective gap is 52-60 days, not 21."
@@ -45,7 +46,7 @@ def change_type_summary(run_id: str | None = None) -> dict:
     total = round(sum(r["area_ha"] for r in rows), 2)
     out = {"run_id": run, "total_ha": total, "change_types": rows}
     if all(r["change_type"] is None for r in rows):
-        out["note"] = "This run carries no change_type: only the robust_cva run is interpreted."
+        out["note"] = NO_CHANGE_TYPE_NOTE
     return out
 
 

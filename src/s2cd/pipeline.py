@@ -399,25 +399,8 @@ def run(cfg: Config) -> Products:
     (out / "run_summary.json").write_text(json.dumps(summary, indent=2, default=str))
     log.info("Changed area (ha): %s", summary["changed_area_ha"])
     return Products(
-        before,
-        after,
-        valid,
-        r1,
-        r2,
-        r2n,
-        stripes,
-        zones,
-        zone_info["source"],
-        seam_dist,
-        pif,
-        base_prob,
-        base_bin,
-        cva,
-        cva_bin,
-        features,
-        outlines,
-        fac_changes,
-        date_labels,
-        aoi,
-        summary,
-    )
+        before=before, after=after, valid=valid, refl_before=r1, refl_after=r2, refl_after_norm=r2n, stripes=stripes,
+        zones=zones, zone_source=zone_info["source"], seam_dist=seam_dist, pif=pif, baseline_prob=base_prob,
+        baseline_binary=base_bin, cva=cva, cva_binary=cva_bin, features=features, facilities=outlines,
+        facility_changes=fac_changes, date_labels=date_labels, aoi=aoi, summary=summary,
+    )  # fmt: skip

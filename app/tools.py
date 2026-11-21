@@ -163,7 +163,7 @@ def explain_change(id: int) -> str:
     if r.get("change_type"):
         reading.append(f"Rule-based hypothesis '{r['change_type']}' ({r['explanation']}); it needs a manual check.")
     else:
-        reading.append("This run carries no change_type: only the robust_cva run is interpreted.")
+        reading.append(results.NO_CHANGE_TYPE_NOTE)
     if r.get("touches_aoi_edge"):
         reading.append("It touches the AOI edge, so it may continue outside and its size is a lower bound.")
     reading.append("Confidence is a magnitude score of the spectral change, not a probability of being correct.")

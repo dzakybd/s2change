@@ -15,8 +15,6 @@ from rasterio.enums import Resampling
 from rasterio.io import MemoryFile
 from rasterio.shutil import copy
 
-BAND_NAMES = {"B02": "blue", "B03": "green", "B04": "red"}
-
 
 @dataclass(frozen=True)
 class Grid:

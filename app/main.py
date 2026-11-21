@@ -19,6 +19,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import DBAPIError, OperationalError
 
 from app import agent, auth, compare_jobs, db, explorer, results
+from app.compare_jobs import DailyCap
 from app.guard import SqlRejected
 from s2cd import compare
 
@@ -31,23 +32,6 @@ def client_ip(request: Request) -> str:
     """Caddy appends the peer it saw to X-Forwarded-For, so the last entry is the one a client cannot forge."""
     forwarded = request.headers.get("x-forwarded-for", "")
     return forwarded.split(",")[-1].strip() or (request.client.host if request.client else "unknown")
-
-
-class DailyCap:
-    """Global cap on agent calls per UTC day (in memory, per process)."""
-
-    def __init__(self, cap: int):
-        self.cap, self.day, self.used, self._lock = cap, date.min, 0, threading.Lock()
-
-    def take(self) -> bool:
-        with self._lock:
-            today = date.today()
-            if today != self.day:
-                self.day, self.used = today, 0
-            if self.used >= self.cap:
-                return False
-            self.used += 1
-            return True
 
 
 limiter = Limiter(key_func=client_ip)
@@ -96,10 +80,6 @@ def runs():
         "round((coalesce(sum(f.area_m2), 0) / 1e4)::numeric, 2)::float AS changed_area_ha, count(f.id)::int AS n_features "
         "FROM change_runs r LEFT JOIN change_features f USING (run_id) GROUP BY r.run_id ORDER BY r.date_before, r.run_id"
     )
-
-
-def bad_request(e: ValueError) -> HTTPException:
-    return HTTPException(422, str(e))
 
 
 @app.get("/api/changes")
@@ -188,7 +168,7 @@ def db_query(request: Request, body: SqlRequest):
     try:
         return explorer.run_query(body.sql)
     except SqlRejected as e:
-        raise bad_request(e) from None
+        raise HTTPException(422, str(e)) from None
     except DBAPIError as e:  # the user's SQL failed in the database: a bad column, a timeout, ...
         raise HTTPException(400, f"The database rejected the query: {str(e.orig).splitlines()[0][:200]}") from None
 
@@ -207,7 +187,7 @@ def compare_dates():
         {
             "date": e["date"],
             "aoi_cloud": e["aoi_cloud"],
-            "ready": (jobs.root / compare.pair_id(before, date.fromisoformat(e["date"])) / "summary.json").exists(),
+            "ready": compare.is_done(jobs.root / compare.pair_id(before, date.fromisoformat(e["date"]))),
         }
         for e in catalog.load()
     ]
@@ -226,7 +206,7 @@ def compare_start(request: Request, body: CompareRequest):
             auth.require_access(request)  # cached pairs are free to serve; a new run costs compute
         job = jobs.submit(body.before, body.after)
     except ValueError as e:
-        raise bad_request(e) from None
+        raise HTTPException(422, str(e)) from None
     except compare_jobs.Refused as e:
         raise HTTPException(429, str(e)) from None
     return job.public()  # a cached pair is "done" at once, so the result must come with it

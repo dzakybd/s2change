@@ -66,13 +66,29 @@ def result_payload(pair: str, folder: Path) -> dict:
     }
 
 
+class DailyCap:
+    """Global cap on calls per UTC day (in memory, per process)."""
+
+    def __init__(self, cap: int):
+        self.cap, self.day, self.used, self._lock = cap, date.min, 0, threading.Lock()
+
+    def take(self) -> bool:
+        with self._lock:
+            today = date.today()
+            if today != self.day:
+                self.day, self.used = today, 0
+            if self.used >= self.cap:
+                return False
+            self.used += 1
+            return True
+
+
 class CompareJobs:
     def __init__(self, daily_cap: int, root: Path = compare.ROOT, run=compare.run):
-        self.daily_cap, self.root, self._run = daily_cap, Path(root), run
+        self._daily, self.root, self._run = DailyCap(daily_cap), Path(root), run
         self._jobs: dict[str, Job] = {}
         self._queue: queue.Queue[Job] = queue.Queue()
         self._lock = threading.Lock()
-        self._day, self._used = date.min, 0
         self._worker: threading.Thread | None = None
 
     def submit(self, before: str, after: str) -> Job:
@@ -86,7 +102,10 @@ class CompareJobs:
                 return active
             if self._queue.qsize() >= MAX_WAITING:
                 raise Refused("Other comparisons are waiting. Please try again in a few minutes.")
-            self._take_daily()
+            if not self._daily.take():
+                raise Refused(
+                    "The service has reached its daily limit of new comparisons. Cached pairs still work; try again tomorrow."
+                )
             job = self._remember(Job(uuid.uuid4().hex[:12], pair, before, after))
             self._queue.put(job)
             self._start_worker()
@@ -95,24 +114,14 @@ class CompareJobs:
     def is_cached(self, before: str, after: str) -> bool:
         """True when the pair's result is already on disk (ValueError for bad dates, like ``submit``)."""
         d_before, d_after = compare.validate_pair(before, after)
-        return (self.root / compare.pair_id(d_before, d_after) / "summary.json").exists()
+        return compare.is_done(self.root / compare.pair_id(d_before, d_after))
 
     def get(self, job_id: str) -> Job | None:
         return self._jobs.get(job_id)
 
     def _cached(self, pair: str) -> dict | None:
         folder = self.root / pair
-        return result_payload(pair, folder) if (folder / "summary.json").exists() else None
-
-    def _take_daily(self) -> None:
-        today = date.today()
-        if today != self._day:
-            self._day, self._used = today, 0
-        if self._used >= self.daily_cap:
-            raise Refused(
-                "The service has reached its daily limit of new comparisons. Cached pairs still work; try again tomorrow."
-            )
-        self._used += 1
+        return result_payload(pair, folder) if compare.is_done(folder) else None
 
     def _remember(self, job: Job) -> Job:
         self._jobs[job.job_id] = job

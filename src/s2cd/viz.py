@@ -250,7 +250,21 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
     return paths
 
 
-def _warp_png(arr: np.ndarray, grid: Grid, path: Path, categorical: bool = False) -> list[list[float]]:
+def rgba(refl: np.ndarray, valid: np.ndarray) -> np.ndarray:
+    """(3, H, W) reflectance -> (4, H, W) uint8 true colour, opaque where ``valid``."""
+    alpha = (valid * 255).astype(np.uint8)[None]
+    return np.concatenate([np.moveaxis((rgb(refl) * 255).astype(np.uint8), -1, 0), alpha])
+
+
+def intensity_rgba(d2: np.ndarray, valid: np.ndarray) -> np.ndarray:
+    """(H, W) squared Mahalanobis distance -> (4, H, W) uint8 inferno heat map of log10 d2, transparent where not ``valid``."""
+    intensity = np.nan_to_num(np.clip(np.log10(np.clip(d2, 1e-3, None)) / 3, 0, 1))
+    heat = (matplotlib.colormaps["inferno"](intensity) * 255).astype(np.uint8)
+    heat[..., 3] = np.where(valid, (intensity * 230).astype(np.uint8), 0)
+    return np.moveaxis(heat, -1, 0)
+
+
+def warp_webp(arr: np.ndarray, grid: Grid, path: Path) -> list[list[float]]:
     """Reproject (bands, H, W) uint8 RGBA to EPSG:3857, save as WebP, return Leaflet bounds [[S, W], [N, E]]."""
     from PIL import Image
 
@@ -267,7 +281,7 @@ def _warp_png(arr: np.ndarray, grid: Grid, path: Path, categorical: bool = False
             src_crs=grid.crs,
             dst_transform=tr,
             dst_crs=dst_crs,
-            resampling=Resampling.nearest if categorical else Resampling.bilinear,
+            resampling=Resampling.bilinear,
         )
     path.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(np.moveaxis(dst, 0, -1)).save(path, quality=88, method=4)  # method 6 is ~7x slower for the same size
@@ -280,7 +294,7 @@ def _round_coords(obj, nd: int = 6):
     return round(obj, nd) if isinstance(obj, float) else [_round_coords(o, nd) for o in obj] if isinstance(obj, list) else obj
 
 
-def _write_geojson(gdf: gpd.GeoDataFrame, path: Path) -> None:
+def write_geojson(gdf: gpd.GeoDataFrame, path: Path) -> None:
     """RFC 7946 GeoJSON (WGS 84, no legacy ``crs`` member); dict-valued columns stay nested JSON objects."""
     fc = json.loads(gdf.to_crs(4326).to_json(drop_id=True, na="null"))
     for f in fc["features"]:
@@ -295,19 +309,10 @@ def export_web(p: Products, out_dir: Path) -> dict:
     """
     out_dir = Path(out_dir)
     grid = p.before.grid
-    alpha = (p.valid * 255).astype(np.uint8)[None]
-
-    def rgba(img):
-        return np.concatenate([np.moveaxis((rgb(img) * 255).astype(np.uint8), -1, 0), alpha])
-
-    intensity = np.nan_to_num(np.clip(np.log10(np.clip(p.cva.d2, 1e-3, None)) / 3, 0, 1))
-    cmap = matplotlib.colormaps["inferno"]
-    heat = (cmap(np.nan_to_num(intensity)) * 255).astype(np.uint8)
-    heat[..., 3] = np.where(p.valid, (intensity * 230).astype(np.uint8), 0)
     layers = {
-        "before": (rgba(p.refl_before), f"Sentinel-2 RGB, {p.date_labels['before']}"),
-        "after_normalized": (rgba(p.refl_after_norm), f"Sentinel-2 RGB, {p.date_labels['after']} (normalized)"),
-        "change_intensity": (np.moveaxis(heat, -1, 0), "Change intensity (log10 d2)"),
+        "before": (rgba(p.refl_before, p.valid), f"Sentinel-2 RGB, {p.date_labels['before']}"),
+        "after_normalized": (rgba(p.refl_after_norm, p.valid), f"Sentinel-2 RGB, {p.date_labels['after']} (normalized)"),
+        "change_intensity": (intensity_rgba(p.cva.d2, p.valid), "Change intensity (log10 d2)"),
     }
     manifest = {
         "date_before": str(p.before.acquired),
@@ -317,12 +322,12 @@ def export_web(p: Products, out_dir: Path) -> dict:
         "summary": p.summary["changed_area_ha"],
     }
     for key, (arr, label) in layers.items():
-        bounds = _warp_png(arr, grid, out_dir / f"{key}.webp")
+        bounds = warp_webp(arr, grid, out_dir / f"{key}.webp")
         manifest["rasters"][key] = {"url": f"{key}.webp", "label": label, "bounds": bounds}
 
-    _write_geojson(p.features["robust_cva"].drop(columns=["region"]), out_dir / "change_features.geojson")
+    write_geojson(p.features["robust_cva"].drop(columns=["region"]), out_dir / "change_features.geojson")
     facilities = p.facilities.merge(p.facility_changes.drop(columns=["name", "class", "area_ha"]), on="facility_id")
-    _write_geojson(facilities, out_dir / "facilities.geojson")
+    write_geojson(facilities, out_dir / "facilities.geojson")
     p.aoi.to_crs(4326).to_file(out_dir / "aoi.geojson", driver="GeoJSON", layer_options={"RFC7946": "YES"})
     manifest["vectors"] = {"changes": "change_features.geojson", "facilities": "facilities.geojson", "aoi": "aoi.geojson"}
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))

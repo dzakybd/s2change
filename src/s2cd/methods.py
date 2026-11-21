@@ -22,7 +22,7 @@ from scipy import stats
 EXAMPLE_PATH = Path(__file__).resolve().parents[2] / "inputs" / "example_change_detection.py"
 
 
-def euclidean_baseline(before: np.ndarray, after: np.ndarray, valid: np.ndarray, example_path: Path = EXAMPLE_PATH) -> np.ndarray:
+def euclidean_baseline(before: np.ndarray, after: np.ndarray, valid: np.ndarray) -> np.ndarray:
     """Apply the provided ``compute_change_distance`` to (bands, H, W) arrays; return its distance score in [0, 1].
 
     The score is min-max scaled; the example calls it a probability, but it is not one.
@@ -31,7 +31,7 @@ def euclidean_baseline(before: np.ndarray, after: np.ndarray, valid: np.ndarray,
     pixels are filled with the valid-pixel median first (otherwise nodata zeros would dominate
     the min-max range) and set to NaN afterwards.
     """
-    spec = importlib.util.spec_from_file_location("example_change_detection", example_path)
+    spec = importlib.util.spec_from_file_location("example_change_detection", EXAMPLE_PATH)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 

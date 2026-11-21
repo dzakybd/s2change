@@ -24,7 +24,7 @@ import re
 import shutil
 import sqlite3
 import sys
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 PROCESSED = Path("data/processed")
@@ -136,10 +136,7 @@ def sensitivity(path: Path = PROCESSED / "sensitivity.csv") -> list[dict]:
     if not path.exists():
         return []
     with path.open(newline="") as f:
-        rows = list(csv.DictReader(f))
-    out = []
-    for r in rows:
-        out.append(
+        return [
             {
                 "far_low": float(r["far_low"]),
                 "mmu_ha": float(r["mmu_ha"]),
@@ -149,8 +146,8 @@ def sensitivity(path: Path = PROCESSED / "sensitivity.csv") -> list[dict]:
                 "share_in_register_mine_classes": float(r["share_in_register_mine_classes"]),
                 "is_default": r["is_default"].strip().lower() == "true",
             }
-        )
-    return out
+            for r in csv.DictReader(f)
+        ]
 
 
 def overview() -> dict:
@@ -194,8 +191,6 @@ def overview() -> dict:
 
 def _compared_gaps(run: dict) -> list[int]:
     """Day gaps of the scene pairs actually compared (one per provenance zone), not every before x after combination."""
-    from datetime import date
-
     acq = list(run["acquisition"].values())
     b_dates, a_dates = acq[0]["source_dates"], acq[1]["source_dates"]
     gaps = set()

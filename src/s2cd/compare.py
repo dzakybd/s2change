@@ -21,9 +21,6 @@ import re
 from datetime import date
 from pathlib import Path
 
-import matplotlib
-import numpy as np
-
 from . import catalog, pipeline, viz
 from .io import parse_date
 
@@ -73,17 +70,13 @@ def _folder(label: str) -> Path:
 def _overlays(p: pipeline.Products, out: Path) -> dict:
     """Before/after RGB and the change-intensity heat map as WebP (EPSG:3857) with Leaflet bounds [[S, W], [N, E]]."""
     grid = p.before.grid
-    alpha = (p.valid * 255).astype(np.uint8)[None]
-
-    def rgba(refl):
-        return np.concatenate([np.moveaxis((viz.rgb(refl) * 255).astype(np.uint8), -1, 0), alpha])
-
-    intensity = np.nan_to_num(np.clip(np.log10(np.clip(p.cva.d2, 1e-3, None)) / 3, 0, 1))
-    heat = (matplotlib.colormaps["inferno"](intensity) * 255).astype(np.uint8)
-    heat[..., 3] = np.where(p.valid, (intensity * 230).astype(np.uint8), 0)
-    arrays = {"before": rgba(p.refl_before), "after": rgba(p.refl_after), "intensity": np.moveaxis(heat, -1, 0)}
+    arrays = {
+        "before": viz.rgba(p.refl_before, p.valid),
+        "after": viz.rgba(p.refl_after, p.valid),
+        "intensity": viz.intensity_rgba(p.cva.d2, p.valid),
+    }
     return {
-        name: {"file": f"{name}.webp", "bounds": viz._warp_png(arr, grid, out / f"{name}.webp")} for name, arr in arrays.items()
+        name: {"file": f"{name}.webp", "bounds": viz.warp_webp(arr, grid, out / f"{name}.webp")} for name, arr in arrays.items()
     }
 
 
@@ -106,11 +99,16 @@ def _summary(p: pipeline.Products) -> dict:
     }
 
 
+def is_done(folder: Path) -> bool:
+    """A pair is finished when its ``summary.json`` exists (it is written last)."""
+    return (folder / "summary.json").exists()
+
+
 def run(before: str, after: str, root: Path = ROOT) -> Path:
     """Compare two dates and return the pair's folder (cached: an existing result is returned untouched)."""
     d_before, d_after = validate_pair(before, after)
     out = Path(root) / pair_id(d_before, d_after)
-    if (out / "summary.json").exists():
+    if is_done(out):
         return out
     cfg = pipeline.Config(
         before=_folder(before),
@@ -121,7 +119,7 @@ def run(before: str, after: str, root: Path = ROOT) -> Path:
     p = pipeline.run(cfg)  # no figures: viz.figures is only called by the CLI
     polys = p.features["robust_cva"].reindex(columns=[*PROPERTIES, "geometry"])
     polys.insert(0, "id", range(1, len(polys) + 1))
-    viz._write_geojson(polys, out / "changes.geojson")
+    viz.write_geojson(polys, out / "changes.geojson")
     manifest = {"overlays": _overlays(p, out)}
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2))
     for stale in (*out.glob("*.tif"), out / "change_features.geojson"):  # large pipeline by-products the app does not serve

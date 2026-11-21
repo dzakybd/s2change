@@ -230,11 +230,10 @@ def plain_area(m2: float) -> str:
     return f"{m2 / 1e6:.2f} km²" if m2 >= 1e4 else f"{round(m2, -2):,.0f} m²"
 
 
-def _location(geom, fac_id, outlines: gpd.GeoDataFrame | None) -> str:
+def _location(geom, fac_id, outlines: gpd.GeoDataFrame) -> str:
     """'on the east side of the X' inside (or touching) a facility, else 'N km <direction> of the nearest facility'."""
-    if outlines is not None:  # an outline can be empty for a date (e.g. no water on both dates): it has no position
-        outlines = outlines[~outlines.geometry.is_empty]
-    if outlines is None or not len(outlines) or geom.is_empty:
+    outlines = outlines[~outlines.geometry.is_empty]  # an outline can be empty for a date (e.g. no water on both dates)
+    if not len(outlines) or geom.is_empty:
         return ""
     names = dict(zip(outlines.facility_id, outlines["name"], strict=True))
     c = geom.centroid
@@ -277,7 +276,7 @@ def _evidence(e, change_type: str) -> str:
     return "; ".join(bits) if bits else "a mixed colour change"
 
 
-def describe(polys: gpd.GeoDataFrame, labels: pd.DataFrame, ev: pd.DataFrame, outlines: gpd.GeoDataFrame | None) -> pd.DataFrame:
+def describe(polys: gpd.GeoDataFrame, labels: pd.DataFrame, ev: pd.DataFrame, outlines: gpd.GeoDataFrame) -> pd.DataFrame:
     """Plain-language fields per polygon: headline, location, evidence, what_to_check and one description sentence."""
     rows = []
     for i, p in polys.iterrows():
