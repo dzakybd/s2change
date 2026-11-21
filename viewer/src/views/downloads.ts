@@ -68,5 +68,5 @@ export async function createDownloads(_ctx: AppContext): Promise<View> {
         .join("")}</div></section>`,
     ).join("")}
   </div>`;
-  return { el, show() {}, hide() {} };
+  return { el, show() {} };
 }

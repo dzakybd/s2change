@@ -28,17 +28,7 @@ const LOADERS: Record<RouteName, { group: string; load: () => Promise<(ctx: AppC
 const main = document.getElementById("main") as HTMLElement;
 document.getElementById("brand-logo")!.innerHTML = logoSvg(28, "hdr");
 
-function toast(message: string): void {
-  const el = document.createElement("div");
-  el.className = "toast glass";
-  el.setAttribute("role", "status");
-  el.textContent = message;
-  document.body.append(el);
-  setTimeout(() => el.classList.add("leaving"), 2600);
-  setTimeout(() => el.remove(), 2900);
-}
-
-const ctx: AppContext = { api: resolveApi(), queryResult: null, toast };
+const ctx: AppContext = { api: resolveApi(), queryResult: null };
 void initAuth(ctx.api);
 mountAuthChip(document.getElementById("auth-chip") as HTMLElement, ctx.api);
 const views = new Map<string, Promise<View>>();
@@ -77,10 +67,7 @@ onRoute((route) => {
   viewFor(route)
     .then((view) => {
       if (mine !== token) return; // a newer navigation won
-      if (current && current !== view) {
-        current.hide();
-        current.el.hidden = true;
-      }
+      if (current && current !== view) current.el.hidden = true;
       view.el.hidden = false;
       current = view;
       view.show(route);

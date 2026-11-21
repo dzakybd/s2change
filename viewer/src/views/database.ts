@@ -178,6 +178,5 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       started = true;
       void start();
     },
-    hide() {},
   };
 }

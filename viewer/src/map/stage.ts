@@ -5,6 +5,7 @@ import type { ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, S
 import { CHANGE_TYPES, esc, fmtKm2, prefersReducedMotion, typeInfo } from "../domain";
 import { RASTER_KEYS } from "../types";
 import type { AoiCollection, Bounds, Dataset, FacilityCollection, FacilityProps } from "../types";
+import { featureBounds } from "../overlays";
 import { LABEL_COUNT, labelTargets, labelText } from "./changes";
 import { labelPoint } from "./geo";
 import type { LayerDef } from "./layers";
@@ -36,13 +37,7 @@ function corners([[s, w], [n, e]]: Bounds): [[number, number], [number, number],
   return [[w, n], [e, n], [e, s], [w, s]];
 }
 
-export function aoiBounds(aoi: AoiCollection): maplibregl.LngLatBounds {
-  const b = new maplibregl.LngLatBounds();
-  for (const f of aoi.features) for (const ring of f.geometry.coordinates) for (const [x, y] of ring) b.extend([x as number, y as number]);
-  return b;
-}
-
-export interface StageOptions {
+interface StageOptions {
   main: HTMLElement;
   compare: HTMLElement;
   aoi: AoiCollection;
@@ -75,7 +70,7 @@ export class MapStage {
     this.layer = opts.initialLayer;
     this.swipe = opts.initialSwipe;
     this.dataset = opts.dataset;
-    const common = { style: BASE_STYLE, bounds: aoiBounds(opts.aoi), fitBoundsOptions: { padding: 24 }, maxZoom: 19, maxPitch: 0 } as const;
+    const common = { style: BASE_STYLE, bounds: featureBounds(opts.aoi.features) ?? undefined, fitBoundsOptions: { padding: 24 }, maxZoom: 19, maxPitch: 0 } as const;
     this.main = new maplibregl.Map({ ...common, container: opts.main, attributionControl: { compact: true } });
     this.compare = new maplibregl.Map({ ...common, container: opts.compare, interactive: false, attributionControl: false });
     this.maps = [this.main, this.compare];
@@ -84,7 +79,7 @@ export class MapStage {
     this.main.dragRotate.disable();
     this.main.touchZoomRotate.disableRotation();
     this.main.on("move", () => {
-      this.compare.jumpTo({ center: this.main.getCenter(), zoom: this.main.getZoom(), bearing: this.main.getBearing() });
+      this.syncCompare();
       this.layoutChangeLabels();
     });
   }
@@ -184,11 +179,6 @@ export class MapStage {
     }
   }
 
-  /** Highlight a polygon from outside the map (a list row under the pointer). */
-  hoverFeature(id: number | null): void {
-    this.setHover(id);
-  }
-
   /* ---------- layer state ---------- */
 
   setLayer(def: LayerDef): void {
@@ -200,6 +190,10 @@ export class MapStage {
     this.swipe = on;
     this.apply();
     this.compare.resize();
+    this.syncCompare();
+  }
+
+  private syncCompare(): void {
     this.compare.jumpTo({ center: this.main.getCenter(), zoom: this.main.getZoom(), bearing: this.main.getBearing() });
   }
 
@@ -283,22 +277,24 @@ export class MapStage {
     });
   }
 
-  private setHover(id: number | null): void {
+  /** Highlight a polygon from outside the map (a list row under the pointer). */
+  setHover(id: number | null): void {
     if (id === this.hover) return;
-    for (const m of this.maps) {
-      if (this.hover !== null) m.setFeatureState({ source: "changes", id: this.hover }, { hover: false });
-      if (id !== null) m.setFeatureState({ source: "changes", id }, { hover: true });
-    }
+    this.moveFeatureState("hover", this.hover, id);
     this.hover = id;
   }
 
   select(id: number | null): void {
     if (this.selection === id) return;
-    for (const m of this.maps) {
-      if (this.selection !== null) m.setFeatureState({ source: "changes", id: this.selection }, { selected: false });
-      if (id !== null) m.setFeatureState({ source: "changes", id }, { selected: true });
-    }
+    this.moveFeatureState("selected", this.selection, id);
     this.selection = id;
+  }
+
+  private moveFeatureState(key: "hover" | "selected", from: number | null, to: number | null): void {
+    for (const m of this.maps) {
+      if (from !== null) m.setFeatureState({ source: "changes", id: from }, { [key]: false });
+      if (to !== null) m.setFeatureState({ source: "changes", id: to }, { [key]: true });
+    }
   }
 
   /* ---------- query result and fitting ---------- */

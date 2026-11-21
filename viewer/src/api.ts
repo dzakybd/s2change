@@ -19,17 +19,13 @@ export class ApiError extends Error {
   }
 }
 
-function params(): URLSearchParams {
-  return new URLSearchParams(location.search);
-}
-
 /**
  * Decide whether the live backend is usable. `?mock` serves canned responses from fixtures/; `?api=<url>` overrides
  * the origin; on `*.github.io` (static hosting) or when `/api/health` fails the live features are disabled and the
  * rest of the app keeps working from the static exports.
  */
 export async function resolveApi(): Promise<ApiState> {
-  const p = params();
+  const p = new URLSearchParams(location.search);
   if (p.has("mock")) return { kind: "ready", base: "", mock: p.get("mock") || "ok" };
   const override = p.get("api");
   const base = (override ?? "").replace(/\/+$/, "");
@@ -104,7 +100,7 @@ const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 const ACTIONS = new Set(["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility", "compare_dates"]);
 
 /** Defensive parse: unknown shapes degrade to an answer-only message instead of throwing in the UI. */
-export function normalizeResponse(raw: unknown): AgentResponse {
+function normalizeResponse(raw: unknown): AgentResponse {
   const r = (raw ?? {}) as Record<string, unknown>;
   return {
     answer: typeof r["answer"] === "string" ? r["answer"] : "",

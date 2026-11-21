@@ -4,10 +4,7 @@
  * or script. Links are limited to http(s). Supports headings, paragraphs, bullet/numbered lists, block
  * quotes, fenced code, rules, **bold**, *italic*, `code` and [links](https://...).
  */
-
-export function esc(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-}
+import { esc } from "./domain";
 
 function inline(raw: string): string {
   const codes: string[] = [];

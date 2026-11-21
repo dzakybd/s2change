@@ -1,6 +1,6 @@
 import { CHEVRON, esc } from "../domain";
 
-export interface MenuItem {
+interface MenuItem {
   id: string;
   label: string;
   hint?: string;

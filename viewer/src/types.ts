@@ -4,12 +4,12 @@ import type { FeatureCollection, Geometry, Polygon } from "geojson";
 export type Bounds = [[number, number], [number, number]];
 
 /** [west, south, east, north] */
-export type BBox = [number, number, number, number];
+type BBox = [number, number, number, number];
 
 export const RASTER_KEYS = ["before", "after_normalized", "change_intensity"] as const;
 export type RasterKey = (typeof RASTER_KEYS)[number];
 
-export interface RasterEntry {
+interface RasterEntry {
   url: string;
   label: string;
   bounds: Bounds;
@@ -156,7 +156,7 @@ export interface AgentResponse {
 
 /* ---------- API payloads (docs/api.md) ---------- */
 
-export interface DbColumn {
+interface DbColumn {
   name: string;
   type: string;
 }

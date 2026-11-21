@@ -57,6 +57,5 @@ export async function createReport(_ctx: AppContext): Promise<View> {
       loaded ??= load();
       void loaded.then(() => scrollToSection(route.params.get("s")));
     },
-    hide() {},
   };
 }

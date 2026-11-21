@@ -4,7 +4,7 @@ import type { RasterKey } from "../types";
  * What each entry of the layer menu shows. The map is two synced MapLibre maps: `right` is what the interactive map
  * shows, `left` is what the clipped map shows to the left of the swipe handle. Rasters are listed with their opacity.
  */
-export type PolygonMode = "outline" | "fill";
+type PolygonMode = "outline" | "fill";
 
 export interface LayerDef {
   id: string;

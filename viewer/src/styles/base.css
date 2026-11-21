@@ -190,7 +190,6 @@ tbody tr:first-child td { box-shadow: none; }
 
 input[type="range"] { accent-color: var(--accent); width: 100%; }
 input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
-.field { display: grid; gap: 6px; }
 
 .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgb(15 23 42 / 0.2); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -198,11 +197,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 .progress { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
 .progress > i { display: block; height: 100%; width: 40%; border-radius: 2px; background: var(--accent); animation: slide 1.4s var(--ease-in-out) infinite; }
 @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
-
-.toast { position: fixed; left: 50%; bottom: calc(var(--s-5) + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 60; padding: var(--s-3) var(--s-4); border-radius: var(--r-md); font-size: var(--fs-sm); transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out); }
-.toast { animation: toast-in 220ms var(--ease-out) both; }
-@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
-.toast.leaving { opacity: 0; transform: translate(-50%, 6px); transition-duration: 160ms; }
 
 /* Skeletons for the first paint of a view: the shape of the page, pulsing in opacity only. */
 .skel { display: block; border-radius: var(--r-sm); background: var(--surface-3); animation: skel 1.3s ease-in-out infinite alternate; }

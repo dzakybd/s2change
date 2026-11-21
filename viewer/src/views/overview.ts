@@ -215,6 +215,5 @@ export async function createOverview(_ctx: AppContext): Promise<View> {
       rendered = true;
       void render();
     },
-    hide() {},
   };
 }

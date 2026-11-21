@@ -1,6 +1,7 @@
 import "./styles/unlock.css";
 import type { ApiState, AuthState } from "./api";
 import { ApiError, authStatus, friendlyError, login, logout } from "./api";
+import { prefersReducedMotion } from "./domain";
 
 /**
  * The access code, in one place. The server gates a few costly features (analyst chat, SQL console, new
@@ -16,7 +17,7 @@ const set = (s: AuthState) => {
   for (const fn of listeners) fn(s);
 };
 
-export function onAuthChange(fn: (s: AuthState) => void): void {
+function onAuthChange(fn: (s: AuthState) => void): void {
   listeners.add(fn);
   fn(state);
 }
@@ -36,7 +37,7 @@ export async function initAuth(apiPromise: Promise<ApiState>): Promise<void> {
   }
 }
 
-export async function lock(apiPromise: Promise<ApiState>): Promise<void> {
+async function lock(apiPromise: Promise<ApiState>): Promise<void> {
   const api = await apiPromise;
   if (api.kind !== "ready") return;
   try {
@@ -61,7 +62,7 @@ export async function withUnlock<T>(apiPromise: Promise<ApiState>, action: () =>
 let open: Promise<boolean> | null = null;
 
 /** Show the unlock dialog (one at a time). Resolves true once the code was accepted, false when dismissed. */
-export function requestUnlock(apiPromise: Promise<ApiState>): Promise<boolean> {
+function requestUnlock(apiPromise: Promise<ApiState>): Promise<boolean> {
   open ??= showDialog(apiPromise).finally(() => (open = null));
   return open;
 }
@@ -92,7 +93,7 @@ function showDialog(apiPromise: Promise<ApiState>): Promise<boolean> {
     // Pointer dismissals fade out quickly; Escape (keyboard) and the success path close at once.
     const dismiss = () => {
       if (dlg.classList.contains("closing")) return;
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return dlg.close();
+      if (prefersReducedMotion()) return dlg.close();
       dlg.classList.add("closing");
       setTimeout(() => dlg.close(), 120);
     };

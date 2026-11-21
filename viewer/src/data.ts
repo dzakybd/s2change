@@ -4,7 +4,7 @@ import type { AoiCollection, ChangeCollection, Dataset, FacilityCollection, Mani
  * Where the exported web assets live. Resolution order: `?data=` query parameter,
  * VITE_DATA_BASE at build time, then `../web/` (docs/viewer/ next to docs/web/).
  */
-export function dataBase(): URL {
+function dataBase(): URL {
   const fromQuery = new URLSearchParams(location.search).get("data");
   const raw = fromQuery ?? import.meta.env.VITE_DATA_BASE ?? "../web/";
   return new URL(raw.endsWith("/") ? raw : `${raw}/`, location.href);

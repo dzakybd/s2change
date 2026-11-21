@@ -5,7 +5,7 @@ export const REPO_URL = "https://github.com/dzakybd/s2change";
 export const RAW_URL = `${REPO_URL}/raw/main/`;
 export const BLOB_URL = `${REPO_URL}/blob/main/`;
 
-export interface ChangeTypeInfo {
+interface ChangeTypeInfo {
   key: string;
   label: string;
   color: string;

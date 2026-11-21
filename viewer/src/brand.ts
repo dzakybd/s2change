@@ -23,6 +23,3 @@ export function logoSvg(size = 28, suffix = "a"): string {
   <g transform="translate(25.6 5.8) rotate(-48)"><rect x="-1.5" y="-1.5" width="3" height="3" rx=".6" fill="#f4f7fb"/><rect x="-5" y="-.7" width="2.6" height="1.4" rx=".3" fill="#f4f7fb"/><rect x="2.4" y="-.7" width="2.6" height="1.4" rx=".3" fill="#f4f7fb"/></g>
 </svg>`;
 }
-
-/** Standalone version for favicon.svg (same artwork, no ids to collide). */
-export const FAVICON_SVG = logoSvg(32, "f");

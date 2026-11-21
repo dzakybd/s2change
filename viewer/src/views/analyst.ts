@@ -2,13 +2,13 @@ import "../styles/chat.css";
 import type { ApiState, ChatMessage } from "../api";
 import { brief, chat, friendlyError } from "../api";
 import { chartElement } from "../charts";
-import { LIVE_URL } from "../domain";
-import { esc, renderMarkdown } from "../markdown";
+import { LIVE_URL, esc, q } from "../domain";
+import { renderMarkdown } from "../markdown";
 import { renderRich } from "../rich";
 import { withUnlock } from "../unlock";
 import type { AgentAction, AgentResponse, AgentTable } from "../types";
 
-export const SUGGESTIONS = [
+const SUGGESTIONS = [
   "How much changed and why?",
   "Show the 5 largest changes in the mine footprint",
   "Which facility changed the most?",
@@ -109,20 +109,15 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
       <button type="submit" class="send" id="chat-send" aria-label="Send" disabled>${SEND}</button>
     </form>`;
 
-  const $ = <T extends HTMLElement>(sel: string): T => {
-    const el = root.querySelector<T>(sel);
-    if (!el) throw new Error(`missing ${sel}`);
-    return el;
-  };
-  const log = $("#chat-log");
-  const scroller = $("#chat-scroll");
-  const input = $<HTMLTextAreaElement>("#chat-input");
-  const send = $<HTMLButtonElement>("#chat-send");
-  const form = $<HTMLFormElement>("#chat-form");
-  const clear = $<HTMLButtonElement>("#chat-clear");
-  const welcome = $("#chat-welcome");
+  const log = q(root, "#chat-log");
+  const scroller = q(root, "#chat-scroll");
+  const input = q<HTMLTextAreaElement>(root, "#chat-input");
+  const send = q<HTMLButtonElement>(root, "#chat-send");
+  const form = q<HTMLFormElement>(root, "#chat-form");
+  const clear = q<HTMLButtonElement>(root, "#chat-clear");
+  const welcome = q(root, "#chat-welcome");
   const chips = [...root.querySelectorAll<HTMLButtonElement>(".chip")];
-  const briefBtn = $<HTMLButtonElement>("#chat-brief");
+  const briefBtn = q<HTMLButtonElement>(root, "#chat-brief");
   let briefBusy = false;
 
   const history: ChatMessage[] = [];
@@ -141,7 +136,7 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
 
   void apiPromise.then((state) => {
     api = state;
-    const banner = $("#chat-banner");
+    const banner = q(root, "#chat-banner");
     if (state.kind === "disabled") {
       const why = state.reason === "static-host" ? "This page is served statically (GitHub Pages), so there is no analyst backend behind it." : "The analyst API did not answer its health check.";
       banner.innerHTML = `<div class="callout offline"><b>Live agent runs at <a href="${LIVE_URL}" target="_blank" rel="noopener noreferrer">${LIVE_URL}</a></b><p>${why} The rest of the app keeps working from the static exports.</p></div>`;

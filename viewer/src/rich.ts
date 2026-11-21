@@ -1,3 +1,5 @@
+import { prefersReducedMotion } from "./domain";
+
 /**
  * Markdown to sanitised DOM for the Report tab and the monitoring brief. marked and DOMPurify load on first use,
  * so they stay out of the entry bundle. Post-processing happens on the sanitised DOM: heading ids for the table of
@@ -5,7 +7,7 @@
  * become SVG diagrams; the mermaid package is imported only when a document contains one. GitHub-style alerts
  * (`> [!NOTE]`) become callout boxes, and remote images are limited to the technology logos on cdn.simpleicons.org.
  */
-export interface RichOptions {
+interface RichOptions {
   /** Resolve relative image URLs against this (the report's own folder). */
   imageBase?: URL;
   figures?: boolean;
@@ -95,7 +97,7 @@ export async function renderRich(markdown: string, opts: RichOptions = {}): Prom
       const target = id ? root.querySelector(`[id="${CSS.escape(id)}"]`) : null;
       if (!target) return;
       e.preventDefault();
-      target.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      target.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" });
     });
   }
 

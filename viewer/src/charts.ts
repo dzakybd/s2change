@@ -1,9 +1,9 @@
-import { esc } from "./markdown";
+import { esc } from "./domain";
 import type { AgentChart } from "./types";
 
 /** Tiny hand-rolled SVG charts (no chart library): multi-series line with gaps and grouped bars. */
 
-export const SERIES_COLORS = ["#e8833a", "#0d9488", "#7c3aed", "#e11d48", "#0284c7", "#64748b"];
+const SERIES_COLORS = ["#e8833a", "#0d9488", "#7c3aed", "#e11d48", "#0284c7", "#64748b"];
 
 const GRID = "#e2e8f0";
 const AXIS_TEXT = "#64748b";
@@ -17,7 +17,7 @@ function niceStep(raw: number): number {
 }
 
 /** Round-number ticks covering [min, max]. */
-export function niceTicks(min: number, max: number, count = 4): number[] {
+function niceTicks(min: number, max: number, count = 4): number[] {
   if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
   if (min === max) {
     const pad = Math.abs(min) * 0.1 || 1;
@@ -30,7 +30,7 @@ export function niceTicks(min: number, max: number, count = 4): number[] {
   return ticks;
 }
 
-export function fmtNum(v: number, step = 0): string {
+function fmtNum(v: number, step = 0): string {
   if (!Number.isFinite(v)) return "";
   const digits = step > 0 && step < 1 ? Math.min(4, Math.ceil(-Math.log10(step))) : Math.abs(v) >= 100 ? 0 : Math.abs(v) >= 10 ? 1 : 2;
   return v.toLocaleString("en-US", { maximumFractionDigits: digits, minimumFractionDigits: step > 0 && step < 1 ? digits : 0 });

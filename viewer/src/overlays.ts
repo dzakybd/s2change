@@ -42,10 +42,6 @@ export class RunOverlay {
     map.addLayer({ id: "highlight-line", type: "line", source: "highlight", paint: { "line-color": "#fde047", "line-width": 3 } });
   }
 
-  setVisible(visible: boolean): void {
-    for (const id of ["run-fill", "run-line", "highlight-fill", "highlight-casing", "highlight-line"]) this.map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
-  }
-
   /** Ids of the assignment result already in the viewer, shown without a network request. */
   assignmentFeatures(ids: number[]): Feature[] {
     const want = new Set(ids);

@@ -1,6 +1,6 @@
 /** Hash router: `#/map?layer=intensity&swipe=0`. Every route is deep-linkable and works on any static host. */
 
-export const ROUTES = ["overview", "map", "database", "report", "analyst", "downloads"] as const;
+const ROUTES = ["overview", "map", "database", "report", "analyst", "downloads"] as const;
 export type RouteName = (typeof ROUTES)[number];
 
 export interface Route {
@@ -8,7 +8,7 @@ export interface Route {
   params: URLSearchParams;
 }
 
-export function parseHash(hash = location.hash): Route {
+function parseHash(hash = location.hash): Route {
   const raw = hash.replace(/^#\/?/, "");
   const [path = "", query = ""] = raw.split("?");
   const name = ROUTES.find((r) => r === path.split("/")[0]) ?? "overview";

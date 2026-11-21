@@ -48,11 +48,6 @@ const TEMPLATE = `
   </div>
 </div>`;
 
-interface UiState {
-  layer: string;
-  swipe: boolean;
-}
-
 export async function createWorkspace(ctx: AppContext): Promise<View> {
   const el = document.createElement("div");
   el.className = "view fill";
@@ -63,14 +58,13 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
   let mode: "map" | "analyst" = "map";
   let pending: Route | null = null;
   let analystLoaded = false;
-  const state: UiState = { layer: DEFAULT_LAYER, swipe: true };
+  const state = { layer: DEFAULT_LAYER, swipe: true };
 
   let applyRoute: (route: Route) => void = () => {};
 
   async function init(): Promise<void> {
-    const [dataset, aoi, facilities] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities()]);
-    const provided = dataset;
-    let ds: Dataset = dataset;
+    const [provided, aoi, facilities] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities()]);
+    let ds: Dataset = provided;
     const facName = new Map(facilities.features.map((f) => [f.properties.facility_id, f.properties.name]));
     const hidden = new Set<string>();
     const list: ListUi = { tab: "list", showAll: false, noise: false };
@@ -243,9 +237,9 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       return v === undefined ? null : Number(v);
     };
     legend.addEventListener("pointerover", (e) => {
-      if (e.pointerType === "mouse") st.hoverFeature(rowFid(e));
+      if (e.pointerType === "mouse") st.setHover(rowFid(e));
     });
-    legend.addEventListener("pointerleave", () => st.hoverFeature(null));
+    legend.addEventListener("pointerleave", () => st.setHover(null));
 
     /* ---------- date picker ---------- */
     const picker = new DatePicker({
@@ -259,9 +253,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         hidden.clear();
         st.setHiddenTypes(hidden);
         menu.setItems(menuItems(), state.layer);
-        if (layerById(state.layer).providedOnly && !next.nominal) setLayer(DEFAULT_LAYER);
-        else setLayer(state.layer);
-        labels();
+        setLayer(state.layer);
       },
     });
     q(el, "#hud-cmp").append(picker.root);
@@ -336,7 +328,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       },
       setLayer(id) {
         setLayer(id);
-        syncHash();
         return state.layer === id ? null : `The ${id} layer is not available for this comparison.`;
       },
       setView({ swipe }) {
@@ -348,7 +339,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         if (!f) return `No facility ${facilityId}.`;
         if (ds.id !== provided.id) picker.reset(); // facility numbers belong to the provided pair
         setLayer("facilities");
-        syncHash();
         fit([f as Feature], 15);
         stage?.select(null);
         showInspector(facilityCard(f.properties));
@@ -407,6 +397,5 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       pending = route;
       if (stage) applyRoute(route);
     },
-    hide() {},
   };
 }

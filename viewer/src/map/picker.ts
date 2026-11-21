@@ -3,7 +3,7 @@ import { ApiError, apiUrl, compareDates, compareStart, compareStatus, friendlyEr
 import { getJson, indexed } from "../data";
 import { withUnlock } from "../unlock";
 import { CHEVRON, CLOSE, LIVE_URL, esc, q } from "../domain";
-import type { ChangeCollection, CompareDate, CompareResult, Dataset } from "../types";
+import type { Bounds, ChangeCollection, CompareDate, CompareResult, Dataset } from "../types";
 
 const PROVIDED_BEFORE = "provided-before";
 const PROVIDED_AFTER = "provided-after";
@@ -226,7 +226,7 @@ export class DatePicker {
       }
       if (token !== this.runToken) return;
       if (!job.result) throw new Error("The job finished without a result");
-      const ds = await this.toDataset(api, job.result, this.label(this.before), this.label(this.after), this.before === PROVIDED_BEFORE || this.after === PROVIDED_AFTER);
+      const ds = await this.toDataset(api, job.result, before, after);
       if (token !== this.runToken) return;
       this.phase = "choose";
       this.opts.onDataset(ds);
@@ -239,15 +239,15 @@ export class DatePicker {
     }
   }
 
-  private async toDataset(api: ReadyApi, r: CompareResult, beforeLabel: string, afterLabel: string, nominal: boolean): Promise<Dataset> {
+  private async toDataset(api: ReadyApi, r: CompareResult, beforeKey: string, afterKey: string): Promise<Dataset> {
     const changes = indexed(await getJson<ChangeCollection>(apiUrl(api, r.changes_url)));
-    const abs = (o: { url: string; bounds: CompareResult["overlays"]["before"]["bounds"] }) => ({ url: apiUrl(api, o.url), bounds: o.bounds });
+    const abs = (o: { url: string; bounds: Bounds }) => ({ url: apiUrl(api, o.url), bounds: o.bounds });
     const before = abs(r.overlays.before);
     const after = abs(r.overlays.after);
     return {
       id: r.pair,
-      dates: { before: beforeLabel.replace(" (nominal)", ""), after: afterLabel.replace(" (nominal)", "") },
-      nominal,
+      dates: { before: this.sortKey(beforeKey), after: this.sortKey(afterKey) },
+      nominal: beforeKey === PROVIDED_BEFORE || afterKey === PROVIDED_AFTER,
       rasters: { before, after_normalized: after, change_intensity: abs(r.overlays.intensity) },
       changes,
     };

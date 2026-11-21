@@ -1,4 +1,4 @@
-import { CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtArea, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
+import { CHANGE_TYPES, CHEVRON, CLOSE, FACILITY_CLASS_LABEL, esc, fmtArea, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
 import type { ChangeCollection, ChangeProps, Dataset, FacilityProps } from "../types";
 import { changeTitle, changeWhere, listHtml, rankChanges } from "./changes";
 import type { ListUi } from "./changes";
@@ -35,23 +35,26 @@ export function facilityCard(p: FacilityProps): string {
   const max = types[0]?.[1] ?? 0;
   return `<header class="ins-head"><i class="swatch lg" style="background:#5eead4"></i><div><h3>${esc(p.name)}</h3><p class="muted">${esc(FACILITY_CLASS_LABEL[p.class] ?? p.class)} · ${esc(p.facility_id)}</p></div>${closeBtn}</header>
   <div class="tiles"><div><b class="num">${fmtKm2(p.changed_ha)}</b><span>changed</span></div><div><b class="num">${fmtPct(p.changed_share, p.changed_share < 0.1 ? 1 : 0)}</b><span>of the facility</span></div><div><b class="num">${fmtKm2(p.area_ha)}</b><span>total</span></div></div>
-  ${types.length ? `<h4>What changed</h4>${bars(types, max, (k) => typeInfo(k).color, (k) => typeInfo(k).label)}` : '<p class="note">No change detected inside this facility.</p>'}
+  ${types.length ? `<h4>What changed</h4>${bars(types, max)}` : '<p class="note">No change detected inside this facility.</p>'}
   <p class="note">${esc(p.summary)}</p>`;
 }
 
-function bars(rows: [string, number][], max: number, color: (k: string) => string, label: (k: string) => string): string {
+function bars(rows: [string, number][], max: number): string {
   return `<ul class="bars">${rows
-    .map(([k, v]) => `<li><span class="bar-l"><i class="swatch" style="background:${color(k)}"></i>${esc(label(k))}</span><b class="num">${fmtKm2(v)}</b><span class="bar"><i style="width:${max ? Math.max(2, (v / max) * 100).toFixed(1) : 0}%;background:${color(k)}"></i></span></li>`)
+    .map(([k, v]) => {
+      const t = typeInfo(k);
+      return `<li><span class="bar-l"><i class="swatch" style="background:${t.color}"></i>${esc(t.label)}</span><b class="num">${fmtKm2(v)}</b><span class="bar"><i style="width:${max ? Math.max(2, (v / max) * 100).toFixed(1) : 0}%;background:${t.color}"></i></span></li>`;
+    })
     .join("")}</ul>`;
 }
 
-export interface TypeTally {
+interface TypeTally {
   key: string;
   count: number;
   ha: number;
 }
 
-export function tallyTypes(changes: ChangeCollection): { rows: TypeTally[]; count: number; ha: number } {
+function tallyTypes(changes: ChangeCollection): { rows: TypeTally[]; count: number; ha: number } {
   const m = new Map<string, TypeTally>();
   let total = 0;
   for (const f of changes.features) {
@@ -90,5 +93,5 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
   } else {
     body = `<p class="note">${esc(def.hint)}.${ds.nominal ? " The two dates are nominal: each is a mosaic of two Sentinel-2 scenes (07-01/07-04 and 08-25/09-02)." : ""} Outlines are the change polygons, coloured by type.</p>`;
   }
-  return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b>${count ? `<span class="lg-count num">${count}</span>` : ""}<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lg-body">${body}</div>`;
+  return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b>${count ? `<span class="lg-count num">${count}</span>` : ""}${CHEVRON}</button><div class="lg-body">${body}</div>`;
 }
