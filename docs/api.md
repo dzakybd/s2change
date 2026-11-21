@@ -2,7 +2,7 @@
 
 The app is the single place to inspect the solution, so evaluators never need a database client. All database access goes through the read-only role `s2cd_reader` (5 s statement timeout), and the query, AOI, compare and chat endpoints are rate-limited per client IP.
 
-Reading is public. Four endpoints need the **access code** (marked "access code" below): the analyst chat, the SQL console, drawn-area stats and starting a new (uncached) comparison. Without a valid session cookie they answer `401 {"detail": "This feature needs the access code."}`. See "Access code" below.
+Reading is public. Three endpoints need the **access code** (marked "access code" below): the analyst chat, the SQL console and starting a new (uncached) comparison. Without a valid session cookie they answer `401 {"detail": "This feature needs the access code."}`. See "Access code" below.
 
 ## Results of the default comparison (the provided pair)
 
@@ -21,12 +21,6 @@ Reading is public. Four endpoints need the **access code** (marked "access code"
 | `GET /api/db/schema` | `[{table, rows, columns: [{name, type}], geometry: {column, srid, type} \| null}]` |
 | `GET /api/db/examples` | `[{title, description, sql}]` (from `sql/queries_postgis.sql`) |
 | `POST /api/db/query {sql}` (access code) | `{columns, rows, truncated, elapsed_ms, geojson \| null}`. Accepts one SELECT over the allow-listed tables, max 500 rows. Geometry columns come back as a GeoJSON FeatureCollection in EPSG:4326, so results can be drawn on the map |
-
-## Area of interest
-
-| Method & path | Returns |
-|---|---|
-| `POST /api/aoi/stats {geometry, run_id?}` (access code) | `{area_ha, changed_ha, changed_share, n_polygons, by_change_type{}, by_facility{}}` for a GeoJSON polygon (EPSG:4326) drawn by the user |
 
 ## Other dates (date picker)
 

@@ -21,7 +21,7 @@ export interface AgentHost {
   highlight(runId: string, ids: number[], fit: boolean): Promise<string | null>;
   showRun(runId: string): Promise<string | null>;
   setLayer(layer: string): string | null;
-  setView(view: { swipe?: boolean; oblique?: boolean }): string | null;
+  setView(view: { swipe: boolean }): string | null;
   showFacility(facilityId: string): string | null;
   compareDates(before: string, after: string): Promise<string | null>;
   /** Clear anything the agent drew (highlights). */
@@ -39,9 +39,9 @@ function actionLabel(a: AgentAction): string {
     case "show_run":
       return `Show run ${a.run_id}`;
     case "set_layer":
-      return `Layer: ${a.layer.replace("_", " ")}`;
+      return `Layer: ${a.layer}`;
     case "set_view":
-      return [a.swipe !== undefined ? `Swipe ${a.swipe ? "on" : "off"}` : "", a.oblique !== undefined ? `Oblique ${a.oblique ? "on" : "off"}` : ""].filter(Boolean).join(" · ");
+      return `Swipe ${a.swipe ? "on" : "off"}`;
     case "show_facility":
       return `Show ${a.facility_id}`;
     case "compare_dates":

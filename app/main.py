@@ -1,4 +1,4 @@
-"""FastAPI app: results, database explorer, AOI stats, date comparison and the analyst chat. Run: uvicorn app.main:app"""
+"""FastAPI app: results, database explorer, date comparison and the analyst chat. Run: uvicorn app.main:app"""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ class DailyCap:
 limiter = Limiter(key_func=client_ip)
 daily = DailyCap(int(os.environ.get("AGENT_DAILY_CAP", "300")))
 RATE = os.environ.get("AGENT_RATE", "6/minute")
-DB_RATE = os.environ.get("DB_RATE", "30/minute")  # explorer queries and AOI stats: read-only, 5 s timeout
+DB_RATE = os.environ.get("DB_RATE", "30/minute")  # explorer queries: read-only, 5 s timeout
 COMPARE_RATE = os.environ.get("COMPARE_RATE", "10/minute")  # comparison job submissions
 LOGIN_RATE = os.environ.get("LOGIN_RATE", "5/minute")  # access-code attempts, per client IP
 jobs = compare_jobs.CompareJobs(int(os.environ.get("COMPARE_DAILY_CAP", "12")))
@@ -191,23 +191,6 @@ def db_query(request: Request, body: SqlRequest):
         raise bad_request(e) from None
     except DBAPIError as e:  # the user's SQL failed in the database: a bad column, a timeout, ...
         raise HTTPException(400, f"The database rejected the query: {str(e.orig).splitlines()[0][:200]}") from None
-
-
-# ---- Area of interest ----------------------------------------------------------------------------------------------
-
-
-class AoiRequest(BaseModel):
-    geometry: dict
-    run_id: str | None = None
-
-
-@app.post("/api/aoi/stats", dependencies=[Depends(auth.require_access)])
-@limiter.limit(lambda: DB_RATE)
-def aoi_stats(request: Request, body: AoiRequest):
-    try:
-        return results.aoi_stats(body.geometry, body.run_id)
-    except ValueError as e:
-        raise bad_request(e) from None
 
 
 # ---- Other dates ---------------------------------------------------------------------------------------------------

@@ -178,7 +178,6 @@ def overview() -> dict:
             "changed_pct_of_aoi": default["changed_pct_of_aoi"] if default else round(100 * changed["robust_cva"] / aoi_ha, 2),
             "baseline_ha": changed["euclidean_baseline"],
             "baseline_n_polygons": run["n_features"]["euclidean_baseline"],
-            "irmad_ha": changed["irmad"],
             "share_in_mine_footprint": run["footprint"]["register_all_facilities"][
                 "share_of_change"
             ],  # same definition as report.md (named facilities)

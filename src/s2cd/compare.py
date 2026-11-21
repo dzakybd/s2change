@@ -117,7 +117,6 @@ def run(before: str, after: str, root: Path = ROOT) -> Path:
         after=_folder(after),
         out_dir=out,
         sqlite_path=out / "db.sqlite",
-        run_irmad=False,
     )
     p = pipeline.run(cfg)  # no figures: viz.figures is only called by the CLI
     polys = p.features["robust_cva"].reindex(columns=[*PROPERTIES, "geometry"])

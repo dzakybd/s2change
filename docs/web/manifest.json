@@ -20,20 +20,6 @@
         ]
       ]
     },
-    "after": {
-      "url": "after.webp",
-      "label": "Sentinel-2 RGB, nominal 2023-09-02 (mosaic of 2023-08-25/09-02) (as delivered)",
-      "bounds": [
-        [
-          -12.320287299499615,
-          25.79001102217236
-        ],
-        [
-          -12.17529130101085,
-          25.944378082147733
-        ]
-      ]
-    },
     "after_normalized": {
       "url": "after_normalized.webp",
       "label": "Sentinel-2 RGB, nominal 2023-09-02 (mosaic of 2023-08-25/09-02) (normalized)",
@@ -65,8 +51,7 @@
   },
   "summary": {
     "euclidean_baseline": 11143.36,
-    "robust_cva": 413.3,
-    "irmad": 10824.45
+    "robust_cva": 413.3
   },
   "vectors": {
     "changes": "change_features.geojson",

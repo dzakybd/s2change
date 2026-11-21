@@ -94,15 +94,6 @@ def facility_summary(facility_id: str | None = None) -> str:
 
 @tool
 @safe
-def aoi_stats(geometry: dict, run_id: str | None = None) -> str:
-    """Change inside an area of interest: a GeoJSON Polygon or MultiPolygon in lon/lat (EPSG:4326). Returns the area (ha),
-    changed hectares (polygons clipped to the area), changed share, polygon count, and hectares per change_type and per
-    facility. Use it for 'how much changed inside this box/area' questions."""
-    return results.aoi_stats(geometry, run_id)
-
-
-@tool
-@safe
 def read_context(topic: Literal[*knowledge.TOPICS]) -> str:  # type: ignore[valid-type]
     """Background notes (markdown) for questions about meaning rather than numbers. Topics: use_case (who it is for),
     site (the mine and its surroundings), facilities (what each facility class is and looks like at 10 m), seasons (wet/dry
@@ -213,18 +204,16 @@ def map_action(
     bbox: list[float] | None = None,
     run_id: str | None = None,
     ids: list[int] | None = None,
-    layer: Literal["types", "after", "before", "after_raw", "intensity", "binary", "facilities", "redness"] | None = None,
+    layer: Literal["types", "after", "before", "intensity", "facilities"] | None = None,
     swipe: bool | None = None,
-    oblique: bool | None = None,
     facility_id: str | None = None,
     before: str | None = None,
     after: str | None = None,
 ) -> str:
     """Control the map the user is looking at (several actions per answer are fine; they run in order).
     fly_to: bbox=[west, south, east, north] lon/lat. highlight: run_id + polygon ids (from top_changes). show_run: switch the
-    displayed run. set_layer: layer = types (change polygons by type), after/before (true colour), after_raw, intensity
-    (change magnitude heat map), binary, facilities (facility register), redness (B04/B02 iron-oxide proxy).
-    set_view: swipe (before/after slider) and/or oblique (tilted 2.5D view) true/false. show_facility: facility_id (from
+    displayed run. set_layer: layer = types (change polygons by type), after/before (true colour), intensity
+    (change magnitude heat map), facilities (facility register). set_view: swipe (before/after slider) true/false. show_facility: facility_id (from
     facility_summary) -> zoom to it and open its card. compare_dates: before/after = 'provided-before', 'provided-after' or a
     date from list_dates -> the map loads that comparison (results are not in the database). Only act on ids, runs,
     facilities and dates returned by other tools."""
@@ -241,7 +230,7 @@ def map_action(
         from s2cd import compare
 
         compare.validate_pair(before or "", after or "")  # ValueError with a usable message for unknown dates
-    kw = {"layer": layer, "swipe": swipe, "oblique": oblique, "facility_id": facility_id, "before": before, "after": after}
+    kw = {"layer": layer, "swipe": swipe, "facility_id": facility_id, "before": before, "after": after}
     return {"ok": True, "action": collector.current().add_action(type, bbox, run_id, ids, **kw)}
 
 
@@ -271,7 +260,6 @@ ALL_TOOLS = [
     area_summary,
     change_type_summary,
     facility_summary,
-    aoi_stats,
     top_changes,
     explain_change,
     read_context,

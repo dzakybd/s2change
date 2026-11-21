@@ -123,7 +123,7 @@ export class DatePicker {
     const head = `<div class="pop-head"><b>Compare other dates</b><button type="button" class="btn ghost icon sm" data-act="close" aria-label="Close">${CLOSE}</button></div>`;
     if (!this.api || this.api.kind !== "ready") {
       const reason = this.api?.kind === "disabled" && this.api.reason === "static-host" ? "This page is served as static files, so there is no backend to compute a new pair." : "The live backend did not answer, so other dates can't be computed right now.";
-      this.pop.innerHTML = `${head}<div class="pop-body"><p>${reason}</p><p class="muted">The provided pair stays fully explorable here. Picking two other clear dates, drawing areas against PostGIS and the SQL console run on the live site.</p><a class="btn primary" href="${LIVE_URL}/#/map" target="_blank" rel="noopener noreferrer">Open s2change.dzaky.ai.id</a></div>`;
+      this.pop.innerHTML = `${head}<div class="pop-body"><p>${reason}</p><p class="muted">The provided pair stays fully explorable here. Picking two other clear dates and the SQL console run on the live site.</p><a class="btn primary" href="${LIVE_URL}/#/map" target="_blank" rel="noopener noreferrer">Open s2change.dzaky.ai.id</a></div>`;
       return;
     }
     if (this.phase === "running") {
@@ -248,7 +248,7 @@ export class DatePicker {
       id: r.pair,
       dates: { before: beforeLabel.replace(" (nominal)", ""), after: afterLabel.replace(" (nominal)", "") },
       nominal,
-      rasters: { before, after, after_normalized: after, change_intensity: abs(r.overlays.intensity) },
+      rasters: { before, after_normalized: after, change_intensity: abs(r.overlays.intensity) },
       changes,
     };
   }

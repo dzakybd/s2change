@@ -7,7 +7,7 @@ from adjacent orbits, seamed along a slanted swath edge (verified pixel-exact ag
 Computer STAC by ``s2cd provenance``). Detector-footprint striping under haze produces the same
 geometry. Either way the before/after radiometric relation changes in straight, parallel steps,
 so a single global relation is wrong, and every method that assumes one (image difference,
-Euclidean distance, global IR-MAD) paints whole zones as "change". The ``stripe`` names below
+Euclidean distance) paints whole zones as "change". The ``stripe`` names below
 refer to this geometry, whatever causes it.
 
 We model the date-to-date radiometric relation as piecewise constant across zones. Zones come from one of two sources:
@@ -20,7 +20,7 @@ We model the date-to-date radiometric relation as piecewise constant across zone
   2. finds the stripe orientation that best explains it (straight lines, angle search),
   3. segments the 1-D profile across the stripes into zones (binary segmentation).
 
-Each zone is then treated independently in IR-MAD, in the relative normalization and in the noise model.
+Each zone is then treated independently in the relative normalization and in the noise model.
 """
 
 from __future__ import annotations
@@ -240,8 +240,8 @@ def relative_normalization(
     """Map the after-image onto the before-image radiometry, zone by zone.
 
     Adapted from the iterative orthogonal-regression normalization of Canty & Nielsen (2008, Remote Sensing of Environment
-    112:1025): they take the no-change pixels from the IR-MAD no-change probability, here they are the pixels that survive
-    the residual trimming below, so no canonical-correlation step is needed.
+    112:1025). The no-change pixels are the ones that survive the residual trimming below, so no canonical-correlation
+    step is needed.
 
     Per zone, every band gets a linear model before = a + b * after, fitted by orthogonal
     regression (both dates are noisy, so ordinary least squares would bias the slope). The fit is

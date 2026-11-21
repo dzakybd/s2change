@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-21T06:09:30+00:00",
+  "generated": "2026-11-21T07:26:04+00:00",
   "pair": {
     "before": "2023-08-12",
     "after": "2023-09-02",
@@ -41,12 +41,11 @@
     "changed_pct_of_aoi": 1.56,
     "baseline_ha": 11143.36,
     "baseline_n_polygons": 1561,
-    "irmad_ha": 10824.45,
     "share_in_mine_footprint": 0.739,
     "share_in_register_mine_classes": 0.738,
     "agreement_iou_with_baseline": 0.031,
     "n_zones": 3,
-    "runtime_s": 32.8
+    "runtime_s": 11.8
   },
   "change_type_ha": {
     "tailings_deposition": 185.3,

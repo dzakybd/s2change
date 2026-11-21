@@ -8,8 +8,6 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from shapely.geometry import shape
-
 from app import db
 
 # The default comparison: robust CVA on the provided pair. Nominal dates, see NOMINAL_DATES_NOTE.
@@ -18,7 +16,6 @@ NOMINAL_DATES_NOTE = (
     "The two dates are nominal mosaic dates. The 2023-08-12 raster is built from scenes of 2023-07-01/07-04 and the "
     "2023-09-02 raster from scenes of 2023-08-25/09-02, so the effective gap is 52-60 days, not 21."
 )
-MAX_AOI_VERTICES = 2000
 
 
 def resolve_run(run_id: str | None = None) -> str:
@@ -76,55 +73,6 @@ def facilities_geojson() -> dict:
             {"type": "Feature", "id": r["facility_id"], "geometry": geoms[r["facility_id"]], "properties": r}
             for r in facility_rows()
         ],
-    }
-
-
-def _aoi_polygon(geometry: dict):
-    """Validate a user-drawn GeoJSON polygon (EPSG:4326) and return the shapely geometry."""
-    try:
-        poly = shape(geometry)
-    except Exception:
-        raise ValueError("geometry must be a GeoJSON Polygon or MultiPolygon.") from None
-    if poly.geom_type not in ("Polygon", "MultiPolygon") or poly.is_empty:
-        raise ValueError("geometry must be a non-empty GeoJSON Polygon or MultiPolygon.")
-    xmin, ymin, xmax, ymax = poly.bounds
-    if xmin < -180 or xmax > 180 or ymin < -90 or ymax > 90:
-        raise ValueError("Coordinates must be lon/lat degrees (EPSG:4326).")
-    if not poly.is_valid:
-        raise ValueError("The polygon is invalid (for example self-intersecting).")
-    if sum(len(g.exterior.coords) for g in getattr(poly, "geoms", [poly])) > MAX_AOI_VERTICES:
-        raise ValueError(f"The polygon has too many vertices (max {MAX_AOI_VERTICES}).")
-    return poly
-
-
-def aoi_stats(geometry: dict, run_id: str | None = None) -> dict:
-    """Change inside a user-drawn polygon: its area, the changed hectares (clipped to it) and the split by type and facility."""
-    poly = _aoi_polygon(geometry)
-    run = resolve_run(run_id)
-    aoi = "ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON(:g), 4326), 32735)"
-    params = {"g": json.dumps(poly.__geo_interface__), "r": run}
-    area_m2 = db.query(f"SELECT ST_Area({aoi}) AS a", **params)[0]["a"]
-    clipped = db.query(
-        f"SELECT change_type, facility_id, ST_Area(ST_Intersection(geometry, {aoi})) AS a FROM change_features "
-        f"WHERE run_id = :r AND ST_Intersects(geometry, {aoi})",
-        **params,
-    )
-    by_type: dict[str, float] = {}
-    by_facility: dict[str, float] = {}
-    for r in clipped:
-        by_type[r["change_type"] or "unclassified"] = by_type.get(r["change_type"] or "unclassified", 0) + r["a"]
-        if r["facility_id"]:
-            by_facility[r["facility_id"]] = by_facility.get(r["facility_id"], 0) + r["a"]
-    ha = lambda m2: round(m2 / 1e4, 2)  # noqa: E731
-    changed = sum(r["a"] for r in clipped)
-    return {
-        "run_id": run,
-        "area_ha": ha(area_m2),
-        "changed_ha": ha(changed),
-        "changed_share": round(changed / area_m2, 4) if area_m2 else 0.0,
-        "n_polygons": len(clipped),
-        "by_change_type": {k: ha(v) for k, v in sorted(by_type.items(), key=lambda kv: -kv[1])},
-        "by_facility": {k: ha(v) for k, v in sorted(by_facility.items(), key=lambda kv: -kv[1])},
     }
 
 

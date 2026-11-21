@@ -7,7 +7,7 @@ https://s2change.dzaky.ai.id, also buildable for GitHub Pages.
 | Tab | What it does | Needs the API? |
 |---|---|---|
 | Overview | Headline findings, brief-to-tab checklist, method diagram, sensitivity table (`web/overview.json`) | no |
-| Map | Before/after swipe, layer menu (change types, true colour, intensity, binary, facility register, redness), polygon inspector with the reason for each label, AOI tool, oblique view (optional extrusion by confidence), other-date comparison | only for other dates and PostGIS AOI stats; AOI falls back to the polygons in the browser |
+| Map | Before/after swipe, layer menu (change types, true colour, intensity, facility register), polygon inspector with the reason for each label, other-date comparison | only for other dates |
 | Database | Schema browser, example queries, SQL editor (Cmd/Ctrl+Enter), results table, CSV/GeoJSON download, "show on map" | yes (live-only; static hosts get an explanation) |
 | Report | `web/report/report.md` rendered with a table of contents and numbered figures | no |
 | Analyst | Chat with charts, tables, map actions and a tool-call trace, plus "Generate monitoring brief" | yes |
@@ -29,9 +29,9 @@ uv run python -m s2cd.site   # docs/web/overview.json, docs/web/report/report.md
 
 ## URLs
 
-- Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&oblique=1&bearing=30&extrude=1&swipe=0`.
+- Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&swipe=0`.
   `#/map?before=provided-before&after=2026-11-02` runs the other-date comparison when the API is reachable.
-  Layers: `types` (default), `after`, `before`, `after_raw`, `intensity`, `binary`, `facilities`, `redness`.
+  Layers: `types` (default), `after`, `before`, `intensity`, `facilities`.
 - `?mock` serves every API call from `fixtures/` (`fixtures/agent/*.json` for the chat, `fixtures/api/*.json` for the
   database, dates, comparison job and brief). `?mock=429` / `?mock=error` simulate chat failures.
 - `?api=<url>` points at another backend, e.g. `?api=http://127.0.0.1:8000`.

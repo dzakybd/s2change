@@ -1,9 +1,9 @@
-import { BINARY_COLOR, CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtArea, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
-import type { AoiStats, ChangeCollection, ChangeProps, Dataset, FacilityProps, MineralsManifest } from "../types";
+import { CHANGE_TYPES, CLOSE, FACILITY_CLASS_LABEL, esc, fmtArea, fmtInt, fmtKm2, fmtPct, ha, typeInfo } from "../domain";
+import type { ChangeCollection, ChangeProps, Dataset, FacilityProps } from "../types";
 import { changeTitle, changeWhere, listHtml, rankChanges } from "./changes";
 import type { ListUi } from "./changes";
 import type { LayerDef } from "./layers";
-import { INTENSITY_RAMP, REDNESS_RAMP } from "./layers";
+import { INTENSITY_RAMP } from "./layers";
 
 const closeBtn = `<button type="button" class="btn ghost icon sm" data-act="close" aria-label="Close panel">${CLOSE}</button>`;
 
@@ -39,19 +39,6 @@ export function facilityCard(p: FacilityProps): string {
   <p class="note">${esc(p.summary)}</p>`;
 }
 
-export function aoiCard(s: AoiStats, locked = false): string {
-  const types = Object.entries(s.by_change_type).sort((a, b) => b[1] - a[1]);
-  const facs = Object.entries(s.by_facility).sort((a, b) => b[1] - a[1]);
-  const src = s.source === "api" ? "Computed in PostGIS by the live API." : "Estimated in your browser from the change polygons on the map (10 m sampling).";
-  const hint = locked ? ` <button type="button" class="linkbtn" data-act="unlock">Sign in for database-exact stats</button>` : "";
-  return `<header class="ins-head"><i class="swatch lg" style="background:#5eead4"></i><div><h3>Selected area</h3><p class="muted">${fmtKm2(s.area_ha)} drawn</p></div>${closeBtn}</header>
-  <div class="tiles"><div><b class="num">${fmtKm2(s.changed_ha)}</b><span>changed</span></div><div><b class="num">${fmtPct(s.changed_share, s.changed_share < 0.1 ? 1 : 0)}</b><span>of the area</span></div><div><b class="num">${fmtInt(s.n_polygons)}</b><span>${s.n_polygons === 1 ? "polygon" : "polygons"}</span></div></div>
-  ${types.length ? `<h4>By change type</h4>${bars(types, types[0]?.[1] ?? 0, (k) => typeInfo(k).color, (k) => typeInfo(k).label)}` : '<p class="note">No change detected inside the area you drew.</p>'}
-  ${facs.length ? `<h4>By facility</h4>${bars(facs, facs[0]?.[1] ?? 0, () => "#5eead4", (k) => k)}` : ""}
-  <p class="note">${src}${hint}</p>
-  <div class="row-actions"><button type="button" class="btn sm" data-act="redraw">Draw again</button><button type="button" class="btn ghost sm" data-act="close">Clear</button></div>`;
-}
-
 function bars(rows: [string, number][], max: number, color: (k: string) => string, label: (k: string) => string): string {
   return `<ul class="bars">${rows
     .map(([k, v]) => `<li><span class="bar-l"><i class="swatch" style="background:${color(k)}"></i>${esc(label(k))}</span><b class="num">${fmtKm2(v)}</b><span class="bar"><i style="width:${max ? Math.max(2, (v / max) * 100).toFixed(1) : 0}%;background:${color(k)}"></i></span></li>`)
@@ -80,7 +67,7 @@ export function tallyTypes(changes: ChangeCollection): { rows: TypeTally[]; coun
   return { rows, count: changes.features.length, ha: total };
 }
 
-export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<string>, minerals: MineralsManifest | null, oblique: boolean, extrude: boolean, list: ListUi, selected: number | null): string {
+export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<string>, list: ListUi, selected: number | null): string {
   const tally = tallyTypes(ds.changes);
   let body = "";
   let title = def.label;
@@ -96,18 +83,12 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
         return `<li><button type="button" class="lg-row" data-type="${esc(r.key)}" aria-pressed="${!hidden.has(r.key)}" title="${esc(t.blurb)}"><i class="swatch" style="background:${t.color}"></i><span>${esc(t.label)}</span><b class="num">${r.count}</b><em class="num">${fmtKm2(r.ha)}</em></button></li>`;
       })
       .join("")}</ul>`;
-  } else if (def.id === "binary") {
-    body = `<p class="lg-sub"><i class="swatch" style="background:${BINARY_COLOR}"></i> Changed · ${fmtInt(tally.count)} ${tally.count === 1 ? "polygon" : "polygons"}, ${fmtKm2(tally.ha)}</p><p class="note">Everything else is unchanged. Minimum mapping unit 2,000 m².</p>`;
   } else if (def.id === "intensity") {
     body = `<div class="ramp" style="background:${INTENSITY_RAMP}"></div><div class="ramp-l"><span>no change</span><span>strong change</span></div><p class="note">log10 of the robust Mahalanobis distance d² per 10 m pixel, before thresholding.</p>`;
   } else if (def.id === "facilities") {
     body = `<p class="lg-sub"><i class="swatch" style="background:#5eead4"></i> Facility outline · area changed inside it</p><p class="note">Click an outline for its change breakdown.</p>`;
-  } else if (def.id === "redness") {
-    const lg = minerals?.legend;
-    body = `<div class="ramp" style="background:${REDNESS_RAMP}"></div><div class="ramp-l"><span>${lg?.min.toFixed(1) ?? "1.0"}</span><span>${esc(lg?.label ?? "iron-oxide proxy")}</span><span>${lg?.max.toFixed(1) ?? "2.2"}</span></div><p class="note">${esc(minerals?.caveat ?? "B04/B02, an indicative proxy; not a mineral map.")}</p>`;
   } else {
     body = `<p class="note">${esc(def.hint)}.${ds.nominal ? " The two dates are nominal: each is a mosaic of two Sentinel-2 scenes (07-01/07-04 and 08-25/09-02)." : ""} Outlines are the change polygons, coloured by type.</p>`;
   }
-  const obl = oblique ? `<p class="note obl">Data visualization, not terrain.${extrude ? " Height shows model confidence." : " Polygons are flat; the view is only tilted."}</p>` : "";
-  return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b>${count ? `<span class="lg-count num">${count}</span>` : ""}<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lg-body">${body}${obl}</div>`;
+  return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b>${count ? `<span class="lg-count num">${count}</span>` : ""}<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lg-body">${body}</div>`;
 }

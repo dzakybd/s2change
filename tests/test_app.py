@@ -303,7 +303,6 @@ def gated_calls(c):
     return {
         "chat": lambda: chat(c),
         "sql": lambda: c.post("/api/db/query", json={"sql": "SELECT 1"}),
-        "aoi": lambda: c.post("/api/aoi/stats", json={"geometry": {}}),
         "compare": lambda: c.post("/api/compare", json={"before": "provided-before", "after": "provided-after"}),
     }
 
@@ -317,11 +316,9 @@ def test_gated_endpoints_need_the_cookie(locked):
 
 def test_gated_endpoints_work_with_the_cookie(locked, monkeypatch):
     monkeypatch.setattr(main.explorer, "run_query", lambda sql: {"columns": [], "rows": []})
-    monkeypatch.setattr(main.results, "aoi_stats", lambda geometry, run_id: {"area_ha": 1})
     login(locked)
     assert chat(locked).status_code == 200
     assert locked.post("/api/db/query", json={"sql": "SELECT 1"}).json() == {"columns": [], "rows": []}
-    assert locked.post("/api/aoi/stats", json={"geometry": {}}).json() == {"area_ha": 1}
     assert gated_calls(locked)["compare"]().status_code == 200  # uncached pair, queued for the stub worker
 
 

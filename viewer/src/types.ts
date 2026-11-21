@@ -6,10 +6,8 @@ export type Bounds = [[number, number], [number, number]];
 /** [west, south, east, north] */
 export type BBox = [number, number, number, number];
 
-export const RASTER_KEYS = ["before", "after", "after_normalized", "change_intensity"] as const;
+export const RASTER_KEYS = ["before", "after_normalized", "change_intensity"] as const;
 export type RasterKey = (typeof RASTER_KEYS)[number];
-/** Raster layers on the map: the manifest rasters plus the optional redness pair. */
-export type MapRaster = RasterKey | "redness_before" | "redness_after";
 
 export interface RasterEntry {
   url: string;
@@ -25,13 +23,6 @@ export interface Manifest {
   /** Changed area in hectares per method. */
   summary: Record<string, number>;
   vectors: { changes: string; facilities?: string; aoi: string };
-}
-
-export interface MineralsManifest {
-  formula: string;
-  legend: { min: number; max: number; colormap: string; label: string };
-  layers: { before: RasterEntry; after: RasterEntry };
-  caveat: string;
 }
 
 export interface ChangeProps {
@@ -98,7 +89,6 @@ export interface Overview {
     changed_pct_of_aoi: number;
     baseline_ha: number;
     baseline_n_polygons: number;
-    irmad_ha: number;
     share_in_mine_footprint: number;
     share_in_register_mine_classes: number;
     agreement_iou_with_baseline: number;
@@ -134,7 +124,7 @@ export type AgentAction =
   | { type: "highlight"; run_id: string; ids: number[] }
   | { type: "show_run"; run_id: string }
   | { type: "set_layer"; layer: string }
-  | { type: "set_view"; swipe?: boolean; oblique?: boolean }
+  | { type: "set_view"; swipe: boolean }
   | { type: "show_facility"; facility_id: string }
   | { type: "compare_dates"; before: string; after: string };
 
@@ -187,17 +177,6 @@ export interface DbQueryResult {
   truncated: boolean;
   elapsed_ms: number;
   geojson: FeatureCollection | null;
-}
-
-export interface AoiStats {
-  area_ha: number;
-  changed_ha: number;
-  changed_share: number;
-  n_polygons: number;
-  by_change_type: Record<string, number>;
-  by_facility: Record<string, number>;
-  /** Where the numbers came from; set by the client. */
-  source?: "api" | "browser";
 }
 
 /** A date from the curated catalogue: one clear scene per month, downloaded in advance. */

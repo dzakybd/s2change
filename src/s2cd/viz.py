@@ -22,7 +22,6 @@ from matplotlib.colors import ListedColormap  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
 from rasterio.warp import Resampling, calculate_default_transform, reproject, transform_bounds  # noqa: E402
 
-from . import rgb as rgbidx  # noqa: E402
 from .io import Grid  # noqa: E402
 from .pipeline import Products  # noqa: E402
 
@@ -145,10 +144,6 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
         ),
         ("Robust CVA (this work): log10 d2", np.log10(np.clip(p.cva.d2, 1e-3, None)), p.cva_binary, "magma", (0, 3)),
     ]
-    if p.irmad is not None:
-        rows.append(
-            ("Zone-wise IR-MAD: log10 chi2", np.log10(np.clip(p.irmad.chi2, 1e-3, None)), p.irmad_binary, "magma", (0, 3))
-        )
     fig, ax = plt.subplots(2, len(rows), figsize=(6 * len(rows), 12.4))
     area = p.summary["changed_area_ha"]
     for j, (title, cont, binary, cmap, (vmin, vmax)) in enumerate(rows):
@@ -296,8 +291,7 @@ def _write_geojson(gdf: gpd.GeoDataFrame, path: Path) -> None:
 def export_web(p: Products, out_dir: Path) -> dict:
     """WebP overlays + GeoJSON + manifest.json, consumed by the Folium map and the MapLibre viewer.
 
-    Also writes ``facilities.geojson`` (register outlines with their change statistics) and the redness before/after overlays
-    in ``minerals/`` (B04/B02 on the before and the normalized after image; an indicative iron-oxide proxy only).
+    Also writes ``facilities.geojson`` (register outlines with their change statistics).
     """
     out_dir = Path(out_dir)
     grid = p.before.grid
@@ -312,7 +306,6 @@ def export_web(p: Products, out_dir: Path) -> dict:
     heat[..., 3] = np.where(p.valid, (intensity * 230).astype(np.uint8), 0)
     layers = {
         "before": (rgba(p.refl_before), f"Sentinel-2 RGB, {p.date_labels['before']}"),
-        "after": (rgba(p.refl_after), f"Sentinel-2 RGB, {p.date_labels['after']} (as delivered)"),
         "after_normalized": (rgba(p.refl_after_norm), f"Sentinel-2 RGB, {p.date_labels['after']} (normalized)"),
         "change_intensity": (np.moveaxis(heat, -1, 0), "Change intensity (log10 d2)"),
     }
@@ -333,36 +326,7 @@ def export_web(p: Products, out_dir: Path) -> dict:
     p.aoi.to_crs(4326).to_file(out_dir / "aoi.geojson", driver="GeoJSON", layer_options={"RFC7946": "YES"})
     manifest["vectors"] = {"changes": "change_features.geojson", "facilities": "facilities.geojson", "aoi": "aoi.geojson"}
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
-    _export_redness(p, out_dir / "minerals")
     return manifest
-
-
-def _export_redness(p: Products, out_dir: Path, lo: float = 1.0, hi: float = 2.2) -> None:
-    """Redness (B04 / B02) overlays for the before image and the normalized after image, plus their manifest."""
-    layers = {}
-    for key, refl, label in (
-        ("before", p.refl_before, p.date_labels["before"]),
-        ("after", p.refl_after_norm, p.date_labels["after"] + " (normalized)"),
-    ):
-        heat = (
-            matplotlib.colormaps["YlOrRd"](np.nan_to_num(np.clip((rgbidx.redness(refl) - lo) / (hi - lo), 0, 1))) * 255
-        ).astype(np.uint8)
-        heat[..., 3] = np.where(p.valid, 255, 0)
-        bounds = _warp_png(np.moveaxis(heat, -1, 0), p.before.grid, out_dir / f"redness_{key}.webp")
-        layers[key] = {"url": f"redness_{key}.webp", "label": label, "bounds": bounds}
-    (out_dir / "manifest.json").write_text(
-        json.dumps(
-            {
-                "index": "redness",
-                "formula": "B04 / B02",
-                "legend": {"min": lo, "max": hi, "colormap": "YlOrRd", "label": "iron-oxide (ferric) proxy"},
-                "layers": layers,
-                "caveat": "Redness = B04/B02, an indicative iron-oxide proxy from visible bands only. It also responds to soil "
-                "colour, moisture, shadow and haze; it is not a mineral map.",
-            },
-            indent=2,
-        )
-    )
 
 
 def folium_map(p: Products, web_dir: Path, out_html: Path) -> Path:

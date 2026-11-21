@@ -91,12 +91,11 @@ The cleanup (1-px opening + 2,000 m² minimum mapping unit) deliberately drops f
 
 ![methods](docs/figures/03_method_comparison.png)
 
-*The provided baseline against zone-wise IR-MAD and the robust CVA of this work.*
+*The provided baseline against the robust CVA of this work.*
 
 | Method | Changed area | Why it behaves this way |
 |---|---:|---|
 | Provided Euclidean distance + Otsu | 111.4 km² (79 / 43 / 16 % per zone) | No radiometric model: it maps seams and haze |
-| Zone-wise IR-MAD (Nielsen 2007) | 108.2 km² | It converges on woodland (ρ ≈ 0.99). With only three correlated visible bands, every other cover then looks "changed" |
 | **Robust CVA, calibrated (this work)** | **4.13 km² (1.1 / 1.0 / 2.0 % per zone)** | Seam-free, mine-concentrated |
 
 > [!TIP]
@@ -211,7 +210,7 @@ flowchart TB
   end
   subgraph PIPE["2. Python pipeline (package s2cd)"]
     direction LR
-    IO["io<br/>load, stack"] --> PROV["provenance<br/>source scenes"] --> RAD["radiometry<br/>zones, normalize"] --> METH["methods<br/>robust CVA, baseline, IR-MAD"] --> VEC["vectorize<br/>hysteresis, MMU"] --> INT["rgb, register, interpret<br/>type + why"]
+    IO["io<br/>load, stack"] --> PROV["provenance<br/>source scenes"] --> RAD["radiometry<br/>zones, normalize"] --> METH["methods<br/>robust CVA, baseline"] --> VEC["vectorize<br/>hysteresis, MMU"] --> INT["rgb, register, interpret<br/>type + why"]
   end
   subgraph OUT["3. Outputs"]
     direction LR
@@ -224,7 +223,6 @@ flowchart TB
   subgraph API["6. FastAPI app"]
     direction LR
     DBX["DB explorer<br/>SQL guard"]
-    AOI["AOI stats"]
     CMP["Compare jobs<br/>monthly scene catalogue"]
     AGT["Analyst agent<br/>deepagents + Gemini via OpenRouter<br/>typed tools + knowledge notes"]
   end
@@ -282,12 +280,12 @@ The public site is read-only by construction; the few features that cost compute
 |---|---|
 | Read-only database role | The API and the agent connect as `s2cd_reader`: `SELECT` on five relations, `default_transaction_read_only`, 5 s statement timeout. Writes fail in the database itself, whatever the application does |
 | SQL guard | The console and the agent's `readonly_sql` tool pass the same sqlglot check: one `SELECT`, an allow-list of tables, no DDL/DML, no `pg_*`/`dblink`/`set_config` functions, `LIMIT` forced |
-| Rate limits and caps | Per client IP (the proxy-appended address): chat 6/min, SQL and area stats 30/min, comparisons 10/min, login 5/min. Whole-service daily caps: 300 chat calls, 12 new comparisons; at most 5 jobs queued |
-| Access code | Chat, SQL console, drawn-area stats and new (uncached) comparisons need a code. It is checked against a salted PBKDF2-SHA256 hash and earns a signed `HttpOnly; Secure; SameSite=Strict` session cookie (7 days). Overview, map, report, downloads and every cached comparison stay public |
+| Rate limits and caps | Per client IP (the proxy-appended address): chat 6/min, SQL 30/min, comparisons 10/min, login 5/min. Whole-service daily caps: 300 chat calls, 12 new comparisons; at most 5 jobs queued |
+| Access code | Chat, SQL console and new (uncached) comparisons need a code. It is checked against a salted PBKDF2-SHA256 hash and earns a signed `HttpOnly; Secure; SameSite=Strict` session cookie (7 days). Overview, map, report, downloads and every cached comparison stay public |
 | Secrets | API keys, database passwords, the code hash and the cookie-signing secret live only in the server's `.env`, never in git; error responses are generic and details go to the server log |
 | Transport and headers | TLS at Caddy, plus HSTS, a Content-Security-Policy limited to this site, the Esri tile host and the logo CDN, `nosniff`, `X-Frame-Options: DENY`, a strict referrer policy, and no `Server` banner. API request bodies are capped at 64 KB |
-| LLM hardening | The model sees only 12 typed tools; deepagents' built-in planning, file, shell and sub-agent tools are switched off; the prompt tells it to treat user and tool text as data; no tool writes anything, so an injection can at worst yield a wrong read-only answer |
-| CORS and input limits | CORS allows only the site origin and the local dev server. Chat messages 2,000 characters, 20 turns kept; SQL 5,000 characters, 500 rows; drawn areas must be valid lon/lat polygons of at most 2,000 vertices; comparison dates are parsed strictly and must be catalogue dates; result files come from a fixed name list |
+| LLM hardening | The model sees only 11 typed tools; deepagents' built-in planning, file, shell and sub-agent tools are switched off; the prompt tells it to treat user and tool text as data; no tool writes anything, so an injection can at worst yield a wrong read-only answer |
+| CORS and input limits | CORS allows only the site origin and the local dev server. Chat messages 2,000 characters, 20 turns kept; SQL 5,000 characters, 500 rows; comparison dates are parsed strictly and must be catalogue dates; result files come from a fixed name list |
 
 ## 6. Limitations and next steps
 
@@ -305,6 +303,6 @@ What this analysis cannot tell, and what would close each gap.
 <details>
 <summary>References</summary>
 
-Malila (1980) change vector analysis; Otsu (1979); Canny (1986) hysteresis; Nielsen (2007) IR-MAD; Canty & Nielsen (2008) *Remote Sens. Environ.* 112:1025 (automatic radiometric normalization); Richardson et al. (2007) / Sonnentag et al. (2012) green chromatic coordinate (here on BOA reflectance, not camera DN); Olofsson et al. (2014) *Remote Sens. Environ.* 148:42.
+Malila (1980) change vector analysis; Otsu (1979); Canny (1986) hysteresis; Canty & Nielsen (2008) *Remote Sens. Environ.* 112:1025 (automatic radiometric normalization); Richardson et al. (2007) / Sonnentag et al. (2012) green chromatic coordinate (here on BOA reflectance, not camera DN); Olofsson et al. (2014) *Remote Sens. Environ.* 148:42.
 
 </details>

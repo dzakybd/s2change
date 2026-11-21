@@ -1,29 +1,25 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import "../styles/map.css";
-import type { Feature, Polygon, Position } from "geojson";
+import type { Feature } from "geojson";
 import type { MapGeoJSONFeature } from "maplibre-gl";
 import type { AppContext, View } from "../app";
-import { aoiStats, fetchRun, STATIC_RUN_IDS } from "../api";
-import { authState, isLocked, markLocked, requestUnlock } from "../unlock";
-import { loadAoi, loadDefaultDataset, loadFacilities, loadMinerals, dataUrl } from "../data";
+import { fetchRun, STATIC_RUN_IDS } from "../api";
+import { loadAoi, loadDefaultDataset, loadFacilities } from "../data";
 import { q, qa } from "../domain";
-import { aoiStatsFromPolygons } from "../map/geo";
 import { DEFAULT_LAYER, LAYERS, layerById } from "../map/layers";
 import type { LayerDef } from "../map/layers";
 import { Menu } from "../map/menu";
 import { DatePicker } from "../map/picker";
 import { MapStage } from "../map/stage";
 import { Swipe } from "../map/swipe";
-import { aoiCard, facilityCard, featureCard, legendHtml } from "../map/cards";
+import { facilityCard, featureCard, legendHtml } from "../map/cards";
 import type { ListUi } from "../map/changes";
 import { featureBounds, RunOverlay } from "../overlays";
 import type { Route } from "../router";
 import { replaceParams } from "../router";
-import type { AoiStats, ChangeProps, Dataset, FacilityProps } from "../types";
+import type { ChangeProps, Dataset, FacilityProps } from "../types";
 import type { AgentHost } from "./analyst";
 
-const ICON_DRAW = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4 14.5 3 6l5-2.5 7 3 2 7-6 3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="3" cy="6" r="1.6" fill="currentColor"/><circle cx="8" cy="3.5" r="1.6" fill="currentColor"/><circle cx="15" cy="6.5" r="1.6" fill="currentColor"/></svg>`;
-const ICON_OBLIQUE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="m10 3 7 3.5-7 3.5-7-3.5zM3 10.2l7 3.5 7-3.5M3 13.7 10 17.2l7-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 const ICON_SWIPE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M10 3v14M6.5 7 3 10l3.5 3M13.5 7 17 10l-3.5 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 const TEMPLATE = `
@@ -43,16 +39,9 @@ const TEMPLATE = `
     <div class="hud hud-tr">
       <div class="tools glass">
         <button type="button" class="tool" id="t-swipe" aria-pressed="true" title="Compare with the before image">${ICON_SWIPE}<span>Swipe</span></button>
-        <button type="button" class="tool" id="t-draw" aria-pressed="false" title="Draw an area to measure change inside it">${ICON_DRAW}<span>Draw area</span></button>
-        <button type="button" class="tool" id="t-oblique" aria-pressed="false" title="Tilt the camera">${ICON_OBLIQUE}<span>Oblique</span></button>
-      </div>
-      <div class="oblique-panel glass" hidden>
-        <label class="rng"><span>Bearing <output id="o-bearing-v">24°</output></span><input id="o-bearing" type="range" min="0" max="360" step="1" value="24" aria-label="Bearing in degrees"></label>
-        <label class="chk"><input id="o-extrude" type="checkbox"><span>Extrude by magnitude<small>Height follows confidence</small></span></label>
       </div>
       <aside class="inspector glass" hidden aria-live="polite"></aside>
     </div>
-    <div class="draw-bar glass" hidden role="status"><span class="draw-msg"></span><button type="button" class="btn sm" data-draw="undo">Undo</button><button type="button" class="btn sm primary" data-draw="finish">Finish</button><button type="button" class="btn sm ghost" data-draw="cancel">Cancel</button></div>
     <div class="result-chip glass" hidden><span></span><button type="button" class="btn ghost icon sm" aria-label="Remove query result from the map">×</button></div>
     <section class="legend glass" aria-label="Legend"></section>
     <div class="ws-loading"><span class="spinner"></span><span>Loading the map…</span></div>
@@ -62,9 +51,6 @@ const TEMPLATE = `
 interface UiState {
   layer: string;
   swipe: boolean;
-  oblique: boolean;
-  bearing: number;
-  extrude: boolean;
 }
 
 export async function createWorkspace(ctx: AppContext): Promise<View> {
@@ -77,18 +63,16 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
   let mode: "map" | "analyst" = "map";
   let pending: Route | null = null;
   let analystLoaded = false;
-  const state: UiState = { layer: DEFAULT_LAYER, swipe: true, oblique: false, bearing: 24, extrude: false };
+  const state: UiState = { layer: DEFAULT_LAYER, swipe: true };
 
   let applyRoute: (route: Route) => void = () => {};
 
   async function init(): Promise<void> {
-    const [dataset, aoi, facilities, minerals] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities(), loadMinerals()]);
+    const [dataset, aoi, facilities] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities()]);
     const provided = dataset;
     let ds: Dataset = dataset;
     const facName = new Map(facilities.features.map((f) => [f.properties.facility_id, f.properties.name]));
     const hidden = new Set<string>();
-    let aoiShape: Polygon | null = null;
-    let obliqueUi = false;
     const list: ListUi = { tab: "list", showAll: false, noise: false };
     let selectedFid: number | null = null;
 
@@ -105,9 +89,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       }
     };
 
-    let inspecting: "feature" | "facility" | "aoi" | null = null;
-    const showInspector = (html: string, kind: "feature" | "facility" | "aoi") => {
-      inspecting = kind;
+    const showInspector = (html: string) => {
       inspector.innerHTML = html;
       inspector.hidden = false;
       inspector.classList.remove("enter");
@@ -116,34 +98,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     };
     const closeInspector = () => {
       inspector.hidden = true;
-      inspecting = null;
       stage?.select(null);
       markSelected(null);
-      if (aoiShape) {
-        aoiShape = null;
-        stage?.setAoiShape(null);
-      }
-    };
-
-    const onAoi = async (ring: Position[]) => {
-      aoiShape = { type: "Polygon", coordinates: [ring] };
-      showInspector(`<div class="ins-wait"><span class="spinner"></span> Measuring change inside the area…</div>`, "aoi");
-      const api = await ctx.api;
-      let stats: AoiStats | null = null;
-      let locked = false; // database-exact stats need the access code; without it the browser estimate stands in, quietly
-      if (api.kind === "ready" && !api.mock && ds.id === provided.id) {
-        if (authState().enabled && !authState().authenticated) locked = true;
-        else {
-          try {
-            stats = { ...(await aoiStats(api, aoiShape)), source: "api" };
-          } catch (err) {
-            stats = null; // fall back to the browser estimate
-            if (isLocked(err)) (markLocked(), (locked = true));
-          }
-        }
-      }
-      stats ??= aoiStatsFromPolygons(aoiShape, ds.changes);
-      if (inspecting === "aoi") showInspector(aoiCard(stats, locked), "aoi");
     };
 
     /* ---------- stage ---------- */
@@ -154,8 +110,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       aoi,
       facilities,
       dataset: ds,
-      minerals,
-      mineralsBase: dataUrl("minerals/"),
       initialLayer,
       initialSwipe: state.swipe,
       onFeatureClick: (f: MapGeoJSONFeature | null) => {
@@ -163,27 +117,15 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         const p = f.properties as unknown as ChangeProps;
         stage?.select(p.fid);
         markSelected(p.fid);
-        showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null), "feature");
+        showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null));
       },
       onFacilityClick: (p: FacilityProps) => {
         stage?.select(null);
         // MapLibre serialises nested objects in feature properties; parse them back.
         const raw = p.change_types as unknown;
         const types = typeof raw === "string" ? (JSON.parse(raw) as Record<string, number> | null) : p.change_types;
-        showInspector(facilityCard({ ...p, change_types: types }), "facility");
+        showInspector(facilityCard({ ...p, change_types: types }));
       },
-      onDrawChange: ({ points, active }) => {
-        const bar = q(el, ".draw-bar");
-        bar.hidden = !active;
-        q(el, "#t-draw").setAttribute("aria-pressed", String(active));
-        q(el, ".ws-stage").toggleAttribute("data-drawing", active);
-        if (active) {
-          q(bar, ".draw-msg").textContent = points < 3 ? `Click to add points (${points}/3 minimum)` : `${points} points. Double-click or Finish to close the shape`;
-          q<HTMLButtonElement>(bar, '[data-draw="finish"]').disabled = points < 3;
-          q<HTMLButtonElement>(bar, '[data-draw="undo"]').disabled = points < 1;
-        }
-      },
-      onDrawDone: (ring) => void onAoi(ring),
     });
     await stage.init();
     const st = stage;
@@ -193,19 +135,16 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     q(el, "#hud-layer").prepend(menu.root);
     const menuItems = () =>
       LAYERS.map((l) => {
-        const unavailable = (l.needsRedness && !minerals) || (l.providedOnly && !ds.nominal);
-        return { id: l.id, label: l.label, hint: l.hint, disabled: !!unavailable, disabledReason: l.needsRedness && !minerals ? "Not in this export" : "Only for the provided pair" };
+        return { id: l.id, label: l.label, hint: l.hint, disabled: !!l.providedOnly && !ds.nominal, disabledReason: "Only for the provided pair" };
       });
 
     const labels = () => {
-      const def = layerById(state.layer);
-      const redness = def.id === "redness";
-      q(el, ".swipe-label.l").textContent = `${redness ? "Redness · " : ""}Before · ${ds.dates.before}`;
-      q(el, ".swipe-label.r").textContent = `${redness ? "Redness · " : ""}After · ${ds.dates.after}`;
+      q(el, ".swipe-label.l").textContent = `Before · ${ds.dates.before}`;
+      q(el, ".swipe-label.r").textContent = `After · ${ds.dates.after}`;
     };
 
     const renderLegend = () => {
-      legend.innerHTML = legendHtml(layerById(state.layer), ds, hidden, minerals, state.oblique, state.extrude, list, selectedFid);
+      legend.innerHTML = legendHtml(layerById(state.layer), ds, hidden, list, selectedFid);
       legend.querySelector(".lg-head")?.setAttribute("aria-expanded", String(!legend.classList.contains("collapsed")));
     };
 
@@ -223,15 +162,12 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       replaceParams("map", {
         layer: state.layer === DEFAULT_LAYER ? undefined : state.layer,
         swipe: state.swipe ? undefined : "0",
-        oblique: state.oblique ? "1" : undefined,
-        bearing: state.oblique && state.bearing !== 24 ? String(Math.round(state.bearing)) : undefined,
-        extrude: state.oblique && state.extrude ? "1" : undefined,
       });
     };
 
     function setLayer(id: string): void {
       let def: LayerDef = layerById(id);
-      if ((def.needsRedness && !minerals) || (def.providedOnly && !ds.nominal)) def = layerById(DEFAULT_LAYER);
+      if (def.providedOnly && !ds.nominal) def = layerById(DEFAULT_LAYER);
       state.layer = def.id;
       st.setLayer(def);
       menu.setValue(def.id);
@@ -246,39 +182,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       state.swipe = !state.swipe;
       st.setSwipe(state.swipe);
       syncSwipeUi();
-      syncHash();
-    });
-
-    /* ---------- oblique ---------- */
-    const bearingIn = q<HTMLInputElement>(el, "#o-bearing");
-    const extrudeIn = q<HTMLInputElement>(el, "#o-extrude");
-    const setOblique = (on: boolean) => {
-      state.oblique = on;
-      q(el, "#t-oblique").setAttribute("aria-pressed", String(on));
-      q(el, ".oblique-panel").hidden = !on;
-      obliqueUi = on;
-      st.setOblique(on, state.bearing);
-      renderLegend();
-      syncHash();
-    };
-    q(el, "#t-oblique").addEventListener("click", () => setOblique(!obliqueUi));
-    bearingIn.addEventListener("input", () => {
-      state.bearing = Number(bearingIn.value);
-      q(el, "#o-bearing-v").textContent = `${state.bearing}°`;
-      st.setBearing(state.bearing);
-    });
-    bearingIn.addEventListener("change", syncHash);
-    st.main.on("rotateend", () => {
-      if (!state.oblique) return;
-      state.bearing = Math.round((st.main.getBearing() + 360) % 360);
-      bearingIn.value = String(state.bearing);
-      q(el, "#o-bearing-v").textContent = `${state.bearing}°`;
-      syncHash();
-    });
-    extrudeIn.addEventListener("change", () => {
-      state.extrude = extrudeIn.checked;
-      st.setExtrude(state.extrude);
-      renderLegend();
       syncHash();
     });
 
@@ -333,7 +236,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         legend.querySelector(".lg-head")?.setAttribute("aria-expanded", "false");
       }
       const p = f.properties;
-      showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null), "feature");
+      showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null));
     };
     const rowFid = (e: Event): number | null => {
       const v = (e.target as HTMLElement).closest<HTMLElement>(".ch-row")?.dataset["fid"];
@@ -363,36 +266,13 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     });
     q(el, "#hud-cmp").append(picker.root);
 
-    /* ---------- draw tool ---------- */
-    q(el, "#t-draw").addEventListener("click", () => {
-      if (st.drawing) return st.cancelDraw();
-      closeInspector();
-      st.startDraw();
-    });
-    q(el, ".draw-bar").addEventListener("click", (e) => {
-      const act = (e.target as HTMLElement).closest<HTMLElement>("[data-draw]")?.dataset["draw"];
-      if (act === "undo") st.undoPoint();
-      else if (act === "finish") st.finishDraw();
-      else if (act === "cancel") st.cancelDraw();
-    });
-
     inspector.addEventListener("click", (e) => {
       const act = (e.target as HTMLElement).closest<HTMLElement>("[data-act]")?.dataset["act"];
       if (act === "close") closeInspector();
-      else if (act === "unlock") {
-        const ring = aoiShape?.coordinates[0];
-        void requestUnlock(ctx.api).then((ok) => {
-          if (ok && ring && inspecting === "aoi") void onAoi(ring);
-        });
-      } else if (act === "redraw") {
-        closeInspector();
-        st.startDraw();
-      }
     });
     document.addEventListener("keydown", (e) => {
       if (el.hidden || e.key !== "Escape") return;
-      if (st.drawing) st.cancelDraw();
-      else if (!inspector.hidden) closeInspector();
+      if (!inspector.hidden) closeInspector();
     });
 
     /* ---------- query result from the Database tab ---------- */
@@ -445,7 +325,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       async showRun(runId) {
         if (STATIC_RUN_IDS.has(runId)) {
           runs.showRun(null);
-          if (layerById(state.layer).polygons === "none") setLayer(DEFAULT_LAYER);
           return null;
         }
         const api = await ctx.api;
@@ -460,9 +339,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         syncHash();
         return state.layer === id ? null : `The ${id} layer is not available for this comparison.`;
       },
-      setView({ swipe, oblique }) {
-        if (swipe !== undefined && swipe !== state.swipe) q<HTMLButtonElement>(el, "#t-swipe").click();
-        if (oblique !== undefined && oblique !== obliqueUi) setOblique(oblique);
+      setView({ swipe }) {
+        if (swipe !== state.swipe) q<HTMLButtonElement>(el, "#t-swipe").click();
         return null;
       },
       showFacility(facilityId) {
@@ -473,7 +351,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         syncHash();
         fit([f as Feature], 15);
         stage?.select(null);
-        showInspector(facilityCard(f.properties), "facility");
+        showInspector(facilityCard(f.properties));
         return null;
       },
       async compareDates(before, after) {
@@ -502,15 +380,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         st.setSwipe(state.swipe);
         if (layer.id !== state.layer || !el.dataset["init"]) setLayer(layer.id);
         else syncSwipeUi();
-        const wantOblique = p.get("oblique") === "1";
-        const bearing = Number(p.get("bearing") ?? 24);
-        state.bearing = Number.isFinite(bearing) ? bearing : 24;
-        bearingIn.value = String(state.bearing);
-        q(el, "#o-bearing-v").textContent = `${state.bearing}°`;
-        extrudeIn.checked = p.get("extrude") === "1";
-        state.extrude = extrudeIn.checked;
-        st.setExtrude(state.extrude);
-        if (wantOblique !== state.oblique || (wantOblique && !el.dataset["init"])) setOblique(wantOblique);
         const [b, a] = [p.get("before"), p.get("after")];
         if (b && a && !el.dataset["linked"]) {
           el.dataset["linked"] = "1";
@@ -538,8 +407,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       pending = route;
       if (stage) applyRoute(route);
     },
-    hide() {
-      stage?.cancelDraw();
-    },
+    hide() {},
   };
 }

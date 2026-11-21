@@ -1,4 +1,4 @@
-import type { AoiCollection, ChangeCollection, Dataset, FacilityCollection, Manifest, MineralsManifest, Overview } from "./types";
+import type { AoiCollection, ChangeCollection, Dataset, FacilityCollection, Manifest, Overview } from "./types";
 
 /**
  * Where the exported web assets live. Resolution order: `?data=` query parameter,
@@ -41,18 +41,6 @@ export const loadFacilities = memo(async () => {
 export const loadChanges = memo(async () => {
   const m = await loadManifest();
   return indexed(await getJson<ChangeCollection>(dataUrl(m.vectors.changes)));
-});
-
-/** The optional redness (B04/B02) overlays; null when the export has none. */
-export const loadMinerals = memo(async (): Promise<MineralsManifest | null> => {
-  try {
-    const res = await fetch(dataUrl("minerals/manifest.json"));
-    if (!res.ok) return null;
-    const m = (await res.json()) as Partial<MineralsManifest>;
-    return m.layers?.before && m.layers.after ? (m as MineralsManifest) : null;
-  } catch {
-    return null;
-  }
 });
 
 /** Give every feature a sequential `fid`: the key for hover/selection feature-state. */

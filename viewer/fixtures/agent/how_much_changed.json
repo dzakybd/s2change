@@ -45,7 +45,6 @@
       "title": "Changed area by method (ha)",
       "x": [
         "Robust CVA",
-        "IR-MAD",
         "Euclidean"
       ],
       "series": [
@@ -53,7 +52,6 @@
           "name": "ha",
           "y": [
             413.3,
-            10824.45,
             11143.36
           ]
         }

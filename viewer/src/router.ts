@@ -1,4 +1,4 @@
-/** Hash router: `#/map?layer=types&oblique=1`. Every route is deep-linkable and works on any static host. */
+/** Hash router: `#/map?layer=intensity&swipe=0`. Every route is deep-linkable and works on any static host. */
 
 export const ROUTES = ["overview", "map", "database", "report", "analyst", "downloads"] as const;
 export type RouteName = (typeof ROUTES)[number];

@@ -8,7 +8,6 @@ facility_register: configs/facility_register.yaml
 sqlite_path: data/change_detection.sqlite
 figures_dir: docs/figures
 bands: [B02, B03, B04]
-run_irmad: true
 
 # Binary change rule (robust CVA). FAR = nominal per-pixel false-alarm rate under the chi2(3) noise model; the realised
 # rate on held-out no-change pixels is reported in run_summary.json under noise_calibration. Sizes are in ha and metres.

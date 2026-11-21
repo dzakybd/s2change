@@ -72,46 +72,6 @@ def test_robust_cva_invalid_pixels_are_nan(rng):
     assert np.isfinite(res.neglog10_p[5:]).all()
 
 
-def _correlated_scene(rng, shape):
-    """Three correlated bands, as in real imagery (a shared brightness field plus band-specific texture)."""
-    base = rng.gamma(4.0, 0.04, size=shape)
-    bands = np.stack([base * k + rng.normal(0, 0.01, shape) for k in (0.8, 1.0, 1.2)])
-    return bands.astype(np.float32)
-
-
-def test_irmad_is_invariant_to_affine_transform_of_after_image(rng):
-    shape = (120, 120)
-    before = _correlated_scene(rng, shape)
-    after = before * np.array([0.9, 1.05, 1.1], np.float32)[:, None, None] + rng.normal(0, 0.008, before.shape).astype(np.float32)
-    after[:, 30:50, 30:60] += np.array([0.15, -0.05, 0.1], np.float32)[:, None, None]  # a spectrally odd patch
-    valid = np.ones(shape, bool)
-
-    plain = methods.irmad(before, after, valid)
-    gain = np.array([1.7, 0.6, 1.3], np.float32)[:, None, None]
-    transformed = methods.irmad(before, after * gain + np.array([0.05, -0.02, 0.1], np.float32)[:, None, None], valid)
-
-    a, b = plain.chi2.ravel(), transformed.chi2.ravel()
-    assert np.corrcoef(a, b)[0, 1] > 0.999
-    assert np.median(np.abs(a - b) / np.maximum(a, 1e-3)) < 0.02
-    np.testing.assert_allclose(plain.rho[0], transformed.rho[0], atol=2e-3)
-    # the odd patch stands out in both
-    patch = np.zeros(shape, bool)
-    patch[30:50, 30:60] = True
-    assert np.median(plain.chi2[patch]) > 10 * np.median(plain.chi2[~patch])
-
-
-def test_irmad_chi2_is_nan_where_invalid(rng):
-    shape = (60, 60)
-    before = _correlated_scene(rng, shape)
-    after = before + rng.normal(0, 0.01, before.shape).astype(np.float32)
-    valid = np.ones(shape, bool)
-    valid[:, :6] = False
-    res = methods.irmad(before, after, valid)
-    assert np.isnan(res.chi2[:, :6]).all()
-    assert np.isfinite(res.chi2[valid]).all()
-    assert np.isnan(res.neglog10_p[~valid]).all()
-
-
 class TestEuclideanBaseline:
     @staticmethod
     def _example():

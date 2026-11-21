@@ -40,7 +40,6 @@ class Config:
     figures_dir: Path = Path("docs/figures")
     database_url: str | None = None  # postgresql+psycopg://... -> also write to PostGIS
     bands: tuple[str, ...] = ("B02", "B03", "B04")
-    run_irmad: bool = True
     rule: vectorize.BinaryRule = field(default_factory=vectorize.BinaryRule)
     noise: methods.NoiseRules = field(default_factory=methods.NoiseRules)
     stripe: dict = field(default_factory=dict)  # overrides for radiometry.detect_stripe_zones
@@ -77,8 +76,6 @@ class Products:
     baseline_binary: np.ndarray
     cva: methods.CvaResult
     cva_binary: np.ndarray
-    irmad: methods.IrmadResult | None
-    irmad_binary: np.ndarray | None
     features: dict[str, gpd.GeoDataFrame]
     facilities: gpd.GeoDataFrame  # register outlines (MultiPolygon, EPSG:32735)
     facility_changes: pd.DataFrame  # one row per facility: changed ha, share, change types, summary
@@ -219,11 +216,6 @@ def run(cfg: Config) -> Products:
     cva = methods.robust_cva(r1, r2n, zones, pif, norm.noise_pif, rule.far_low, cfg.noise)
     cva_bin = vectorize.binary_from_d2(cva.d2, valid, seam_dist, nb, rule, px_m)
 
-    irm, irm_bin = None, None
-    if cfg.run_irmad:
-        irm = methods.irmad(r1, r2, valid, zones)
-        irm_bin = vectorize.binary_from_d2(irm.chi2, valid, seam_dist, nb, rule, px_m)
-
     low, high = rule.thresholds(nb)
     tags = {
         "NOMINAL_DATE_BEFORE": before.acquired,
@@ -278,16 +270,6 @@ def run(cfg: Config) -> Products:
         tags,
         overview_resampling=nearest,
     )
-    if irm is not None:
-        write_raster(
-            out / "change_binary_irmad.tif",
-            binary(irm_bin),
-            grid,
-            nodata_u8,
-            ["1 = change (zone-wise IR-MAD)"],
-            tags,
-            overview_resampling=nearest,
-        )
 
     # ---- Part 3: vectorize, interpret, store --------------------------------------------------
     traces = [np.trace(np.array(c)) / nb for covs in cva.noise_cov.values() for c in covs]
@@ -359,14 +341,11 @@ def run(cfg: Config) -> Products:
         "changed_area_ha": {
             "euclidean_baseline": _area_ha(base_bin, px),
             "robust_cva": _area_ha(cva_bin, px),
-            **({"irmad": _area_ha(irm_bin, px)} if irm is not None else {}),
         },
         "changed_fraction_by_zone": {
             m: [round(float(b[zones == z].mean()), 4) for z in range(zone_info["n_zones"])]
             for m, b in [("euclidean_baseline", base_bin), ("robust_cva", cva_bin)]
-            + ([("irmad", irm_bin)] if irm is not None else [])
         },
-        "irmad_rho_by_zone": irm.rho if irm is not None else None,
         "n_features": {k: len(v) for k, v in features.items()},
         "agreement_cva_vs_baseline_iou": round(float((cva_bin & base_bin).sum() / max((cva_bin | base_bin).sum(), 1)), 3),
         "footprint": {
@@ -435,8 +414,6 @@ def run(cfg: Config) -> Products:
         base_bin,
         cva,
         cva_bin,
-        irm,
-        irm_bin,
         features,
         outlines,
         fac_changes,

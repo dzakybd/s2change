@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 MAX_IDS, MAX_POINTS, MAX_ROWS, MAX_ITEMS = 500, 200, 100, 6
 # Layer ids of the viewer's layer menu (viewer/src/map/layers.ts).
-LAYERS = ("types", "after", "before", "after_raw", "intensity", "binary", "facilities", "redness")
+LAYERS = ("types", "after", "before", "intensity", "facilities")
 
 
 @dataclass
@@ -42,10 +42,9 @@ class Collector:
                 raise ValueError(f"set_layer needs layer, one of {', '.join(LAYERS)}.")
             action = {"type": type, "layer": kw["layer"]}
         elif type == "set_view":
-            view = {k: bool(kw[k]) for k in ("swipe", "oblique") if kw.get(k) is not None}
-            if not view:
-                raise ValueError("set_view needs swipe and/or oblique (true or false).")
-            action = {"type": type, **view}
+            if kw.get("swipe") is None:
+                raise ValueError("set_view needs swipe (true or false).")
+            action = {"type": type, "swipe": bool(kw["swipe"])}
         elif type == "show_facility":
             if not kw.get("facility_id"):
                 raise ValueError("show_facility needs facility_id.")

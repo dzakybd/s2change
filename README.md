@@ -46,7 +46,7 @@ Full write-up: **[report.md](report.md)**: method, results, interpretation with 
 | **1 · Data preparation:** load B02–B04, verify CRS/transform/shape, stack | `s2cd/io.py` → `data/processed/sentinel2_2023MMDD_stack.tif` |
 | **2 · Change detection:** the example algorithm *and* your own | Example, unchanged: `change_map_baseline.tif`, `change_binary_baseline.tif`. Mine: `change_map.tif` (log10 d²), `change_significance.tif` (−log10 p), `change_binary.tif` |
 | **3 · Features in a geospatial DB** (`id, date_before, date_after, area_m2, confidence, geometry`) | `data/change_detection.sqlite` (SpatiaLite) and **PostGIS on Supabase**: `change_features` + `change_runs` + `facilities` + `facility_changes`, MultiPolygon EPSG:32735, GiST index, validity check. Query it live in the app's **Database** tab |
-| **4 · Visualization:** AOI + change raster/polygons, interactive a plus | The app: swipe, change types, facility register, intensity, oblique view, draw-an-area stats, other-date comparison. Static figures in `docs/figures/` |
+| **4 · Visualization:** AOI + change raster/polygons, interactive a plus | The app: swipe, change types, facility register, intensity, other-date comparison. Static figures in `docs/figures/` |
 | **5 · `report.md`:** Method / Results / Interpretation | [report.md](report.md) sections 1–3; the data finding, sensitivity and limitations sit around them |
 
 ## Run it
@@ -106,7 +106,7 @@ src/s2cd/
   io.py                  load, validate, stack, write GeoTIFF/COG
   provenance.py          STAC source scenes behind each provided date (B02-B04 only)
   radiometry.py          reflectance, zones (seams), per-zone normalization
-  methods.py             provided baseline, robust CVA (calibrated), IR-MAD for comparison
+  methods.py             provided baseline, robust CVA (calibrated)
   vectorize.py           hysteresis, cleanup, valid polygons
   rgb.py                 visible-band indices and rules (greenness, redness, water, bare)
   register.py            facility register: outlines from imagery, change per facility
@@ -116,7 +116,7 @@ src/s2cd/
   pipeline.py, cli.py, viz.py, db.py, site.py
 configs/                 thresholds (default.yaml), facility register
 sql/                     PostGIS schema + example queries
-app/                     FastAPI: results, DB explorer, AOI stats, compare jobs, analyst agent (+ knowledge/)
+app/                     FastAPI: results, DB explorer, compare jobs, analyst agent (+ knowledge/)
 viewer/                  TypeScript + MapLibre app (built into docs/viewer and the live site)
 docs/                    figures, web assets, api.md
 ```

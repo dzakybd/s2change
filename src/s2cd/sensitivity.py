@@ -37,9 +37,7 @@ def sweep(cfg: Config | None = None) -> pd.DataFrame:
     """Changed area and footprint shares over the FAR x MMU grid (the run itself goes to a temporary directory)."""
     base = cfg or Config.from_yaml(Path("configs/default.yaml"))
     with tempfile.TemporaryDirectory() as tmp:
-        p = run(
-            replace(base, run_irmad=False, out_dir=Path(tmp) / "processed", sqlite_path=Path(tmp) / "change_detection.sqlite")
-        )
+        p = run(replace(base, out_dir=Path(tmp) / "processed", sqlite_path=Path(tmp) / "change_detection.sqlite"))
     grid = p.before.grid
     px_ha = grid.pixel_area_m2 / 1e4
     disturbed = vectorize.disturbed_footprint(p.refl_before, p.valid)

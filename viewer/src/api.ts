@@ -1,5 +1,5 @@
 import type { PolygonCollection } from "./overlays";
-import type { AgentAction, AgentChart, AgentResponse, AgentTable, AgentToolCall, AoiStats, CompareDate, CompareJob, DbExample, DbQueryResult, DbTable } from "./types";
+import type { AgentAction, AgentChart, AgentResponse, AgentTable, AgentToolCall, CompareDate, CompareJob, DbExample, DbQueryResult, DbTable } from "./types";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -143,9 +143,8 @@ export const dbSchema = (s: ReadyApi) => call<DbTable[]>(s, "GET", "/api/db/sche
 export const dbExamples = (s: ReadyApi) => call<DbExample[]>(s, "GET", "/api/db/examples");
 export const dbQuery = (s: ReadyApi, sql: string, signal?: AbortSignal) => call<DbQueryResult>(s, "POST", "/api/db/query", { sql }, signal);
 
-/* ---------- area of interest and other dates ---------- */
+/* ---------- other dates ---------- */
 
-export const aoiStats = (s: ReadyApi, geometry: unknown) => call<AoiStats>(s, "POST", "/api/aoi/stats", { geometry });
 export const compareDates = (s: ReadyApi) => call<CompareDate[]>(s, "GET", "/api/compare/dates");
 export const compareStart = (s: ReadyApi, before: string, after: string) => call<CompareJob>(s, "POST", "/api/compare", { before, after });
 export const compareStatus = (s: ReadyApi, jobId: string) => call<CompareJob>(s, "GET", `/api/compare/${encodeURIComponent(jobId)}`);

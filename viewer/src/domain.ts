@@ -34,8 +34,6 @@ export function typeInfo(key: string): ChangeTypeInfo {
   return TYPE_BY_KEY.get(key) ?? { ...FALLBACK_TYPE, key, label: key.replaceAll("_", " ") };
 }
 
-export const BINARY_COLOR = "#e8833a";
-
 export const FACILITY_CLASS_LABEL: Record<string, string> = {
   tailings: "Tailings",
   pit_dump_complex: "Pit and dump complex",

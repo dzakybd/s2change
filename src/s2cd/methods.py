@@ -4,10 +4,6 @@
 * ``robust_cva`` (main method) is change vector analysis (CVA; Malila 1980) on radiometrically normalized reflectance,
   scored by a Mahalanobis distance whose noise model is learned from no-change pixels, separately for every radiometric zone
   and every brightness stratum of the before image. The model is checked on held-out no-change pixels (``NoiseRules``).
-* ``irmad`` is iteratively reweighted multivariate alteration detection (Nielsen 2007), run
-  independently per radiometric zone, with the chi-square statistic and the weighting loop adapted from Canty & Nielsen
-  (2008, Remote Sensing of Environment 112:1025). It is kept as a comparison: see report.md for why it
-  over-detects on this 3-band, haze-affected pair.
 
 All "false-alarm rates" here are *nominal per-pixel rates under the chi-square model*: they hold exactly only if the noise
 is Gaussian with the fitted covariance. ``robust_cva`` measures the realised rate on held-out pixels and reports it.
@@ -21,7 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-from scipy import linalg, stats
+from scipy import stats
 
 EXAMPLE_PATH = Path(__file__).resolve().parents[2] / "inputs" / "example_change_detection.py"
 
@@ -228,85 +224,3 @@ def _calibrate(d2_model, d2_old, stratum, bright, test, folds, nb, far, rules):
         "thresholds_source": "empirical held-out quantiles" if empirical else "nominal chi-square",
         "realised_far_final": round(float(np.mean(realised)), 5),
     }
-
-
-@dataclass
-class IrmadResult:
-    chi2: np.ndarray  # (H, W) sum of squared standardized MAD variates; NaN where invalid
-    neglog10_p: np.ndarray  # (H, W) -log10 of the no-change p-value chi2.sf(chi2, bands)
-    mad: np.ndarray  # (bands, H, W) MAD variates, ordered from most to least correlated pair
-    rho: dict[int, list[float]]  # canonical correlations per zone
-    iterations: dict[int, int]
-
-
-def _irmad_samples(x: np.ndarray, y: np.ndarray, max_iter: int, tol: float) -> tuple[np.ndarray, np.ndarray, list[float], int]:
-    """IR-MAD on (n, p) sample matrices. Returns (MAD variates (n, p), chi2 (n,), rho, iterations)."""
-    n, p = x.shape
-    w = np.ones(n)
-    rho_old = np.zeros(p)
-    for it in range(1, max_iter + 1):  # noqa: B007 (returned as the iteration count)
-        ws = w / w.sum()
-        mx, my = ws @ x, ws @ y
-        xc, yc = x - mx, y - my
-        sxx = (xc * ws[:, None]).T @ xc
-        syy = (yc * ws[:, None]).T @ yc
-        sxy = (xc * ws[:, None]).T @ yc
-        # Generalized eigenproblem: Sxy Syy^-1 Syx a = rho^2 Sxx a
-        lam, a = linalg.eigh(sxy @ linalg.solve(syy, sxy.T), sxx)
-        order = np.argsort(lam)[::-1]  # most correlated first
-        lam, a = lam[order], a[:, order]
-        rho = np.sqrt(np.clip(lam, 0, 1))
-        b = linalg.solve(syy, sxy.T @ a) / np.where(rho > 0, rho, 1)
-        b /= np.sqrt(np.einsum("ij,ik,kj->j", b, syy, b))  # unit variance V
-        a /= np.sqrt(np.einsum("ij,ik,kj->j", a, sxx, a))  # unit variance U
-        sign = np.sign(np.einsum("ij,ik,kj->j", a, sxy, b))
-        b *= sign  # positive correlation between U_i and V_i
-        mad = xc @ a - yc @ b
-        var_mad = np.clip(2 * (1 - rho), 1e-12, None)
-        chi2 = np.sum(mad**2 / var_mad, axis=1)
-        w = 1 - stats.chi2.cdf(chi2, p)  # probability of no change -> weight for the next iteration
-        if np.max(np.abs(rho - rho_old)) < tol:
-            break
-        rho_old = rho
-    return mad, chi2, rho.tolist(), it
-
-
-def irmad(
-    before: np.ndarray,
-    after: np.ndarray,
-    valid: np.ndarray,
-    zones: np.ndarray | None = None,
-    max_iter: int = 50,
-    tol: float = 1e-5,
-    min_zone_pixels: int = 5000,
-) -> IrmadResult:
-    """Zone-wise IR-MAD.
-
-    IR-MAD is invariant to any affine radiometric transform of either image (gain/offset from
-    illumination, atmosphere, sensor calibration). Running it per stripe zone makes it invariant
-    to a different gain/offset in every detector footprint. Zones too small for stable
-    covariance estimates are merged into the largest zone.
-    """
-    nb, H, W = before.shape
-    zones = np.where(valid, 0, -1) if zones is None else np.where(valid, zones, -1)
-    sizes = {int(z): int((zones == z).sum()) for z in np.unique(zones[zones >= 0])}
-    largest = max(sizes, key=sizes.get)
-    for z, n in sizes.items():
-        if n < min_zone_pixels:
-            zones = np.where(zones == z, largest, zones)
-
-    chi2 = np.full((H, W), np.nan, np.float32)
-    mad = np.full((nb, H, W), np.nan, np.float32)
-    rho_by_zone, iters = {}, {}
-    for z in np.unique(zones[zones >= 0]):
-        m = zones == z
-        x = before[:, m].T.astype(np.float64)
-        y = after[:, m].T.astype(np.float64)
-        mz, cz, rz, it = _irmad_samples(x, y, max_iter, tol)
-        chi2[m] = cz
-        mad[:, m] = mz.T
-        rho_by_zone[int(z)] = rz
-        iters[int(z)] = it
-    sig = neglog10_p(chi2, nb)
-    sig[~valid] = np.nan
-    return IrmadResult(chi2, sig, mad, rho_by_zone, iters)

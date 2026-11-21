@@ -56,9 +56,9 @@ function typesBar(o: Overview): string {
 const BRIEF = [
   { n: 1, t: "Work with real satellite data", d: "Every provided pixel matched to a Planetary Computer scene; the mosaic seams found and explained.", links: [["Provenance in the report", hrefFor("report")], ["Stacks to download", hrefFor("downloads")]] },
   { n: 2, t: "Design the pipeline", d: "Seven stages from provenance to PostGIS; thresholds are false-alarm rates, not tuned constants.", links: [["Method diagram", "#method"], ["Report, method", hrefFor("report")]] },
-  { n: 3, t: "Implement change detection", d: "Robust CVA against a per-zone noise model, hysteresis and a 2,000 m² minimum mapping unit.", links: [["Change intensity", hrefFor("map", { layer: "intensity" })], ["Change binary", hrefFor("map", { layer: "binary" })]] },
+  { n: 3, t: "Implement change detection", d: "Robust CVA against a per-zone noise model, hysteresis and a 2,000 m² minimum mapping unit.", links: [["Change intensity", hrefFor("map", { layer: "intensity" })]] },
   { n: 4, t: "Store and query geospatial analytics", d: "A PostGIS database with spatial indexes, a read-only SQL console and an HTTP API.", links: [["SQL console", hrefFor("database")], ["API reference", `${BLOB_URL}docs/api.md`]] },
-  { n: 5, t: "Visualize and interpret", d: "Typed change polygons with a stated reason each, a facility register, an oblique view and an analyst agent.", links: [["Change types", hrefFor("map")], ["Facilities", hrefFor("map", { layer: "facilities" })], ["Analyst", hrefFor("analyst")]] },
+  { n: 5, t: "Visualize and interpret", d: "Typed change polygons with a stated reason each, a facility register and an analyst agent.", links: [["Change types", hrefFor("map")], ["Facilities", hrefFor("map", { layer: "facilities" })], ["Analyst", hrefFor("analyst")]] },
 ];
 
 function brief(): string {

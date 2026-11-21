@@ -3,8 +3,8 @@ import type { ApiState, AuthState } from "./api";
 import { ApiError, authStatus, friendlyError, login, logout } from "./api";
 
 /**
- * The access code, in one place. The server gates a few costly features (analyst chat, SQL console, drawn-area stats,
- * new comparisons) and answers them with 401. `withUnlock` runs an action, and on a 401 asks for the code in a dialog and
+ * The access code, in one place. The server gates a few costly features (analyst chat, SQL console, new
+ * comparisons) and answers them with 401. `withUnlock` runs an action, and on a 401 asks for the code in a dialog and
  * retries the action once. The state (is there a code at all, is this browser unlocked) feeds the top-bar chip.
  */
 
@@ -16,17 +16,15 @@ const set = (s: AuthState) => {
   for (const fn of listeners) fn(s);
 };
 
-export const authState = (): AuthState => state;
-
 export function onAuthChange(fn: (s: AuthState) => void): void {
   listeners.add(fn);
   fn(state);
 }
 
 /** A gated call came back 401: remember that this browser is locked, whatever the status said before. */
-export const markLocked = (): void => set({ enabled: true, authenticated: false });
+const markLocked = (): void => set({ enabled: true, authenticated: false });
 
-export const isLocked = (err: unknown): boolean => err instanceof ApiError && err.status === 401;
+const isLocked = (err: unknown): boolean => err instanceof ApiError && err.status === 401;
 
 export async function initAuth(apiPromise: Promise<ApiState>): Promise<void> {
   const api = await apiPromise;
