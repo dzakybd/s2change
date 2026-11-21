@@ -16,6 +16,9 @@ from app.tools import ALL_TOOLS
 
 log = logging.getLogger("s2cd.app")
 DEFAULT_MODEL = "gemini-3.5-flash"
+# Answers are short. Without a cap the provider reserves the model maximum (65k tokens) per call, which OpenRouter
+# refuses when the balance is low (HTTP 402).
+MAX_OUTPUT_TOKENS = 4096
 # deepagents adds planning, filesystem, shell and sub-agent tools by default. None helps a 3-8 call Q&A over a database,
 # and each is extra attack surface, so they are hidden from the model (tools=[...] below are the only ones it sees).
 BUILTIN_TOOLS = frozenset(
@@ -93,10 +96,11 @@ def _model():
             api_key=os.environ["OPENROUTER_API_KEY"],
             max_retries=2,
             timeout=60,
+            max_tokens=MAX_OUTPUT_TOKENS,
             default_headers={"HTTP-Referer": "https://s2change.dzaky.ai.id", "X-Title": "s2change analyst"},
             **extra,
         )
-    return ChatGoogleGenerativeAI(model=name, max_retries=2, timeout=60, **extra)
+    return ChatGoogleGenerativeAI(model=name, max_retries=2, timeout=60, max_output_tokens=MAX_OUTPUT_TOKENS, **extra)
 
 
 def key_numbers() -> str:
