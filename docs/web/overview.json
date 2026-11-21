@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-20T07:56:15+00:00",
+  "generated": "2026-11-21T06:09:30+00:00",
   "pair": {
     "before": "2023-08-12",
     "after": "2023-09-02",
@@ -78,7 +78,11 @@
         "infrastructure_or_settlement": 1.0,
         "waste_dumping": 0.1
       },
-      "summary": "Tailings storage facility: 1.94 km\u00b2 changed (9% of 22.4 km\u00b2); mostly tailings deposition"
+      "summary": "Tailings storage facility: 1.94 km\u00b2 changed (9% of 22.4 km\u00b2); mostly tailings deposition",
+      "thumbnails": {
+        "before": "facilities/TSF_before.webp",
+        "after": "facilities/TSF_after.webp"
+      }
     },
     {
       "facility_id": "PIT-S",
@@ -94,7 +98,11 @@
         "water_level_change": 8.4,
         "noise_or_artifact": 0.3
       },
-      "summary": "South pit complex: 0.38 km\u00b2 changed (2% of 20.1 km\u00b2); mostly pit excavation"
+      "summary": "South pit complex: 0.38 km\u00b2 changed (2% of 20.1 km\u00b2); mostly pit excavation",
+      "thumbnails": {
+        "before": "facilities/PIT-S_before.webp",
+        "after": "facilities/PIT-S_after.webp"
+      }
     },
     {
       "facility_id": "WD-E",
@@ -110,7 +118,11 @@
         "pit_excavation": 0.2,
         "mine_expansion_clearing": 0.1
       },
-      "summary": "Eastern waste dumps: 0.36 km\u00b2 changed (8% of 4.4 km\u00b2); mostly waste dumping"
+      "summary": "Eastern waste dumps: 0.36 km\u00b2 changed (8% of 4.4 km\u00b2); mostly waste dumping",
+      "thumbnails": {
+        "before": "facilities/WD-E_before.webp",
+        "after": "facilities/WD-E_after.webp"
+      }
     },
     {
       "facility_id": "PIT-NW",
@@ -125,7 +137,11 @@
         "pit_excavation": 5.2,
         "noise_or_artifact": 0.5
       },
-      "summary": "North-west pit complex: 0.34 km\u00b2 changed (3% of 11.2 km\u00b2); mostly waste dumping"
+      "summary": "North-west pit complex: 0.34 km\u00b2 changed (3% of 11.2 km\u00b2); mostly waste dumping",
+      "thumbnails": {
+        "before": "facilities/PIT-NW_before.webp",
+        "after": "facilities/PIT-NW_after.webp"
+      }
     },
     {
       "facility_id": "PLANT",
@@ -140,7 +156,11 @@
         "waste_dumping": 0.9,
         "tailings_dam_raise": 0.4
       },
-      "summary": "Process plant and central yard: 0.05 km\u00b2 changed (2% of 2.0 km\u00b2); mostly infrastructure or settlement"
+      "summary": "Process plant and central yard: 0.05 km\u00b2 changed (2% of 2.0 km\u00b2); mostly infrastructure or settlement",
+      "thumbnails": {
+        "before": "facilities/PLANT_before.webp",
+        "after": "facilities/PLANT_after.webp"
+      }
     },
     {
       "facility_id": "TOWN",
@@ -153,7 +173,11 @@
       "change_types": {
         "infrastructure_or_settlement": 0.3
       },
-      "summary": "South-west settlement: 0.00 km\u00b2 changed (0% of 11.2 km\u00b2); mostly infrastructure or settlement"
+      "summary": "South-west settlement: 0.00 km\u00b2 changed (0% of 11.2 km\u00b2); mostly infrastructure or settlement",
+      "thumbnails": {
+        "before": "facilities/TOWN_before.webp",
+        "after": "facilities/TOWN_after.webp"
+      }
     },
     {
       "facility_id": "CAMP",
@@ -164,7 +188,11 @@
       "changed_ha": 0.0,
       "changed_share": 0.0,
       "change_types": {},
-      "summary": "Eastern camp: 0.00 km\u00b2 changed (0% of 1.8 km\u00b2)"
+      "summary": "Eastern camp: 0.00 km\u00b2 changed (0% of 1.8 km\u00b2)",
+      "thumbnails": {
+        "before": "facilities/CAMP_before.webp",
+        "after": "facilities/CAMP_after.webp"
+      }
     },
     {
       "facility_id": "DAM",
@@ -175,7 +203,11 @@
       "changed_ha": 0.0,
       "changed_share": 0.0,
       "change_types": {},
-      "summary": "Fresh-water dam: 0.00 km\u00b2 changed (0% of 5.1 km\u00b2)"
+      "summary": "Fresh-water dam: 0.00 km\u00b2 changed (0% of 5.1 km\u00b2)",
+      "thumbnails": {
+        "before": "facilities/DAM_before.webp",
+        "after": "facilities/DAM_after.webp"
+      }
     }
   ],
   "sensitivity": [

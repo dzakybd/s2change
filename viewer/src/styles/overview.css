@@ -69,14 +69,25 @@
 .sens thead th:first-child { text-transform: none; letter-spacing: 0; font-size: var(--fs-xs); }
 .sens tbody th { position: static; background: transparent; text-transform: none; font-size: var(--fs-sm); color: var(--text-2); letter-spacing: 0; }
 .fac { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.fac a { display: grid; grid-template-columns: 62px 1fr auto; gap: 0 var(--s-3); align-items: center; padding: 8px var(--s-3); border-radius: var(--r-sm); color: inherit; text-decoration: none; transition: background-color 140ms ease; }
+.fac a { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 0 var(--s-3); align-items: center; padding: 8px var(--s-3); border-radius: var(--r-sm); color: inherit; text-decoration: none; transition: background-color 140ms ease; }
 @media (hover: hover) and (pointer: fine) { .fac a:hover { background: var(--surface); } }
 .fac-id { font-family: var(--mono); font-size: var(--fs-xs); color: var(--teal); font-weight: 600; }
 .fac-n { display: grid; min-width: 0; }
 .fac-n b { font-size: var(--fs-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fac-n small { color: var(--text-3); font-size: var(--fs-xs); }
 .fac-v { font-size: var(--fs-sm); font-weight: 600; }
-.fac .bar { grid-column: 2 / -1; margin-top: 5px; }
+.fac .bar { grid-column: 2 / -1; align-self: start; margin-top: 6px; height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+.fac .bar i { display: block; height: 100%; border-radius: 2px; }
+.fac-thumb { grid-row: span 2; position: relative; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: var(--surface-2); box-shadow: 0 0 0 1px rgb(15 23 42 / 0.08); }
+.fac-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.fac-thumb .fac-before { opacity: 0; transition: opacity 180ms var(--ease-out, ease-out); }
+.fac-tag { position: absolute; left: 4px; bottom: 4px; padding: 1px 5px; border-radius: 6px; font-size: 10px; font-weight: 600; line-height: 1.4; color: #fff; background: rgb(15 23 42 / 0.62); transition: opacity 180ms var(--ease-out, ease-out); }
+.fac-tag.b { opacity: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .fac a:hover .fac-before, .fac a:hover .fac-tag.b { opacity: 1; }
+  .fac a:hover .fac-tag:not(.b) { opacity: 0; }
+}
+.fac a:focus-visible .fac-before, .fac a:focus-visible .fac-tag.b { opacity: 1; }
 
 .ov-foot { margin-top: var(--s-8); padding-top: var(--s-5); box-shadow: 0 -1px 0 rgb(15 23 42 / 0.07); }
 .links { display: flex; flex-wrap: wrap; gap: var(--s-2); }

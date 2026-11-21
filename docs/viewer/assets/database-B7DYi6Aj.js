@@ -1,4 +1,4 @@
-import{_ as e,a as t,o as n,v as r,x as i,y as a}from"./index-DYyxmQXj.js";import{c as o,d as s,f as c,m as l,n as u,y as d}from"./domain-BTjasbXA.js";var f=`s2cd.sql.v1`,p=`SELECT change_type, count(*) AS n_polygons,
+import{_ as e,a as t,o as n,v as r,x as i,y as a}from"./index-D-fzi37z.js";import{c as o,d as s,f as c,m as l,n as u,y as d}from"./domain-BTjasbXA.js";var f=`s2cd.sql.v1`,p=`SELECT change_type, count(*) AS n_polygons,
        round((sum(area_m2) / 10000.0)::numeric, 1) AS area_ha
 FROM change_features
 WHERE method = 'robust_cva'

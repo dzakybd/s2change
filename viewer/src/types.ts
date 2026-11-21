@@ -115,6 +115,8 @@ export interface Overview {
     changed_share: number;
     change_types: Record<string, number>;
     summary: string;
+    /** Satellite crops under docs/web/, written by `python -m s2cd.site`. */
+    thumbnails?: { before: string; after: string } | null;
   }[];
   sensitivity: {
     far_low: number;

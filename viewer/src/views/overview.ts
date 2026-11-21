@@ -118,12 +118,19 @@ function sensitivity(o: Overview): string {
   return `<div class="table-wrap sens"><table><thead><tr><th>False-alarm rate ↓ · MMU (m²) →</th>${mmus.map((m) => `<th class="num">${fmtInt(m * 10_000)}</th>`).join("")}</tr></thead><tbody>${fars.map((f) => `<tr><th scope="row">${f.toExponential(0).replace("e-", "e−")}</th>${mmus.map((m) => cell(f, m)).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 
+/** Satellite crop of a facility: after (change outlined in yellow) by default, before on hover. Exported by s2cd.site. */
+function thumb(f: Overview["facilities"][number]): string {
+  const t = f.thumbnails;
+  if (!t) return `<span class="fac-thumb empty" aria-hidden="true"></span>`;
+  return `<span class="fac-thumb" title="After, change outlined in yellow. Hover for before."><img src="${dataUrl(t.after).href}" alt="${esc(f.name)}, after, with the detected change outlined" loading="lazy" width="96" height="96"><img class="fac-before" src="${dataUrl(t.before).href}" alt="" loading="lazy" width="96" height="96"><span class="fac-tag">After</span><span class="fac-tag b">Before</span></span>`;
+}
+
 function facilityRows(o: Overview): string {
   const max = Math.max(...o.facilities.map((f) => f.changed_ha), 1);
   return `<ul class="fac">${o.facilities
     .map((f) => {
       const main = Object.entries(f.change_types).sort((a, b) => b[1] - a[1])[0]?.[0];
-      return `<li><a href="${hrefFor("map", { layer: "facilities" })}"><span class="fac-id">${esc(f.facility_id)}</span><span class="fac-n"><b>${esc(f.name)}</b><small>${main ? esc(typeInfo(main).label) : "no change detected"}</small></span><span class="fac-v num">${fmtKm2(f.changed_ha)}</span><span class="bar"><i style="width:${Math.max(f.changed_ha > 0 ? 2 : 0, (f.changed_ha / max) * 100).toFixed(1)}%;background:${main ? typeInfo(main).color : "#94a3b8"}"></i></span></a></li>`;
+      return `<li><a href="${hrefFor("map", { layer: "facilities" })}">${thumb(f)}<span class="fac-n"><b>${esc(f.name)}</b><small><span class="fac-id">${esc(f.facility_id)}</span> · ${main ? esc(typeInfo(main).label) : "no change detected"}</small></span><span class="fac-v num">${fmtKm2(f.changed_ha)}</span><span class="bar"><i style="width:${Math.max(f.changed_ha > 0 ? 2 : 0, (f.changed_ha / max) * 100).toFixed(1)}%;background:${main ? typeInfo(main).color : "#94a3b8"}"></i></span></a></li>`;
     })
     .join("")}</ul>`;
 }
