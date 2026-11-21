@@ -25,7 +25,7 @@
 
 <p align="center"><img src="docs/figures/demo.gif" alt="s2change: overview, before/after swipe, other-date comparison, analyst driving the map" width="860"></p>
 
-<p align="center"><i>Overview, before/after swipe, other-date comparison, and the analyst opening a facility on the map.</i></p>
+<p align="center"><i>Overview with facility thumbnails, before/after swipe with the plain-language "What changed" list, a 2023 → 2026 comparison, and the analyst opening a facility on the map.</i></p>
 
 ## Findings (nominal 2023-08-12 → 2023-09-02)
 
