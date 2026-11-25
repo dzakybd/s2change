@@ -1,0 +1,201 @@
+id,change,type,confidence,note
+P001,0,,medium,vegetation next to clearing unchanged
+P002,1,waste_dumping,medium,orange material appears on slope
+P003,0,,low,road junction; widening ambiguous
+P004,0,,medium,woodland seasonal browning only
+P005,1,other,low,orange surface darkens; unclear cause
+P006,1,tailings_deposition,medium,grey tailings boundary moved
+P007,0,,low,colour cast differs; shapes similar
+P008,1,water_level_change,low,bright pixel becomes dark pond
+P009,0,,high,road unchanged; seasonal browning
+P010,1,construction_or_road,low,grey strip appears along berm
+P011,0,,low,strong tonal difference; possibly burn
+P012,1,tailings_deposition,high,white tailings becomes dark wet slurry
+P013,1,vegetation_loss_or_burn,medium,dark burn scar replaces brown grass
+P014,1,tailings_deposition,low,dark tailings patch changes tone
+P015,1,vegetation_loss_or_burn,low,bare strip turns dark; possible burn
+P016,0,,medium,vegetation; colour cast only
+P017,0,,medium,settlement unchanged
+P018,0,,medium,vegetation unchanged
+P019,0,,low,green patch persists
+P020,0,,medium,woodland unchanged
+P021,0,,low,vegetation; colour cast only
+P022,0,,high,shore vegetation unchanged
+P023,0,,low,bare strip faint in both
+P024,1,water_level_change,high,pond edge retreated; beach exposed
+P025,0,,high,tailings surface unchanged
+P026,0,,medium,woodland unchanged
+P027,1,water_level_change,medium,dark water appears at road junction
+P028,1,tailings_deposition,medium,bright tailings extends into dark zone
+P029,0,,medium,water both dates
+P030,0,,medium,vegetation unchanged
+P031,1,construction_or_road,low,bare patch extends near buildings
+P032,0,,low,vegetation; colour cast
+P033,0,,high,pond water both dates
+P034,0,,high,dark vegetation unchanged
+P035,1,tailings_deposition,medium,grey edge becomes bright tailings
+P036,0,,high,vegetation beside road unchanged
+P037,0,,medium,vegetation unchanged
+P038,0,,low,vegetation; colour cast
+P039,0,,low,vegetation; seasonal browning
+P040,0,,low,vegetation; colour cast
+P041,0,,high,dark vegetation unchanged
+P042,0,,medium,pond water both dates
+P043,0,,medium,white tailings both dates
+P044,1,construction_or_road,medium,new parallel road through vegetation
+P045,0,,medium,orange surface unchanged
+P046,0,,medium,vegetation unchanged
+P047,0,,low,strong tonal difference; possibly burn
+P048,1,waste_dumping,high,orange dump appears in vegetation
+P049,1,tailings_deposition,medium,wet grey tailings dried/changed
+P050,0,,medium,pond water both dates
+P051,1,tailings_deposition,low,pale tailings becomes grey
+P052,0,,medium,vegetation; colour cast
+P053,1,tailings_deposition,high,dark wet tailings becomes pale
+P054,0,,medium,road edge unchanged
+P055,0,,medium,grey pad both dates
+P056,0,,low,pond tip; cast differs
+P057,0,,low,strong tonal difference near scene edge
+P058,0,,high,woodland unchanged
+P059,0,,high,woodland unchanged
+P060,0,,medium,pond water both dates
+P061,1,vegetation_loss_or_burn,medium,dark burn scar over grassland
+P062,1,vegetation_loss_or_burn,low,bare strip turns dark; possible burn
+P063,0,,high,river water both dates
+P064,1,vegetation_loss_or_burn,low,tan strip darkens; possible burn
+P065,0,,medium,pond water both dates
+P066,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P067,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P068,0,,high,water both dates
+P069,0,,low,mixed bare/vegetation similar
+P070,0,,low,vegetation; colour cast
+P071,0,,low,vegetation; colour cast
+P072,1,water_level_change,medium,pond edge retreated
+P073,0,,medium,shoreline tip unchanged
+P074,0,,high,river water both dates
+P075,1,tailings_deposition,low,new light streaks on tailings
+P076,1,construction_or_road,medium,grey band appears along berm
+P077,0,,medium,tailings/road unchanged
+P078,0,,medium,pond water both dates
+P079,1,other,low,bright patches appear on brown surface
+P080,1,construction_or_road,medium,orange pad becomes grey surface
+P081,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P082,0,,medium,vegetation unchanged
+P083,0,,medium,pond water both dates
+P084,0,,high,tailings channels unchanged
+P085,1,tailings_deposition,medium,grey tailings becomes bright
+P086,0,,medium,channel line unchanged
+P087,0,,medium,drainage channel unchanged
+P088,0,,medium,vegetation unchanged
+P089,0,,high,river water both dates
+P090,1,construction_or_road,medium,new bright berm strip at dam toe
+P091,0,,low,colour cast; structure ambiguous
+P092,0,,low,tailings/vegetation edge; stripe artifact
+P093,1,tailings_deposition,high,pale tailings becomes dark wet
+P094,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P095,1,tailings_deposition,medium,brown tailings band shifted; now pale
+P096,0,,medium,pond water both dates
+P097,0,,medium,vegetation below grey pad
+P098,0,,low,pit floor similar
+P099,0,,low,colour cast; shapes similar
+P100,0,,medium,road junction unchanged
+P101,0,,low,vegetation; colour cast
+P102,0,,medium,vegetation unchanged
+P103,0,,high,vegetation unchanged
+P104,1,vegetation_loss_or_burn,low,tan strip turns dark; possible burn
+P105,0,,low,vegetation; colour cast
+P106,0,,medium,field texture unchanged
+P107,0,,medium,vegetation beside water unchanged
+P108,0,,high,road unchanged
+P109,1,tailings_deposition,medium,dark grey patch replaced by brown
+P110,0,,medium,vegetation unchanged
+P111,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P112,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P113,1,vegetation_loss_or_burn,low,bare strip turns dark; possible burn
+P114,1,waste_dumping,high,orange material dumped on grey area
+P115,0,,high,dark area unchanged
+P116,0,,medium,pond water both dates
+P117,0,,low,colour cast; shapes similar
+P118,0,,low,vegetation; colour cast
+P119,0,,medium,vegetation unchanged
+P120,0,,low,after likely hazy; surface obscured
+P121,0,,medium,vegetation unchanged
+P122,0,,low,vegetation; colour cast
+P123,1,other,low,new pale strip on orange surface
+P124,0,,high,dark area unchanged
+P125,0,,medium,vegetation seasonal browning
+P126,0,,medium,mixed surface unchanged
+P127,1,tailings_deposition,medium,pale tailings becomes dark grey
+P128,0,,low,water edge similar
+P129,0,,high,surface unchanged
+P130,1,waste_dumping,medium,orange material on pale surface
+P131,0,,medium,woodland unchanged
+P132,1,construction_or_road,medium,grey band appears along berm
+P133,0,,medium,vegetation unchanged
+P134,0,,medium,vegetation unchanged
+P135,0,,medium,vegetation unchanged
+P136,0,,medium,orange surface unchanged
+P137,1,tailings_deposition,low,dark tailings zone lightens
+P138,0,,high,surface unchanged
+P139,0,,medium,brown tailings both dates
+P140,0,,low,white tailings both dates
+P141,0,,high,dark area unchanged
+P142,1,waste_dumping,medium,grey strip replaced by orange material
+P143,0,,medium,vegetation unchanged
+P144,0,,medium,settlement unchanged
+P145,0,,medium,tailings surface unchanged
+P146,0,,low,vegetation; colour cast
+P147,0,,medium,vegetation unchanged
+P148,0,,medium,vegetation; stripe artifact nearby
+P149,0,,low,vegetation; colour cast
+P150,0,,medium,surface unchanged
+P151,0,,medium,settlement unchanged
+P152,0,,medium,vegetation unchanged
+P153,0,,low,after likely hazy; surface obscured
+P154,1,vegetation_loss_or_burn,low,shore vegetation darkens; possible burn
+P155,1,tailings_deposition,low,bright streak appears on grey tailings
+P156,0,,low,vegetation; colour cast
+P157,0,,low,after likely hazy; surface obscured
+P158,0,,high,woodland unchanged
+P159,0,,high,road junction unchanged
+P160,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P161,0,,low,vegetation; colour cast
+P162,0,,high,water both dates
+P163,1,water_level_change,low,pond edge receded slightly
+P164,0,,low,vegetation; colour cast
+P165,0,,medium,vegetation beside track unchanged
+P166,0,,medium,brown tailings both dates
+P167,1,vegetation_loss_or_burn,low,dark vegetation patch disappears
+P168,1,tailings_deposition,low,bright deposit near dark boundary
+P169,0,,low,mixed vegetation; colour cast
+P170,0,,medium,dark area beside embankment unchanged
+P171,0,,medium,vegetation unchanged
+P172,1,water_level_change,low,pond edge shifted at square
+P173,1,vegetation_loss_or_burn,low,area darkens; possible burn
+P174,1,tailings_deposition,low,light streaks replaced by grey
+P175,1,water_level_change,medium,pond edge retreated; beach exposed
+P176,1,tailings_deposition,medium,white/grey pattern becomes uniform
+P177,0,,medium,vegetation unchanged
+P178,1,vegetation_loss_or_burn,medium,dark burn along drainage line
+P179,1,waste_dumping,medium,bright deposit extends into vegetation
+P180,0,,low,vegetation; colour cast
+P181,0,,low,vegetation; seasonal browning
+P182,1,waste_dumping,medium,bright deposit edge reaches square
+P183,0,,low,vegetation; seasonal browning
+P184,0,,high,vegetation beside road unchanged
+P185,1,vegetation_loss_or_burn,low,tan area darkens; possible burn
+P186,0,,low,shoreline similar
+P187,0,,medium,water both dates
+P188,0,,low,colour cast; shapes similar
+P189,1,tailings_deposition,low,road crossing faded under tailings
+P190,0,,medium,vegetation unchanged
+P191,0,,low,vegetation; colour cast
+P192,0,,medium,dark vegetation unchanged
+P193,0,,high,road unchanged
+P194,0,,medium,bright band both dates
+P195,1,tailings_deposition,medium,dark grey tailings becomes lighter
+P196,0,,low,vegetation; colour cast
+P197,0,,medium,pond water both dates
+P198,0,,high,surface unchanged
+P199,1,tailings_deposition,high,pale tailings becomes dark wet
+P200,0,,low,vegetation; scene-edge stripe nearby

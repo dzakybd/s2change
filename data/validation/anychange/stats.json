@@ -1,0 +1,20 @@
+{
+ "cva": {
+  "changed_km2": 4.13,
+  "share_inside_facilities": 0.739,
+  "iou_with_cva": 1.0,
+  "share_of_cva_found": 1.0
+ },
+ "anychange 145 (strict)": {
+  "changed_km2": 2.01,
+  "share_inside_facilities": 0.165,
+  "iou_with_cva": 0.071,
+  "share_of_cva_found": 0.098
+ },
+ "anychange auto (Otsu)": {
+  "changed_km2": 8.38,
+  "share_inside_facilities": 0.673,
+  "iou_with_cva": 0.033,
+  "share_of_cva_found": 0.098
+ }
+}

@@ -1,0 +1,97 @@
+{
+  "answer": "The five largest changes are shown below and highlighted on the map. Together they cover 107 ha, 26% of all change.",
+  "actions": [
+    {
+      "type": "fly_to",
+      "bbox": [
+        25.802,
+        -12.2479,
+        25.8977,
+        -12.2016
+      ]
+    },
+    {
+      "type": "highlight",
+      "run_id": "assignment",
+      "ids": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  ],
+  "charts": [],
+  "tables": [
+    {
+      "title": "Five largest changes",
+      "columns": [
+        "Polygon",
+        "Type",
+        "Area (ha)",
+        "Facility",
+        "Confidence"
+      ],
+      "rows": [
+        [
+          0,
+          "waste dumping",
+          38.8,
+          "TSF",
+          0.343
+        ],
+        [
+          1,
+          "waste dumping",
+          19.3,
+          "PIT-NW",
+          0.222
+        ],
+        [
+          2,
+          "tailings deposition",
+          16.8,
+          "TSF",
+          0.344
+        ],
+        [
+          3,
+          "tailings deposition",
+          16.7,
+          "TSF",
+          0.115
+        ],
+        [
+          4,
+          "tailings deposition",
+          15.5,
+          "TSF",
+          0.157
+        ]
+      ]
+    }
+  ],
+  "tool_calls": [
+    {
+      "name": "query_changes",
+      "args": {
+        "run_id": "assignment",
+        "order_by": "area_m2 desc",
+        "limit": 5
+      }
+    },
+    {
+      "name": "map_actions",
+      "args": {
+        "highlight": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      }
+    }
+  ]
+}

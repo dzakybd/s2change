@@ -1,0 +1,24 @@
+{
+  "name": "s2cd-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:site": "tsc --noEmit && VITE_DATA_BASE=./web/ vite build --outDir dist-site",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.18",
+    "maplibre-gl": "^6.19.0",
+    "marked": "^18.2.1",
+    "mermaid": "^12.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}

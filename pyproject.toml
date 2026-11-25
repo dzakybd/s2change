@@ -1,0 +1,64 @@
+[project]
+name = "s2cd"
+version = "0.1.0"
+description = "Sentinel-2 change detection for open-pit mine monitoring: stripe-aware radiometric normalization, robust CVA, PostGIS/SpatiaLite storage"
+readme = "README.md"
+authors = [
+    { name = "Dzaky Zakiyal Fawwaz", email = "dzakybd@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "geopandas>=1.2.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.5",
+    "psycopg[binary]>=3.3.9",
+    "pyogrio>=0.13.0",
+    "pyproj>=3.8.0",
+    "pyyaml>=6.0.3",
+    "rasterio>=1.5.2",
+    "scikit-image>=0.26.0",
+    "scipy>=1.18.1",
+    "shapely>=2.2.0",
+    "sqlalchemy>=2.1.9",
+    "typer>=0.29.2",
+]
+
+[project.optional-dependencies]
+stac = [
+    "planetary-computer>=1.0.0",
+    "pystac-client>=0.9.1",
+]
+app = [
+    "deepagents>=0.7.40",
+    "fastapi>=0.165.0",
+    "httpx>=0.28.1",
+    "langchain-google-genai>=4.5.1",
+    "langchain-openai>=1.8.3",
+    "python-dotenv>=1.2.4",
+    "slowapi>=0.1.10",
+    "sqlglot>=30.33.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+s2cd = "s2cd.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.6",
+]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "NPY", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

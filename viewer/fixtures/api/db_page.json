@@ -1,0 +1,118 @@
+{
+ "table": "facility_changes",
+ "columns": [
+  {
+   "name": "facility_id",
+   "type": "text"
+  },
+  {
+   "name": "changed_ha",
+   "type": "real"
+  },
+  {
+   "name": "changed_share",
+   "type": "real"
+  },
+  {
+   "name": "change_types",
+   "type": "jsonb"
+  },
+  {
+   "name": "summary",
+   "type": "text"
+  }
+ ],
+ "rows": [
+  [
+   "CAMP",
+   0.0,
+   0.0,
+   {},
+   "Eastern camp: 0.00 km\u00b2 changed (0% of 1.8 km\u00b2)"
+  ],
+  [
+   "DAM",
+   0.0,
+   0.0,
+   {},
+   "Fresh-water dam: 0.00 km\u00b2 changed (0% of 5.1 km\u00b2)"
+  ],
+  [
+   "PIT-NW",
+   33.6,
+   0.03,
+   {
+    "waste_dumping": 27.9,
+    "pit_excavation": 5.2,
+    "noise_or_artifact": 0.5
+   },
+   "North-west pit complex: 0.34 km\u00b2 changed (3% of 11.2 km\u00b2); mostly waste dumping"
+  ],
+  [
+   "PIT-S",
+   37.7,
+   0.019,
+   {
+    "waste_dumping": 8.7,
+    "pit_excavation": 20.3,
+    "noise_or_artifact": 0.3,
+    "water_level_change": 8.4
+   },
+   "South pit complex: 0.38 km\u00b2 changed (2% of 20.1 km\u00b2); mostly pit excavation"
+  ],
+  [
+   "PLANT",
+   4.9,
+   0.025,
+   {
+    "waste_dumping": 0.9,
+    "tailings_dam_raise": 0.4,
+    "infrastructure_or_settlement": 3.6
+   },
+   "Process plant and central yard: 0.05 km\u00b2 changed (2% of 2.0 km\u00b2); mostly infrastructure or settlement"
+  ],
+  [
+   "TOWN",
+   0.4,
+   0.0,
+   {
+    "infrastructure_or_settlement": 0.3
+   },
+   "South-west settlement: 0.00 km\u00b2 changed (0% of 11.2 km\u00b2); mostly infrastructure or settlement"
+  ],
+  [
+   "TSF",
+   193.6,
+   0.086,
+   {
+    "waste_dumping": 0.1,
+    "noise_or_artifact": 2.3,
+    "tailings_dam_raise": 8.4,
+    "water_level_change": 6.2,
+    "tailings_deposition": 175.7,
+    "infrastructure_or_settlement": 1.0
+   },
+   "Tailings storage facility: 1.94 km\u00b2 changed (9% of 22.4 km\u00b2); mostly tailings deposition"
+  ],
+  [
+   "WD-E",
+   36.2,
+   0.083,
+   {
+    "waste_dumping": 35.5,
+    "pit_excavation": 0.2,
+    "noise_or_artifact": 0.4,
+    "mine_expansion_clearing": 0.1
+   },
+   "Eastern waste dumps: 0.36 km\u00b2 changed (8% of 4.4 km\u00b2); mostly waste dumping"
+  ]
+ ],
+ "total": 8,
+ "page": 1,
+ "pages": 1,
+ "size": 10,
+ "sort": null,
+ "desc": false,
+ "elapsed_ms": 78,
+ "geojson": null
+}

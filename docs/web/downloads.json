@@ -1,0 +1,625 @@
+{
+ "groups": [
+  {
+   "title": "Change maps",
+   "blurb": "GeoTIFFs on the 10 m grid of the scenes (EPSG:32735). Open in QGIS or rasterio.",
+   "items": [
+    {
+     "path": "data/processed/change_map.tif",
+     "title": "change_map.tif",
+     "desc": "Robust change magnitude per pixel (log10 d²).",
+     "size": "11.2 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "change intensity: log10 Mahalanobis d2"
+      ],
+      [
+       "Type",
+       "float32"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-9999"
+      ]
+     ],
+     "image": "previews/data_processed_change_map_tif.webp"
+    },
+    {
+     "path": "data/processed/change_significance.tif",
+     "title": "change_significance.tif",
+     "desc": "−log10 p of the change under the noise model.",
+     "size": "10.5 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "-log10 no-change p-value, chi2.logsf(d2, 3), capped at 50"
+      ],
+      [
+       "Type",
+       "float32"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-9999"
+      ]
+     ],
+     "image": "previews/data_processed_change_significance_tif.webp"
+    },
+    {
+     "path": "data/processed/change_binary.tif",
+     "title": "change_binary.tif",
+     "desc": "Changed (1) or not (0) after hysteresis and the 2,000 m² minimum mapping unit; 255 = no data.",
+     "size": "40 KB",
+     "kind": "binary",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "1 = change (robust CVA, hysteresis nominal FAR 0.001/1e-05)"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/data_processed_change_binary_tif.webp"
+    },
+    {
+     "path": "data/processed/change_binary_baseline.tif",
+     "title": "change_binary_baseline.tif",
+     "desc": "The provided Euclidean-difference baseline, binarised the same way, for comparison.",
+     "size": "210 KB",
+     "kind": "binary",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "1 = change (Otsu)"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/data_processed_change_binary_baseline_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "Sentinel-2 stacks",
+   "blurb": "B02, B03, B04 as delivered, plus the later date normalised to the earlier one.",
+   "items": [
+    {
+     "path": "data/processed/sentinel2_20230812_stack.tif",
+     "title": "sentinel2_20230812_stack.tif",
+     "desc": "Nominal 2023-08-12 (mosaic of 2023-07-01 and 07-04).",
+     "size": "13.8 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/data_processed_sentinel2_20230812_stack_tif.webp"
+    },
+    {
+     "path": "data/processed/sentinel2_20230902_stack.tif",
+     "title": "sentinel2_20230902_stack.tif",
+     "desc": "Nominal 2023-09-02 (mosaic of 2023-08-25 and 09-02), as delivered.",
+     "size": "13.2 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/data_processed_sentinel2_20230902_stack_tif.webp"
+    },
+    {
+     "path": "data/processed/sentinel2_20230902_stack_normalized.tif",
+     "title": "sentinel2_20230902_stack_normalized.tif",
+     "desc": "The later date after per-zone radiometric normalisation.",
+     "size": "14.1 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/data_processed_sentinel2_20230902_stack_normalized_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "Database and vectors",
+   "blurb": "The SpatiaLite file holds the same tables the live PostGIS database serves.",
+   "items": [
+    {
+     "path": "data/change_detection.sqlite",
+     "title": "change_detection.sqlite",
+     "desc": "SpatiaLite: runs, change features, facility register and per-facility changes.",
+     "size": "11.6 MB",
+     "kind": "sqlite",
+     "tables": [
+      {
+       "name": "change_runs",
+       "rows": 2,
+       "columns": [
+        "ogc_fid",
+        "run_id",
+        "method",
+        "date_before",
+        "date_after",
+        "params",
+        "summary"
+       ]
+      },
+      {
+       "name": "change_features",
+       "rows": 1776,
+       "columns": [
+        "id",
+        "run_id",
+        "date_before",
+        "date_after",
+        "method",
+        "area_m2",
+        "perimeter_m",
+        "compactness",
+        "confidence",
+        "neglog10_p",
+        "strong_fraction",
+        "change_direction",
+        "in_disturbed_area",
+        "touches_aoi_edge",
+        "d_blue",
+        "d_green",
+        "d_red",
+        "d_brightness",
+        "brightness_before",
+        "brightness_after",
+        "zone",
+        "change_type",
+        "brief_category",
+        "explanation",
+        "facility_id",
+        "headline",
+        "location",
+        "evidence",
+        "what_to_check",
+        "description",
+        "disturbed_fraction",
+        "geometry"
+       ]
+      },
+      {
+       "name": "facilities",
+       "rows": 8,
+       "columns": [
+        "id",
+        "facility_id",
+        "name",
+        "class",
+        "cover",
+        "area_ha",
+        "geometry"
+       ]
+      },
+      {
+       "name": "facility_changes",
+       "rows": 8,
+       "columns": [
+        "ogc_fid",
+        "facility_id",
+        "name",
+        "class",
+        "area_ha",
+        "changed_ha",
+        "changed_share",
+        "change_types",
+        "summary"
+       ]
+      }
+     ]
+    },
+    {
+     "path": "docs/web/change_features.geojson",
+     "title": "change_features.geojson",
+     "desc": "The change polygons with type, plain-language description, confidence and facility (web export).",
+     "size": "647 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "215"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "26: d_blue, d_green, d_red, d_brightness, brightness_before, brightness_after, disturbed_fraction, confidence, neglog10_p, strong_fraction, touches_aoi_edge, zone, area_m2, perimeter_m, compactness, change_direction, in_disturbed_area, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, description"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "change_type",
+       "headline",
+       "area_m2",
+       "confidence"
+      ],
+      "rows": [
+       [
+        "TSF",
+        "tailings_dam_raise",
+        "Tailings dam wall likely raised",
+        "388,100.00",
+        "0.34"
+       ],
+       [
+        "PIT-NW",
+        "waste_dumping",
+        "Waste rock dumped",
+        "193,200.00",
+        "0.22"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "167,800.00",
+        "0.34"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "166,900.00",
+        "0.12"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "155,300.00",
+        "0.16"
+       ]
+      ]
+     },
+     "image": "previews/docs_web_change_features_geojson.webp"
+    },
+    {
+     "path": "data/processed/change_features.geojson",
+     "title": "change_features.geojson",
+     "desc": "Full-precision export with every attribute the pipeline computed.",
+     "size": "6.8 MB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "1,776"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Runs",
+       "20230812_20230902_euclidean_baseline, 20230812_20230902_robust_cva"
+      ],
+      [
+       "Attributes",
+       "30: run_id, date_before, date_after, method, area_m2, perimeter_m, compactness, confidence, neglog10_p, strong_fraction, change_direction, in_disturbed_area, touches_aoi_edge, d_blue, d_green, d_red, d_brightness, brightness_before, brightness_after, zone, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, description, disturbed_fraction"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "change_type",
+       "headline",
+       "area_m2",
+       "confidence"
+      ],
+      "rows": [
+       [
+        "TSF",
+        "tailings_dam_raise",
+        "Tailings dam wall likely raised",
+        "388,100.00",
+        "0.34"
+       ],
+       [
+        "PIT-NW",
+        "waste_dumping",
+        "Waste rock dumped",
+        "193,200.00",
+        "0.22"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "167,800.00",
+        "0.34"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "166,900.00",
+        "0.12"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "155,300.00",
+        "0.16"
+       ]
+      ]
+     },
+     "image": "previews/data_processed_change_features_geojson.webp"
+    },
+    {
+     "path": "docs/web/facilities.geojson",
+     "title": "facilities.geojson",
+     "desc": "The facility register: outlines, area changed (hectares in the file) and the change mix.",
+     "size": "594 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "8"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "9: facility_id, name, class, cover, area_ha, changed_ha, changed_share, change_types, summary"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "name",
+       "class",
+       "area_ha",
+       "changed_ha"
+      ],
+      "rows": [
+       [
+        "PIT-NW",
+        "North-west pit complex",
+        "pit_dump_complex",
+        "1,116.90",
+        "33.60"
+       ],
+       [
+        "PIT-S",
+        "South pit complex",
+        "pit_dump_complex",
+        "2,009.20",
+        "37.70"
+       ],
+       [
+        "WD-E",
+        "Eastern waste dumps",
+        "waste_dump",
+        "435.30",
+        "36.20"
+       ],
+       [
+        "TSF",
+        "Tailings storage facility",
+        "tailings",
+        "2,244.20",
+        "193.60"
+       ],
+       [
+        "DAM",
+        "Fresh-water dam",
+        "water_reservoir",
+        "509.70",
+        "0.00"
+       ]
+      ]
+     },
+     "image": "previews/docs_web_facilities_geojson.webp"
+    },
+    {
+     "path": "docs/web/aoi.geojson",
+     "title": "aoi.geojson",
+     "desc": "The area of interest.",
+     "size": "1 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "1"
+      ],
+      [
+       "Geometry",
+       "Polygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "1: name"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "name"
+      ],
+      "rows": [
+       [
+        "Unknown"
+       ]
+      ]
+     },
+     "image": "previews/docs_web_aoi_geojson.webp"
+    }
+   ]
+  },
+  {
+   "title": "Documents",
+   "blurb": "",
+   "items": [
+    {
+     "path": "docs/api.md",
+     "title": "api.md",
+     "desc": "Every HTTP endpoint behind the map, database console and agent, with request and response shapes.",
+     "size": "5 KB",
+     "kind": "markdown",
+     "document": "previews/api.md"
+    },
+    {
+     "path": "report.md",
+     "title": "report.md",
+     "desc": "The full write-up, as shown in the Report tab.",
+     "size": "25 KB",
+     "kind": "report"
+    }
+   ]
+  }
+ ]
+}

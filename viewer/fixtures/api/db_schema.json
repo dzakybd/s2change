@@ -1,0 +1,274 @@
+[
+ {
+  "table": "change_runs",
+  "description": "One row per change-detection run: the method, the two dates, its parameters and summary numbers.",
+  "rows": 2,
+  "primary_key": [
+   "run_id"
+  ],
+  "links": [],
+  "columns": [
+   {
+    "name": "run_id",
+    "type": "text"
+   },
+   {
+    "name": "method",
+    "type": "text"
+   },
+   {
+    "name": "date_before",
+    "type": "date"
+   },
+   {
+    "name": "date_after",
+    "type": "date"
+   },
+   {
+    "name": "params",
+    "type": "jsonb"
+   },
+   {
+    "name": "summary",
+    "type": "jsonb"
+   },
+   {
+    "name": "created_at",
+    "type": "timestamp with time zone"
+   }
+  ],
+  "geometry": null
+ },
+ {
+  "table": "change_features",
+  "description": "Every change polygon, with its type, a plain-language description, confidence and facility.",
+  "rows": 1776,
+  "primary_key": [
+   "id"
+  ],
+  "links": [
+   {
+    "column": "run_id",
+    "ref_table": "change_runs",
+    "ref_column": "run_id",
+    "enforced": true
+   },
+   {
+    "column": "facility_id",
+    "ref_table": "facilities",
+    "ref_column": "facility_id",
+    "enforced": false
+   }
+  ],
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint"
+   },
+   {
+    "name": "run_id",
+    "type": "text"
+   },
+   {
+    "name": "date_before",
+    "type": "date"
+   },
+   {
+    "name": "date_after",
+    "type": "date"
+   },
+   {
+    "name": "method",
+    "type": "text"
+   },
+   {
+    "name": "area_m2",
+    "type": "double precision"
+   },
+   {
+    "name": "perimeter_m",
+    "type": "double precision"
+   },
+   {
+    "name": "compactness",
+    "type": "real"
+   },
+   {
+    "name": "confidence",
+    "type": "real"
+   },
+   {
+    "name": "strong_fraction",
+    "type": "real"
+   },
+   {
+    "name": "change_direction",
+    "type": "text"
+   },
+   {
+    "name": "in_disturbed_area",
+    "type": "boolean"
+   },
+   {
+    "name": "d_blue",
+    "type": "real"
+   },
+   {
+    "name": "d_green",
+    "type": "real"
+   },
+   {
+    "name": "d_red",
+    "type": "real"
+   },
+   {
+    "name": "d_brightness",
+    "type": "real"
+   },
+   {
+    "name": "brightness_before",
+    "type": "real"
+   },
+   {
+    "name": "brightness_after",
+    "type": "real"
+   },
+   {
+    "name": "zone",
+    "type": "smallint"
+   },
+   {
+    "name": "geometry",
+    "type": "geometry(MultiPolygon,32735)"
+   },
+   {
+    "name": "neglog10_p",
+    "type": "real"
+   },
+   {
+    "name": "touches_aoi_edge",
+    "type": "boolean"
+   },
+   {
+    "name": "change_type",
+    "type": "text"
+   },
+   {
+    "name": "brief_category",
+    "type": "text"
+   },
+   {
+    "name": "explanation",
+    "type": "text"
+   },
+   {
+    "name": "facility_id",
+    "type": "text"
+   },
+   {
+    "name": "headline",
+    "type": "text"
+   },
+   {
+    "name": "location",
+    "type": "text"
+   },
+   {
+    "name": "evidence",
+    "type": "text"
+   },
+   {
+    "name": "what_to_check",
+    "type": "text"
+   },
+   {
+    "name": "description",
+    "type": "text"
+   }
+  ],
+  "geometry": {
+   "column": "geometry",
+   "srid": 32735,
+   "type": "MultiPolygon"
+  }
+ },
+ {
+  "table": "facilities",
+  "description": "The facility register: pits, dumps, tailings, plant, camp, dam and town, outlined from the imagery.",
+  "rows": 8,
+  "primary_key": [
+   "facility_id"
+  ],
+  "links": [],
+  "columns": [
+   {
+    "name": "facility_id",
+    "type": "text"
+   },
+   {
+    "name": "name",
+    "type": "text"
+   },
+   {
+    "name": "class",
+    "type": "text"
+   },
+   {
+    "name": "cover",
+    "type": "text"
+   },
+   {
+    "name": "area_ha",
+    "type": "real"
+   },
+   {
+    "name": "geometry",
+    "type": "geometry(MultiPolygon,32735)"
+   }
+  ],
+  "geometry": {
+   "column": "geometry",
+   "srid": 32735,
+   "type": "MultiPolygon"
+  }
+ },
+ {
+  "table": "facility_changes",
+  "description": "Area changed per facility in the default comparison, and the mix of change types.",
+  "rows": 8,
+  "primary_key": [
+   "facility_id"
+  ],
+  "links": [
+   {
+    "column": "facility_id",
+    "ref_table": "facilities",
+    "ref_column": "facility_id",
+    "enforced": true
+   }
+  ],
+  "columns": [
+   {
+    "name": "facility_id",
+    "type": "text"
+   },
+   {
+    "name": "changed_ha",
+    "type": "real"
+   },
+   {
+    "name": "changed_share",
+    "type": "real"
+   },
+   {
+    "name": "change_types",
+    "type": "jsonb"
+   },
+   {
+    "name": "summary",
+    "type": "text"
+   }
+  ],
+  "geometry": null
+ }
+]

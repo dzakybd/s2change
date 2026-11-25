@@ -1,0 +1,60 @@
+# Curated facility register (human-in-the-loop), EPSG:32735 metres.
+#
+# Mining agencies monitor *named* facilities, not loose pixels. Each entry is an analyst-drawn
+# region of interest (here an axis-aligned box read off the 2023-08-12 image with a 1 km grid; see
+# docs/figures/09_facility_register.png). The facility *outline* is not hand-drawn: it is the
+# data-driven cover inside the box (s2cd.register), so boundaries still come from the imagery:
+#   bare   - bare in both dates (rgb.bare_mask), i.e. mine surface, not seasonal grass
+#   water  - water in both dates (rgb.water_mask on T1 and the normalized T2)
+#   any    - bare or water
+# Names are descriptive; the site identity (likely Lumwana) is an inference.
+#
+# Class -> what a change inside it most likely means (s2cd.interpret):
+#   pit_dump_complex  -> excavation or dumping (pits and their waste dumps; not separable without elevation)
+#   waste_dump        -> waste dumping
+#   tailings          -> tailings deposition (beach + pond)
+#   water_reservoir   -> water level / water surface change
+#   plant             -> infrastructure change
+#   camp, settlement  -> infrastructure / settlement growth (the brief's "urban expansion")
+
+facilities:
+  - id: PIT-NW
+    name: North-west pit complex
+    class: pit_dump_complex
+    cover: any
+    box: [369800, 8645600, 372600, 8650500]   # [xmin, ymin, xmax, ymax]
+  - id: PIT-S
+    name: South pit complex
+    class: pit_dump_complex
+    cover: any
+    box: [374800, 8639500, 379600, 8644200]
+  - id: WD-E
+    name: Eastern waste dumps
+    class: waste_dump
+    cover: bare
+    box: [379600, 8639600, 381200, 8643800]
+  - id: TSF
+    name: Tailings storage facility
+    class: tailings
+    cover: any
+    box: [372600, 8646000, 380400, 8651300]
+  - id: DAM
+    name: Fresh-water dam
+    class: water_reservoir
+    cover: water
+    box: [380400, 8645800, 385000, 8651500]
+  - id: PLANT
+    name: Process plant and central yard
+    class: plant
+    cover: bare
+    box: [375500, 8644600, 377500, 8646200]
+  - id: CAMP
+    name: Eastern camp
+    class: camp
+    cover: bare
+    box: [381000, 8644500, 383200, 8646000]
+  - id: TOWN
+    name: South-west settlement
+    class: settlement
+    cover: bare
+    box: [368500, 8637800, 374800, 8641200]

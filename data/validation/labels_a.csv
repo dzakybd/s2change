@@ -1,0 +1,201 @@
+id,change,type,confidence,note
+P001,0,,high,dark vegetation unchanged
+P002,0,,low,white to pink tone shift only
+P003,0,,low,road unchanged; tone difference
+P004,0,,medium,vegetation tone only
+P005,0,,low,orange ground; tone difference
+P006,0,,low,tailings edge; square on light area
+P007,0,,low,tone shift white to pink
+P008,0,,low,pond tone difference only
+P009,0,,high,road and vegetation unchanged
+P010,0,,low,band edge above square
+P011,0,,low,whole-scene radiometric difference
+P012,1,water_level_change,medium,dark pond appeared over tailings at square
+P013,1,water_level_change,high,pond expanded over tan ground
+P014,0,,medium,square on brown; change is lower right
+P015,0,,low,strip tone difference
+P016,0,,medium,strip colour shift only
+P017,0,,high,buildings unchanged
+P018,0,,medium,vegetation brightness only
+P019,0,,medium,green patch persists
+P020,0,,high,unchanged
+P021,0,,medium,vegetation tone only
+P022,0,,high,pond shore unchanged
+P023,0,,low,road strip fainter; tone
+P024,1,water_level_change,low,green pond edge receded past square
+P025,0,,high,unchanged
+P026,0,,medium,vegetation tone only
+P027,1,water_level_change,medium,tan road area flooded dark green
+P028,1,tailings_deposition,low,dark mud edge became lighter material
+P029,0,,low,water colour difference only
+P030,0,,high,vegetation unchanged
+P031,0,,medium,buildings unchanged
+P032,0,,low,pink tone shift
+P033,0,,medium,pond colour only; water in both
+P034,0,,high,unchanged
+P035,1,tailings_deposition,low,dark edge lightened at square
+P036,0,,medium,road tone; square in dark area
+P037,0,,high,unchanged
+P038,0,,medium,vegetation tone only
+P039,0,,medium,vegetation tone only
+P040,0,,low,pink tone shift
+P041,0,,high,unchanged
+P042,0,,medium,water in both dates
+P043,0,,medium,tailings tone only
+P044,1,construction_or_road,medium,new parallel road line at square
+P045,0,,medium,orange ground unchanged
+P046,0,,high,vegetation unchanged
+P047,0,,low,whole-scene radiometric difference
+P048,1,waste_dumping,medium,new round dump at square edge
+P049,1,tailings_deposition,low,wet gray tailings dried at square
+P050,0,,medium,water in both dates
+P051,0,,medium,tone only
+P052,0,,high,unchanged
+P053,1,tailings_deposition,low,gray wet area dried to light
+P054,0,,low,patch texture shift only
+P055,0,,medium,gray pad present both dates
+P056,0,,medium,pond colour only
+P057,0,,low,whole-scene radiometric difference
+P058,0,,high,unchanged
+P059,0,,high,unchanged
+P060,0,,medium,water in both dates
+P061,0,,low,whole-scene radiometric difference
+P062,0,,low,strip tone difference
+P063,0,,medium,water in both dates
+P064,0,,low,strip tone difference
+P065,0,,medium,water in both dates
+P066,0,,low,whole-scene radiometric difference
+P067,0,,low,whole-scene radiometric difference
+P068,0,,medium,water edge unchanged
+P069,0,,low,tone difference
+P070,0,,high,vegetation unchanged
+P071,0,,medium,vegetation tone only
+P072,0,,medium,pond receded but not at square
+P073,0,,low,shore edge unchanged
+P074,0,,medium,water in both dates
+P075,1,tailings_deposition,low,new flow streaks on tailings beach
+P076,1,other,low,gray band replaced orange band
+P077,0,,medium,tone only
+P078,0,,medium,water in both dates
+P079,0,,low,bright patches tone
+P080,1,other,medium,orange pad became gray at square
+P081,0,,low,whole-scene radiometric difference
+P082,0,,medium,vegetation tone only
+P083,0,,medium,water in both dates
+P084,0,,high,unchanged
+P085,0,,low,beach tone shift
+P086,0,,low,ditch tone only
+P087,0,,medium,vegetation tone only
+P088,0,,high,unchanged
+P089,0,,medium,water in both dates
+P090,1,construction_or_road,low,new bright stripe along road
+P091,0,,low,white to pink tone shift
+P092,0,,low,edge artifacts only
+P093,1,tailings_deposition,low,dark wet tailings advanced to square
+P094,0,,low,whole-scene radiometric difference
+P095,0,,low,brown area tone
+P096,0,,medium,water in both dates
+P097,0,,medium,new gray pad is outside square
+P098,0,,medium,tone only
+P099,0,,low,white to pink tone shift
+P100,0,,high,road unchanged
+P101,0,,medium,vegetation tone only
+P102,0,,medium,vegetation tone only
+P103,0,,high,unchanged
+P104,0,,low,strip tone difference
+P105,0,,medium,tone only
+P106,0,,low,field texture tone
+P107,0,,medium,shore unchanged
+P108,0,,high,road unchanged
+P109,1,tailings_deposition,low,dark gray patch replaced by brown
+P110,0,,medium,vegetation tone only
+P111,0,,low,whole-scene radiometric difference
+P112,0,,low,whole-scene radiometric difference
+P113,0,,low,strip tone difference
+P114,1,waste_dumping,medium,new orange material patch at square
+P115,0,,high,unchanged
+P116,0,,medium,water in both dates
+P117,0,,low,white to pink tone shift
+P118,0,,medium,vegetation tone only
+P119,0,,high,unchanged
+P120,0,,low,whole-scene radiometric difference
+P121,0,,medium,vegetation tone only
+P122,0,,medium,vegetation tone only
+P123,0,,low,ground tone difference
+P124,0,,high,unchanged
+P125,0,,medium,vegetation tone only
+P126,0,,medium,tone only
+P127,1,tailings_deposition,low,dark wet tailings advanced to square
+P128,0,,medium,water in both dates
+P129,0,,high,unchanged
+P130,0,,medium,tone only
+P131,0,,high,unchanged
+P132,1,other,low,gray band now crosses square
+P133,0,,high,unchanged
+P134,0,,medium,vegetation tone only
+P135,0,,high,unchanged
+P136,0,,medium,tone only
+P137,1,tailings_deposition,low,dark edge became lighter material
+P138,0,,high,unchanged
+P139,0,,low,tone difference
+P140,0,,low,bright streak near square
+P141,0,,high,unchanged
+P142,0,,low,gray strip tone shift
+P143,0,,high,unchanged
+P144,0,,high,unchanged
+P145,0,,low,tone difference
+P146,0,,medium,vegetation tone only
+P147,0,,high,unchanged
+P148,0,,medium,edge artifact only
+P149,0,,medium,vegetation tone only
+P150,0,,high,unchanged
+P151,0,,high,unchanged
+P152,0,,medium,vegetation tone only
+P153,0,,low,whole-scene radiometric difference
+P154,1,vegetation_loss_or_burn,low,land darkened gray-brown; possible burn
+P155,0,,medium,unchanged
+P156,0,,medium,vegetation tone only
+P157,0,,low,whole-scene radiometric difference
+P158,0,,high,unchanged
+P159,0,,high,road junction unchanged
+P160,0,,low,whole-scene radiometric difference
+P161,0,,medium,vegetation tone only
+P162,0,,medium,water in both dates
+P163,0,,low,pond edge shift small
+P164,0,,medium,vegetation tone only
+P165,0,,high,unchanged
+P166,0,,low,brown area tone
+P167,0,,low,tone shift
+P168,1,tailings_deposition,low,new bright deposit at tailings edge
+P169,0,,medium,tone only
+P170,0,,medium,road tone; square in dark area
+P171,0,,high,unchanged
+P172,0,,medium,pond tip colour only
+P173,0,,low,whole-scene radiometric difference
+P174,0,,low,beach channels tone only
+P175,0,,low,pond edge shift small
+P176,1,tailings_deposition,low,pale crust became uniform gray
+P177,0,,medium,vegetation tone only
+P178,0,,low,channel darker; tone
+P179,1,tailings_deposition,low,tan material covered dark area at square
+P180,0,,medium,vegetation tone only
+P181,0,,medium,vegetation tone only
+P182,0,,low,tan band edge just above square
+P183,0,,medium,vegetation tone only
+P184,0,,high,unchanged
+P185,0,,low,tone difference
+P186,0,,medium,vegetation near shore unchanged
+P187,0,,medium,water in both dates
+P188,0,,low,tone difference
+P189,0,,low,road tone only
+P190,0,,high,unchanged
+P191,0,,medium,vegetation unchanged at square
+P192,0,,low,tone difference
+P193,0,,high,road unchanged
+P194,0,,high,unchanged
+P195,0,,low,tailings tone difference
+P196,0,,medium,vegetation tone only
+P197,0,,medium,water in both dates
+P198,0,,high,unchanged
+P199,1,tailings_deposition,low,dark wet tailings advanced to square
+P200,0,,medium,vegetation tone only
