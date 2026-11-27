@@ -18,7 +18,7 @@ const ESRI_ATTRIBUTION = 'Tiles &copy; <a href="https://www.esri.com/" target="_
 
 const BASE_STYLE: StyleSpecification = {
   version: 8,
-  sources: { esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 18, attribution: ESRI_ATTRIBUTION } },
+  sources: { esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 17 /* Esri has no imagery here at z18+: it serves "Map data not yet available" tiles, so overzoom z17 */, attribution: ESRI_ATTRIBUTION } },
   layers: [
     { id: "background", type: "background", paint: { "background-color": "#e9edf2" } },
     { id: "esri", type: "raster", source: "esri", paint: { "raster-resampling": "linear", "raster-fade-duration": 120 } },
