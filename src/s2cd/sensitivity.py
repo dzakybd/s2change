@@ -9,7 +9,7 @@ The pipeline is run into a temporary directory and SQLite file, so the shipped o
 never touched; the default configuration (``configs/default.yaml``, with provenance zones when available) is used.
 
 Run: ``uv run python -m s2cd.sensitivity`` (about a minute) ->
-data/processed/sensitivity.csv (``scripts/fig_sensitivity.py`` draws the report figure from it)
+data/processed/sensitivity.csv
 """
 
 from __future__ import annotations

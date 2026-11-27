@@ -132,11 +132,17 @@ Co-registration was checked per zone (8 windows): shifts are at most 0.05 px, so
 | 5️⃣6️⃣ **Seams skipped, cleaned** | <img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/close_07.jpg" width="200" alt="Cleaned change mask, close-up"> | <img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/wide_07.jpg" width="200" alt="Cleaned change mask, whole site"> | <b class="good">4.17 km² in 223 polygons</b> |
 | 📤 **Typed and explained** | <img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/close_08.jpg" width="200" alt="Typed change polygons, close-up"> | <img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/wide_08.jpg" width="200" alt="Typed change polygons, whole site"> | Each polygon gets a likely type from its colour change and facility, and one plain sentence. Here: **Tailings dam wall likely raised**, 0.39 km². *Check the dam-raise plan and inspect the embankment.* |
 
-### 🎚️ Does it depend on the settings?
+### 🎚️ Would other settings give a different answer?
 
-No. Across 16 settings (cut-offs from 1 in 100 to 1 in 100,000; minimum areas 1,000–10,000 m²) the changed area stays within <b class="good">2.1–7.0 km²</b> and the share inside the 5 mining facilities within <b class="good">67–88 %</b>, highest at the stricter settings: the strongest changes are the mining ones.
+Two numbers in the method are choices, not facts: **how strict the cut-off is** (step 4, 1 in 1,000) and **the smallest patch kept** (step 6, 2,000 m²). So the whole run was repeated with both made looser and stricter, 16 combinations in all. The extremes and our choice:
 
-![sensitivity](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/11_sensitivity.png)
+| Setting | Changed area | Share inside the mine |
+|---|---:|---:|
+| 🔓 Loosest (1 in 100, patches from 1,000 m²) | 6.95 km² | 67 % |
+| ⭐ **Ours** (1 in 1,000, patches from 2,000 m²) | **4.17 km²** | **81 %** |
+| 🔒 Strictest (1 in 100,000, patches from 10,000 m²) | 2.10 km² | 87 % |
+
+💡 **What it means.** The exact area depends on how strict one is, so read 4.17 km² as "a few km²", not as a precise figure. The *conclusion* does not move: in every run most change is in the mine, and the stricter the test, the larger that share. The strongest changes are the mining ones.
 
 ## 📍 4. What changed
 
