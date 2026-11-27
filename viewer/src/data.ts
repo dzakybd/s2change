@@ -11,7 +11,8 @@ function dataBase(): URL {
 }
 
 export async function getJson<T>(url: URL | string): Promise<T> {
-  const res = await fetch(url);
+  // Revalidate every time (a 304 when unchanged): /web data is regenerated in place, and a stale manifest breaks the map.
+  const res = await fetch(url, { cache: "no-cache" });
   if (!res.ok) throw new Error(`${new URL(url, location.href).pathname}: HTTP ${res.status}`);
   return (await res.json()) as T;
 }

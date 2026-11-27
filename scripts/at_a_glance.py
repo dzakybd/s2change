@@ -96,7 +96,7 @@ def build() -> str:
         ("Data", "Sentinel-2 L2A surface reflectance, red · green · blue only, 10 m"),
         ("Dates", "Nominal 2023-08-12 → 2023-09-02; really two passes each, Jul → late Aug/Sep"),
         ("Method", "Per-zone normalisation, robust change vector analysis, calibrated thresholds, rule-based typing"),
-        ("Cost", "Free imagery every 5 days; about 30 s of compute per pair"),
+        ("Cost", "Free imagery every 5 days; about 15 s of compute per pair"),
     ]
     step_html = "".join(
         f'<li><span class="k">{i}</span><div><b>{t}</b><p>{d}</p></div></li>' for i, (t, d) in enumerate(facts, 1)
