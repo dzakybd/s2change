@@ -79,7 +79,7 @@ Co-registration was checked per zone by phase correlation in 8 windows: the shif
 
 *Before with before, after with after: the supplied files change at the yellow line, the single passes do not; (e) measures the step (`scripts/fig_trap_proof.py`).*
 
-**2. The pixels match four catalogue scenes exactly.** Matching every pixel against the Planetary Computer catalogue (`s2cd provenance`) found all three bands **identical, pixel for pixel**, to two scenes per date, with no pixel left unexplained:
+**2. The pixels match four catalogue scenes exactly.** Every Sentinel-2 scene of the site in the 75 days before each nominal date (55–56 candidates) was read onto the same 10 m grid, and each supplied pixel was checked for an *exactly equal* stored value. Two scenes per date explain every pixel, and composing them reproduces all three bands **identical, pixel for pixel** (2.6 million pixels, none left over). The dates come from those scenes' catalogue records (`s2cd provenance`). There is no scene at all on 12 Aug 2023: the satellites passed on 8, 10 and 13 Aug; the one on 10 Aug covers only the east of the site and the one on 13 Aug is 40 % cloud.
 
 ![provenance](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/06_provenance.png)
 
