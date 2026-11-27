@@ -16,16 +16,19 @@ maplibregl.setWorkerUrl(workerUrl);
 const ESRI_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const ESRI_ATTRIBUTION = 'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics';
 
-// Esri has no imagery over the AOI past z17 (it serves "Map data not yet available" tiles), so z17 is overzoomed and
-// Bing Aerial, which has real z18-19 imagery here, is drawn on top from z18. Mapbox Satellite was cloudy and soft there.
+// Two high-res sources, switchable (setImagery). Esri has no imagery over the AOI past z17 (it serves "Map data not yet
+// available" tiles), so in Esri mode z17 is overzoomed and Bing Aerial, which has real z18-19 imagery here, takes over
+// from z18. Bing mode shows Bing at every zoom. Mapbox Satellite was cloudy and soft there.
 const BING_TILES = [0, 1, 2, 3].map((n) => `https://ecn.t${n}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1`);
-const BING_ATTRIBUTION = 'Close-up imagery &copy; <a href="https://www.microsoft.com/maps" target="_blank" rel="noopener">Microsoft</a>';
+const BING_ATTRIBUTION = 'Imagery &copy; <a href="https://www.microsoft.com/maps" target="_blank" rel="noopener">Microsoft</a>';
+
+export type Imagery = "esri" | "bing";
 
 const BASE_STYLE: StyleSpecification = {
   version: 8,
   sources: {
     esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 17, attribution: ESRI_ATTRIBUTION },
-    bing: { type: "raster", tiles: BING_TILES, tileSize: 256, minzoom: 18, maxzoom: 19, attribution: BING_ATTRIBUTION },
+    bing: { type: "raster", tiles: BING_TILES, tileSize: 256, maxzoom: 19, attribution: BING_ATTRIBUTION },
   },
   layers: [
     { id: "background", type: "background", paint: { "background-color": "#e9edf2" } },
@@ -275,6 +278,14 @@ export class MapStage {
   }
 
   /** Show or hide every change layer, to see the imagery underneath. */
+  /** High-res basemap: "esri" (Bing only for the z18+ close-ups Esri lacks) or "bing" at every zoom. */
+  setImagery(source: Imagery): void {
+    for (const m of this.maps) {
+      m.setLayoutProperty("esri", "visibility", source === "esri" ? "visible" : "none");
+      m.setLayerZoomRange("bing", source === "esri" ? 18 : 0, 24);
+    }
+  }
+
   setChangesVisible(on: boolean): void {
     this.showChanges = on;
     this.apply();

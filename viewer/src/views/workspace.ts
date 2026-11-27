@@ -11,6 +11,7 @@ import type { LayerDef } from "../map/layers";
 import { Menu } from "../map/menu";
 import { DatePicker } from "../map/picker";
 import { MapStage } from "../map/stage";
+import type { Imagery } from "../map/stage";
 import { Swipe } from "../map/swipe";
 import { facilityCard, featureCard, legendHtml } from "../map/cards";
 import type { ListUi } from "../map/changes";
@@ -25,6 +26,7 @@ const ICON_SWIPE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden=
 const ICON_OBLIQUE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="m10 3 7 3.5-7 3.5-7-3.5zM3 10.2l7 3.5 7-3.5M3 13.7 10 17.2l7-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 const ICON_AGENT = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4 4.5h12a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3H4a1.5 1.5 0 0 1-1.5-1.5V6A1.5 1.5 0 0 1 4 4.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6.5 8.5h7M6.5 11h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
 const ICON_EYE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M1.8 10S4.8 4.5 10 4.5 18.2 10 18.2 10 15.2 15.5 10 15.5 1.8 10 1.8 10Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
+const ICON_GLOBE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.75 10h14.5M10 2.75c2 2.2 2.9 4.6 2.9 7.25S12 15.05 10 17.25C8 15.05 7.1 12.65 7.1 10S8 4.95 10 2.75Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 const DEFAULT_BEARING = 24;
 /** Which result the map shows: the brief's method, this method on the provided mosaics, or on true single-pass dates. */
 type ResultId = "original" | "mosaic" | "true" | "other";
@@ -50,6 +52,7 @@ const TEMPLATE = `
     <div class="hud hud-tr">
       <div class="tools glass">
         <button type="button" class="tool" id="t-changes" aria-pressed="true" title="Show or hide the changes, to see the imagery underneath">${ICON_EYE}<span>Changes</span></button>
+        <button type="button" class="tool" id="t-imagery" aria-pressed="false" title="Switch the high-res imagery between Esri and Bing (different capture dates)">${ICON_GLOBE}<span>Esri</span></button>
         <button type="button" class="tool" id="t-swipe" aria-pressed="true" title="Compare with the before image">${ICON_SWIPE}<span>Swipe</span></button>
         <button type="button" class="tool" id="t-agent" aria-pressed="false" aria-controls="chat-panel" title="Ask the agent; it answers and moves this map">${ICON_AGENT}<span>Agent</span></button>
         <button type="button" class="tool" id="t-oblique" aria-pressed="false" title="Tilt the camera (2.5D)">${ICON_OBLIQUE}<span>2.5D</span></button>
@@ -76,7 +79,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
   let chatOpen = false;
   let pending: Route | null = null;
   let analystLoaded = false;
-  const state = { layer: DEFAULT_LAYER, swipe: true, oblique: false, bearing: DEFAULT_BEARING, extrude: true, changes: true };
+  const state = { imagery: "esri" as Imagery, layer: DEFAULT_LAYER, swipe: true, oblique: false, bearing: DEFAULT_BEARING, extrude: true, changes: true };
 
   let applyRoute: (route: Route) => void = () => {};
 
@@ -176,6 +179,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       replaceParams("map", {
         layer: state.layer === DEFAULT_LAYER ? undefined : state.layer,
         result: ds.id === TRUE_PASSES_ID ? "true" : undefined,
+        imagery: state.imagery === "bing" ? "bing" : undefined,
         swipe: state.swipe ? undefined : "0",
         changes: state.changes ? undefined : "0",
         oblique: state.oblique ? undefined : "0",
@@ -252,6 +256,18 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       }
       st.setSwipe(state.swipe);
       syncSwipeUi();
+      syncHash();
+    });
+
+    const setImagery = (source: Imagery) => {
+      state.imagery = source;
+      const btn = q(el, "#t-imagery");
+      btn.setAttribute("aria-pressed", String(source === "bing"));
+      q(btn, "span").textContent = source === "bing" ? "Bing" : "Esri";
+      st.setImagery(source);
+    };
+    q(el, "#t-imagery").addEventListener("click", () => {
+      setImagery(state.imagery === "esri" ? "bing" : "esri");
       syncHash();
     });
 
@@ -509,6 +525,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         state.bearing = Number.isFinite(bearing) ? Math.round(((bearing % 360) + 360) % 360) : DEFAULT_BEARING;
         showBearing();
         setChanges(p.get("changes") !== "0");
+        setImagery(p.get("imagery") === "bing" ? "bing" : "esri");
         extrudeIn.checked = state.extrude = p.get("extrude") !== "0";
         st.setExtrude(state.extrude);
         const wantOblique = p.get("oblique") !== "0";
