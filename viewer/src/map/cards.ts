@@ -99,7 +99,7 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
   } else if (def.id === "intensity") {
     body = `<div class="ramp" style="background:${INTENSITY_RAMP}"></div><div class="ramp-l"><span>no change</span><span>strong change</span></div><p class="note">log10 of the robust Mahalanobis distance d² per 10 m pixel, before thresholding.</p>`;
   } else if (def.baseline) {
-    body = `<p class="lg-sub"><i class="swatch" style="background:#ef4444"></i> Provided baseline: 111.4 km², 42 % of the area</p><p class="lg-sub"><i class="swatch" style="background:transparent;box-shadow:inset 0 0 0 2px #0f172a"></i> This work, outlined in its type colours: 4.13 km²</p><p class="note">The straight diagonal bands are the seams between satellite passes inside each "date"; the baseline reads them, and haze, as change. Report section 1, "The data trap".</p>`;
+    body = `<p class="lg-sub"><i class="swatch" style="background:#ef4444"></i> Provided baseline: 111.4 km², 42 % of the area</p><p class="lg-sub"><i class="swatch" style="background:transparent;box-shadow:inset 0 0 0 2px #0f172a"></i> This work, outlined in its type colours: 4.17 km²</p><p class="note">The straight diagonal bands are the seams between satellite passes inside each "date"; the baseline reads them, and haze, as change. Report section 1, "The data trap".</p>`;
   } else if (def.id === "facilities") {
     const rows = [...facilities].sort((a, b) => b.changed_ha - a.changed_ha);
     body = `<p class="lg-sub">${rows.length} facilities · area changed inside each. Click one for its breakdown.</p><ul class="lg-types">${rows

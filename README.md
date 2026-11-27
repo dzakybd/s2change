@@ -4,7 +4,7 @@
 
 <p align="center"><b>What changed at an open-pit copper mine in Zambia?</b><br>Free satellite images, two dates: what changed, what it means, who should act.</p>
 
-**In one paragraph.** Between the two 2023 dates the mine was working normally: 4.1 km² changed, four fifths inside known facilities (tailings spread on the tailings dam, waste rock dumped, pits dug), with no new clearing outside it. The supplied images hide a trap: each is stitched from two satellite passes, so the provided example method reports 27× more "change", mostly stitching. Over three years, same season, the mine keeps growing: change typed as waste dumping rises from 5.7 to 20.2 km² (exploratory, not validated).
+**In one paragraph.** Between the two 2023 dates the mine was working normally: 4.2 km² changed, four fifths inside known facilities (tailings spread on the tailings dam, waste rock dumped, pits dug), with no new clearing outside it. The supplied images hide a trap: each is stitched from two satellite passes, so the provided example method reports 27× more "change", mostly stitching. Over three years, same season, the mine keeps growing: change typed as waste dumping rises from 5.7 to 20.2 km² (exploratory, not validated).
 
 **Read:** [report.md](report.md) (Method · Results · Interpretation · Limitations). **Run:** the three commands below. **Look:** the optional [live app](https://s2change.dzaky.ai.id). **Watch:** the [4.5-minute walkthrough](https://youtu.be/MBTmg62P2ew).
 
@@ -34,11 +34,11 @@ Inputs are the provided files in `inputs/`, unchanged. Outputs (already committe
 > [!IMPORTANT]
 > **The provided "dates" are mosaics.** Each combines two Sentinel-2 scenes from different orbits, verified pixel-exact against STAC (100 % identical DN). The scenes actually compared are **52–60 days** apart, and radiometry steps along the seams. The provided Euclidean baseline maps those seams and haze: **111.4 km² (42 % of the AOI)**.
 
-- **Calibrated change: 4.13 km²** in 215 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
-- **It is mining, not expansion.** **82 %** of the change lies inside the named facilities: the tailings facility (2.19 km², including fresh fill on the dam walls, consistent with a raise), the waste dumps and pit edges (0.75 km² of dumping), and pit benches. Each change comes with a plain sentence: what it is, where, how big, the evidence and what to check. Outside the mine, only 0.02 km² (6 polygons) is typed as land clearing.
+- **Calibrated change: 4.17 km²** in 223 polygons (1.6 % of the AOI). Realised false-alarm rate on held-out stable pixels is **0.10 %**, at the 0.1 % target.
+- **It is mining, not expansion.** **81 %** of the change lies inside the named facilities: the tailings facility (2.19 km², including fresh fill on the dam walls, consistent with a raise), the waste dumps and pit edges (0.75 km² of dumping), and pit benches. Each change comes with a plain sentence: what it is, where, how big, the evidence and what to check. Outside the mine, only 0.02 km² (6 polygons) is typed as land clearing.
 - **So what (multi-year, same season, exploratory):** from August 2023 to August 2024 / 2025 / 2026, change typed as waste dumping grows 2.3 → 5.5 → 11.3 km² and change outside the named facilities 3.3 → 9.2 → 14.3 km²: a mine in sustained development with a spreading footprint, the signal a regulator or investor would want. See [who acts on it](report.md#-3-interpretation).
-- **Checked on 200 random points:** precision 0.67 ± 0.11 against the provided method's 0.12 ± 0.08; overall accuracy 0.94 against 0.62. It is conservative: recall 0.17 ± 0.11, so 4.13 km² is the confident core of an estimated 16.6 ± 10.9 km² of real change.
-- **Robust:** the result holds across 16 threshold settings (2.10–6.82 km², 68–88 % inside the 5 mining facilities of the register).
+- **Checked on 200 random points:** precision 0.67 ± 0.11 against the provided method's 0.12 ± 0.08; overall accuracy 0.94 against 0.62. It is conservative: recall 0.17 ± 0.11, so 4.17 km² is the confident core of an estimated 16.6 ± 10.9 km² of real change.
+- **Robust:** the result holds across 16 threshold settings (2.10–6.95 km², 67–88 % inside the 5 mining facilities of the register).
 
 ## How this maps to the brief
 
