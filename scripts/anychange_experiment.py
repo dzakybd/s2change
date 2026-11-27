@@ -6,7 +6,7 @@
 Both dates get the same 8-bit stretch (the after date is the per-zone normalised stack, the same input the CVA uses). SAM
 resizes the whole AOI to 1024 px (about 16 m pixels). Writes the masks and agreement numbers to data/validation/anychange/
 (masks.npz, stats.json); scripts/fig_anychange_vs_cva.py draws docs/figures/15_anychange_vs_cva.png from them. The SAM ViT-B
-weights come from the Hugging Face hub. Result on this pair: report.md section 1.
+weights come from the Hugging Face hub. Not in the report; kept as a record of the comparison.
 """
 
 from __future__ import annotations
