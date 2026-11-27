@@ -11,6 +11,7 @@ import type { LayerDef } from "../map/layers";
 import { Menu } from "../map/menu";
 import { MapStage } from "../map/stage";
 import { Swipe } from "../map/swipe";
+import { installTooltips } from "../map/tooltip";
 import { facilityCard, featureCard, legendHtml } from "../map/cards";
 import type { ListUi } from "../map/changes";
 import { featureBounds, RunOverlay } from "../overlays";
@@ -18,6 +19,8 @@ import type { Route } from "../router";
 import { replaceParams } from "../router";
 import type { ChangeProps, Dataset, FacilityProps } from "../types";
 import type { AgentHost } from "./analyst";
+
+installTooltips();
 
 const ICON_SWIPE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M10 3v14M6.5 7 3 10l3.5 3M13.5 7 17 10l-3.5 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 

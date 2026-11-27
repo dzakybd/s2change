@@ -125,6 +125,9 @@
 .ins-why span i { font-style: normal; text-transform: none; letter-spacing: 0; }
 .ins-why p { margin: 0; color: var(--text); font-size: var(--fs-sm); }
 .src { cursor: help; text-decoration: underline dotted rgb(15 23 42 / 0.3); text-underline-offset: 3px; }
+.src:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.tip { position: fixed; z-index: 1000; max-width: min(300px, calc(100vw - 16px)); padding: 8px 10px; border-radius: 8px; background: #0f172a; color: #f8fafc; font-size: 12px; line-height: 1.45; font-weight: 400; letter-spacing: 0; text-transform: none; box-shadow: 0 6px 20px rgb(15 23 42 / 0.25); pointer-events: none; }
+.tip[hidden] { display: none; }
 .conf-rank { display: block; font-size: var(--fs-xs); font-weight: 400; margin-top: 2px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding: 2px 9px 2px 8px; border-radius: var(--r-pill); background: rgb(15 23 42 / 0.06); color: var(--text-2); font-size: var(--fs-xs); font-weight: 600; }
 .tech { margin-top: var(--s-3); border-top: 1px solid var(--hair); padding-top: var(--s-2); }

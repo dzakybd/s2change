@@ -9,7 +9,7 @@ const closeBtn = `<button type="button" class="btn ghost icon sm" data-act="clos
 
 const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-/** Where each value on the change card comes from (shown as tooltips). None is written by an AI model. */
+/** Where each value on the change card comes from (shown as tooltips, map/tooltip.ts). None is written by an AI model. */
 const SOURCE = {
   area: "Area of the polygon: connected 10 m pixels flagged as changed by the calibrated change vector analysis, vectorised (algorithmic).",
   why: "Written by fixed rules (s2cd/interpret.py), not by AI: thresholds on RGB indices (water, greenness, redness, brightness) before and after, plus overlap with the analyst-drawn facility register. The numbers are this polygon's own.",
@@ -19,7 +19,7 @@ const SOURCE = {
   direction: "Algorithmic: mean brightness of the polygon after versus before.",
   facility: "Spatial overlay with the facility register, whose outlines were drawn by an analyst on very-high-resolution imagery.",
 };
-const tip = (label: string, key: keyof typeof SOURCE) => `<dt class="src" title="${esc(SOURCE[key])}">${label}</dt>`;
+const tip = (label: string, key: keyof typeof SOURCE) => `<dt class="src" tabindex="0" data-tip="${esc(SOURCE[key])}">${label}</dt>`;
 
 /** `strongerThan`: share of this pair's changes with a lower confidence, to read the score against the others. */
 export function featureCard(p: ChangeProps, facilityName: string | null, strongerThan: number | null = null): string {
@@ -27,8 +27,8 @@ export function featureCard(p: ChangeProps, facilityName: string | null, stronge
   const conf = Math.max(0, Math.min(1, p.confidence));
   const why = p.explanation?.trim() || p.evidence?.trim();
   return `<header class="ins-head">${typeIcon(p.change_type, 28)}<div><h3>${esc(changeTitle(p))}</h3><p class="muted">${esc(sentence(changeWhere(p)))}</p></div>${closeBtn}</header>
-  <p class="ins-meta"><b class="num src" title="${esc(SOURCE.area)}">${fmtArea(p.area_m2)}</b><span>changed</span></p>
-  <div class="ins-why"><span class="src" title="${esc(SOURCE.why)}">Why this label <i>(rule-based)</i></span><p>${esc(sentence(why || "No rule recorded."))}</p></div>
+  <p class="ins-meta"><b class="num src" tabindex="0" data-tip="${esc(SOURCE.area)}">${fmtArea(p.area_m2)}</b><span>changed</span></p>
+  <div class="ins-why"><span class="src" tabindex="0" data-tip="${esc(SOURCE.why)}">Why this label <i>(rule-based)</i></span><p>${esc(sentence(why || "No rule recorded."))}</p></div>
   ${p.touches_aoi_edge ? '<p class="note">Touches the edge of the area of interest, so its shape may be clipped.</p>' : ""}
   <details class="tech" open><summary>Technical details</summary>
   <dl class="facts">
