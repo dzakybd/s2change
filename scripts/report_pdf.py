@@ -59,6 +59,32 @@ READY = """() => {
 }"""
 
 
+def downsample(doc: pymupdf.Document, above: int = 170, target: int = 150, quality: int = 82) -> None:
+    """Re-encode page images printed above `above` dpi at `target` dpi.
+
+    Not doc.rewrite_images: it also rewrites the bitmap glyphs of colour-emoji Type 3 fonts and leaves them blank.
+    """
+    done: set[int] = set()
+    for page in doc:
+        for xref, smask, width, *_ in page.get_images(full=True):
+            rects = page.get_image_rects(xref)
+            if xref in done or not rects:
+                continue
+            inches = max(r.width for r in rects) / 72
+            if width / inches <= above:
+                continue
+            pix = pymupdf.Pixmap(doc, xref)
+            if smask:
+                pix = pymupdf.Pixmap(pix, pymupdf.Pixmap(doc, smask))
+            scale = target * inches / width
+            pix = pymupdf.Pixmap(pix, max(1, round(pix.width * scale)), max(1, round(pix.height * scale)), None)
+            if pix.alpha:
+                page.replace_image(xref, pixmap=pix)
+            else:
+                page.replace_image(xref, stream=pix.tobytes("jpeg", jpg_quality=quality))
+            done.add(xref)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=OUT)
@@ -91,7 +117,7 @@ def main() -> None:
         )
         browser.close()
     doc = pymupdf.open(args.out)
-    doc.rewrite_images(dpi_threshold=170, dpi_target=150, quality=82)
+    downsample(doc)
     doc.set_metadata({**doc.metadata, "title": "s2change report"})
     tmp = args.out.with_suffix(".tmp.pdf")
     doc.save(tmp, garbage=3, deflate=True)

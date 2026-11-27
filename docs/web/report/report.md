@@ -19,7 +19,7 @@ The report follows the brief: **[1. Method](#-1-method)** (which algorithm, and 
 <tr>
 <td align="center"><b>4.13 km²</b><br>🛰️ changed<br><sub>in 215 polygons</sub></td>
 <td align="center"><b>82 %</b><br>🏭 inside the mine<br><sub>in the 8 named facilities</sub></td>
-<td align="center"><b>27× less</b><br>🪤 than the provided method<br><sub>which maps seams as change</sub></td>
+<td align="center"><b class="good">27× less</b><br>🪤 than the provided method<br><sub>which maps seams as change</sub></td>
 <td align="center"><b>0.67</b><br>🎯 precision<br><sub>on 200 random points</sub></td>
 </tr>
 </table>
@@ -27,25 +27,25 @@ The report follows the brief: **[1. Method](#-1-method)** (which algorithm, and 
 ![at a glance](figures/00_at_a_glance.png)
 
 - ⛏️ **The mine was working, not spreading.** Tailings spread, waste tipped, pits worked; outside the mine only 0.02 km² is clearing.
-- 🧱 **Fresh fill on the tailings dam's south-east wall, likely a wall raise:** 0.39 km² where vegetation was, made between 4 Jul and 8 Aug. The first thing a dam-safety team would want to see.
-- 🪤 **The data had a trap.** Each supplied "date" is two satellite passes stitched together; the provided method maps the stitch as change (111 km²). Found, proved and corrected ([the data trap](#the-data-trap-each-date-is-two-passes)).
-- 🎯 **Precise but conservative.** Right 2 times in 3 when it says "changed" (the provided method: 1 in 8), but it finds only about a fifth of all real change ([how accurate](#how-accurate-is-it)).
-- 📈 **Over three years the footprint grows** (exploratory): change outside the named facilities rises from 3.3 to 14.3 km².
+- 🧱 **Fresh fill on the tailings dam's south-east wall, likely a wall raise:** <b class="hl">0.39 km²</b> where vegetation was, made between *4 Jul and 8 Aug*. The first thing a dam-safety team would want to see.
+- 🪤 **The data had a trap.** Each supplied "date" is two satellite passes stitched together; the provided method maps the stitch as change (<b class="bad">111 km²</b>). Found, proved and corrected ([the data trap](#the-data-trap-each-date-is-two-passes)).
+- 🎯 **Precise but conservative.** Right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), but it finds only <b class="hl">about a fifth</b> of all real change ([how accurate](#how-accurate-is-it)).
+- 📈 **Over three years the footprint grows** (exploratory): change outside the named facilities rises from 3.3 to <b class="hl">14.3 km²</b>.
 
 ## ⚙️ 1. Method
 
-**Algorithm.** Two methods on the same stacks, stored in the same database:
+🧮 **Algorithm.** Two methods on the same stacks, stored in the same database:
 
 - **The provided example, unchanged:** Euclidean distance across the three bands, plus an Otsu threshold for its binary map (`change_map_baseline.tif`, `change_binary_baseline.tif`).
 - **This work: a calibrated change vector analysis** (Malila 1980). How far did each pixel's colour move, compared with how far colour moves on ground that did not change? (`change_map.tif`, `change_binary.tif`)
 
-**Why this method.** The example fails on this data in three ways, and each has a fix:
+🤔 **Why this method.** The example fails on this data in three ways, and each has a fix:
 
 | | Problem with the example | Measured | Fix here |
 |---|---|---|---|
-| 🧩 | **The images are mosaics**: brightness jumps at the seams read as change | 111 km², 42 % of the area | Correct each seam-bounded zone on its own ([the data trap](#the-data-trap-each-date-is-two-passes)) |
-| 🌗 | **Noise is not the same everywhere**: bright mine ground varies more than dark forest | one noise level: 22× too many false alarms, 66× on the brightest ground | Measure noise per zone and per brightness level |
-| 🎚️ | **Its threshold has no meaning**: with no labels, a cut-off must say how often noise passes it | — | "Noise may pass 1 pixel in 1,000"; held-out stable pixels give 0.09–0.11 % |
+| 🧩 | **The images are mosaics**: brightness jumps at the seams read as change | <b class="bad">111 km²</b>, 42 % of the area | Correct each seam-bounded zone on its own ([the data trap](#the-data-trap-each-date-is-two-passes)) |
+| 🌗 | **Noise is not the same everywhere**: bright mine ground varies more than dark forest | one noise level: <b class="bad">22×</b> too many false alarms, <b class="bad">66×</b> on the brightest ground | Measure noise per zone and per brightness level |
+| 🎚️ | **Its threshold has no meaning**: with no labels, a cut-off must say how often noise passes it | — | "Noise may pass 1 pixel in 1,000"; held-out stable pixels give <b class="good">0.09–0.11 %</b> |
 
 The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design target; how often a flagged polygon is real is measured separately ([how accurate](#how-accurate-is-it)). Co-registration was checked per zone (phase correlation, 8 windows): shifts are at most 0.05 px, so nothing is resampled. A full run takes 13.6 s on a laptop.
 
@@ -57,7 +57,7 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 
 *Every layer is the real data around the same place, the tailings dam's south-east wall. The output is a typed polygon with a plain sentence, stored and shown on the [map](https://s2change.dzaky.ai.id/#/map).*
 
-**Each step, close-up and whole site:**
+🪜 **Each step, close-up and whole site:**
 
 | Step | Close-up: the tailings dam wall | Whole site | What we do, and why |
 |---|---|---|---|
@@ -80,39 +80,39 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 
 <table class="kpi">
 <tr>
-<td align="center"><b>0</b><br>scenes on 12 Aug 2023<br><sub>passes on 8, 10 and 13 Aug only</sub></td>
+<td align="center"><b class="bad">0</b><br>scenes on 12 Aug 2023<br><sub>passes on 8, 10 and 13 Aug only</sub></td>
 <td align="center"><b>2</b><br>passes in each file<br><sub>joined at a straight 12.6° seam</sub></td>
-<td align="center"><b>100 %</b><br>identical to one pass, west of the seam<br><sub>and 0 % east of it</sub></td>
-<td align="center"><b>52–60</b><br>days between the real passes<br><sub>in three zones, not 21</sub></td>
+<td align="center"><b class="good">100 %</b><br>identical to one pass, west of the seam<br><sub>and 0 % east of it</sub></td>
+<td align="center"><b class="bad">52–60</b><br>days between the real passes<br><sub>in three zones, not 21</sub></td>
 </tr>
 </table>
 
-**Proof 1. One side is a known pass, the other is not.** With no 12 Aug scene to compare against, each file was set beside the single pass that covers the whole site and is found inside it: before with 4 Jul, after with 2 Sep. West of the seam every pixel is identical in all three bands; east of it, none is. The brightness steps exactly at the seam (e), through bush, roads and the tailings pond alike: an orbit edge, not the ground.
+🔎 **Proof 1. One side is a known pass, the other is not.** With no 12 Aug scene to compare against, each file was set beside the single pass that covers the whole site and is found inside it: before with 4 Jul, after with 2 Sep. West of the seam <b class="good">every pixel is identical</b> in all three bands; east of it, <b class="bad">none is</b>. The brightness steps exactly at the seam (e), through bush, roads and the tailings pond alike: an orbit edge, not the ground.
 
 ![Each supplied file beside the full-coverage single pass found inside it, with the brightness profile across its seam](figures/07_trap_proof.png)
 
 *Before with before, after with after: identical on one side of the yellow line, different on the other (`scripts/fig_trap_proof.py`).*
 
-**Proof 2. Every pixel traced to its scene.** All 55–56 catalogue scenes of the site in the 75 days before each date were read onto the same grid and matched on exact stored values (`s2cd provenance`). Two scenes per date reproduce every pixel, bit for bit; their catalogue records give the true dates. The two files switch pass at slightly different lines, so laid over each other they cut the site into **three zones**, each one real before → after pair:
+🧬 **Proof 2. Every pixel traced to its scene.** All 55–56 catalogue scenes of the site in the 75 days before each date were read onto the same grid and matched on exact stored values (`s2cd provenance`). Two scenes per date reproduce every pixel, bit for bit; their catalogue records give the true dates. The two files switch pass at slightly different lines, so laid over each other they cut the site into **three zones**, each one real before → after pair:
 
 ![Source pass of every pixel on both dates, the three zones they form, and the real time gap of each](figures/06_provenance.png)
 
 *The seams follow the swath edge of orbit 78, which covers only the east of the site.*
 
-**What the pipeline does with it.** Each zone is normalised on its own, so pass-to-pass haze and brightness do not read as change, and the 90 m around each seam is left out (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method flags the western pass almost entirely.
+🛠️ **What the pipeline does with it.** Each zone is normalised on its own, so pass-to-pass haze and brightness do not read as change, and the 90 m around each seam is left out (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method flags the western pass almost entirely.
 
-**Proof 3. True single passes change the answer.** The same pipeline re-run on single passes that cover the whole site (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"; scenes in Downloads):
+🔁 **Proof 3. True single passes change the answer.** The same pipeline re-run on single passes that cover the whole site (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"; scenes in Downloads):
 
 | Pair | Provided method | This method | Dam-wall fill |
 |---|---:|---:|---:|
-| The provided mosaics (nominal 12 Aug → 2 Sep) | 111 km² | 4.13 km² | 0.44 km² |
-| Single pass, 8 Aug → 2 Sep 2023 (the clear dates closest to the nominal ones) | 194 km² | 2.25 km² | 0.10 km² |
+| The provided mosaics (nominal 12 Aug → 2 Sep) | <b class="bad">111 km²</b> | <b class="good">4.13 km²</b> | 0.44 km² |
+| Single pass, 8 Aug → 2 Sep 2023 (the clear dates closest to the nominal ones) | <b class="bad">194 km²</b> | 2.25 km² | 0.10 km² |
 | Single pass, 4 Jul → 8 Aug 2023 | 4.6 km² | 12.1 km² | 0.44 km² |
 
-- Without seams the provided method gets *worse* (194 km²): its real weakness is the haze and brightness difference between dates, which the normalisation removes.
-- The dam-wall fill happened **between 4 Jul and 8 Aug**, before the nominal before date; the mosaics catch it only because their "12 Aug" is really early July. The provided pair stays the main result, because it is what the brief supplies.
+- Without seams the provided method gets *worse* (<b class="bad">194 km²</b>): its real weakness is the haze and brightness difference between dates, which the normalisation removes.
+- The dam-wall fill happened <b class="hl">between 4 Jul and 8 Aug</b>, before the nominal before date; the mosaics catch it only because their "12 Aug" is really early July. The provided pair stays the main result, because it is what the brief supplies.
 
-**Was the data already corrected?** Yes:
+🧪 **Was the data already corrected?** Yes:
 
 - **ESA Level-2A, bit for bit** (the pixel match above): calibrated, orthorectified, atmospherically corrected.
 - No level tag in the files; the −1000 offset in the darkest pixels agrees. Reflectance = `(DN − 1000) / 10000`.
@@ -125,7 +125,7 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 
 ### Does it depend on one threshold?
 
-No. Across 16 settings (false-alarm rates 1 in 100 to 1 in 100,000; minimum areas 1,000–10,000 m²) the changed area stays within **2.1–6.8 km²** and the share inside the 5 mining facilities within **68–88 %**, highest at the stricter settings: the strongest changes are the mining ones.
+No. Across 16 settings (false-alarm rates 1 in 100 to 1 in 100,000; minimum areas 1,000–10,000 m²) the changed area stays within <b class="good">2.1–6.8 km²</b> and the share inside the 5 mining facilities within <b class="good">68–88 %</b>, highest at the stricter settings: the strongest changes are the mining ones.
 
 ![sensitivity](figures/11_sensitivity.png)
 
@@ -140,9 +140,9 @@ No. Across 16 settings (false-alarm rates 1 in 100 to 1 in 100,000; minimum area
 </tr>
 </table>
 
-**Where.** Change concentrates in the mine: 82 % lies inside the eight named facilities, more than half on the tailings storage facility. Outside, change is scattered and small.
+📍 **Where.** Change concentrates in the mine: 82 % lies inside the eight named facilities, more than half on the tailings storage facility. Outside, change is scattered and small.
 
-**Pattern.** Patches moving on the tailings facility, brighter and redder faces at dumps and pit edges, bench changes in the pits, and a long strip of fresh fill on the dam's south-east wall. No straight seam lines are left.
+🔍 **Pattern.** Patches moving on the tailings facility, brighter and redder faces at dumps and pit edges, bench changes in the pits, and a long strip of fresh fill on the dam's south-east wall. No straight seam lines are left.
 
 ![change types](figures/10_change_types.png)
 
@@ -158,11 +158,11 @@ No. Across 16 settings (false-alarm rates 1 in 100 to 1 in 100,000; minimum area
 | <img src="figures/icon_water_level_change.svg" width="20" alt=""> | Water level change | water change | 8 | 0.18 km² | Pond and pit-lake edges moving |
 | <img src="figures/icon_unexplained.svg" width="20" alt=""> | Noise, unexplained, infrastructure, clearing | other | 42 | 0.15 km² | Seams, haze, small builds; 0.02 km² of clearing |
 
-**Per facility.** The last row combines the three facilities with almost no change.
+🏭 **Per facility.** The last row combines the three facilities with almost no change.
 
 | Before → after (change in yellow) | Facility | Area | Changed | Mostly |
 |---|---|---:|---:|---|
-| <img src="figures/TSF_before.webp" alt="TSF before" width="64"> <img src="figures/TSF_after.webp" alt="TSF after" width="64"> | <img src="figures/fac_TSF.svg" width="20" alt=""> Tailings storage facility (TSF) | 21.84 km² | **2.19 km² (10 %)** | tailings deposition, dam-wall fill |
+| <img src="figures/TSF_before.webp" alt="TSF before" width="64"> <img src="figures/TSF_after.webp" alt="TSF after" width="64"> | <img src="figures/fac_TSF.svg" width="20" alt=""> Tailings storage facility (TSF) | 21.84 km² | <b class="hl">2.19 km² (10 %)</b> | tailings deposition, dam-wall fill |
 | <img src="figures/PIT-S_before.webp" alt="PIT-S before" width="64"> <img src="figures/PIT-S_after.webp" alt="PIT-S after" width="64"> | <img src="figures/fac_PIT-S.svg" width="20" alt=""> South pit complex | 24.84 km² | 0.55 km² (2 %) | pit / bench activity |
 | <img src="figures/PIT-NW_before.webp" alt="PIT-NW before" width="64"> <img src="figures/PIT-NW_after.webp" alt="PIT-NW after" width="64"> | <img src="figures/fac_PIT-NW.svg" width="20" alt=""> North-west pit complex | 13.16 km² | 0.41 km² (3 %) | waste dumping |
 | <img src="figures/WD-E_before.webp" alt="WD-E before" width="64"> <img src="figures/WD-E_after.webp" alt="WD-E after" width="64"> | <img src="figures/fac_WD-E.svg" width="20" alt=""> Eastern waste dumps | 3.30 km² | 0.21 km² (6 %) | waste dumping |
@@ -171,9 +171,9 @@ No. Across 16 settings (false-alarm rates 1 in 100 to 1 in 100,000; minimum area
 
 Facility outlines are analyst-drawn on very-high-resolution imagery, checked against the 2023 image, and do not overlap (`configs/facility_register.yaml`; [on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities)).
 
-**Land cover before → after**, a check without the register: simple RGB rules sort changed pixels into water, bright surface, bare ground and vegetation. Vegetation → bare ground (0.62 km², 15 %) is the new disturbance, much of it along the dam wall; most of the rest is bare ground re-worked (30 %) or turned to bright tailings (18 %).
+🌿 **Land cover before → after**, a check without the register: simple RGB rules sort changed pixels into water, bright surface, bare ground and vegetation. Vegetation → bare ground (0.62 km², 15 %) is the new disturbance, much of it along the dam wall; most of the rest is bare ground re-worked (30 %) or turned to bright tailings (18 %).
 
-**Over three years (exploratory, not validated).** The supplied before date against later August scenes, so the season matches. Beyond the brief; no accuracy check.
+📈 **Over three years** *(exploratory, not validated)*. The supplied before date against later August scenes, so the season matches. Beyond the brief; no accuracy check.
 
 ![multi-year](figures/13_multi_year.png)
 
@@ -185,8 +185,8 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 
 <table class="kpi">
 <tr>
-<td align="center"><b>0.67</b><br>precision<br><sub>right 2 times in 3 when it says "changed"</sub></td>
-<td align="center"><b>0.17</b><br>recall<br><sub>finds about a fifth of real change</sub></td>
+<td align="center"><b class="good">0.67</b><br>precision<br><sub>right 2 times in 3 when it says "changed"</sub></td>
+<td align="center"><b class="bad">0.17</b><br>recall<br><sub>finds about a fifth of real change</sub></td>
 <td align="center"><b>0.94</b><br>overall accuracy<br><sub>provided method: 0.62</sub></td>
 <td align="center"><b>16.6 km²</b><br>estimated real change<br><sub>± 10.9; the 4.13 km² is its core</sub></td>
 </tr>
@@ -194,7 +194,7 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 
 200 random points, 50 in each of four groups (both maps say change, only this map, only the provided method, neither), so one sample scores both maps without bias (Olofsson et al. 2014).
 
-**How the points were labelled:**
+🏷️ **How the points were labelled:**
 
 - **Two independent AI vision labellers**, from before/after image chips, blind to both maps.
 - Agreement 80 % (Cohen's κ 0.46, moderate); the 40 disagreements settled by a third look with a wider view.
@@ -202,26 +202,26 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 
 | 95 % intervals | This method | Provided method |
 |---|---:|---:|
-| Pixels labelled correctly (overall accuracy) | **0.94 ± 0.04** | 0.62 ± 0.04 |
-| When it says "changed", it is right (precision) | **0.67 ± 0.11** | 0.12 ± 0.08 |
-| Share of all real change it finds (recall) | 0.17 ± 0.11 | 0.80 ± 0.31 |
+| Pixels labelled correctly (overall accuracy) | <b class="good">0.94 ± 0.04</b> | 0.62 ± 0.04 |
+| When it says "changed", it is right (precision) | <b class="good">0.67 ± 0.11</b> | <b class="bad">0.12 ± 0.08</b> |
+| Share of all real change it finds (recall) | <b class="bad">0.17 ± 0.11</b> | 0.80 ± 0.31 |
 
-**What this means.** Precise but conservative. Where both maps agree, 72 % of points really changed; 16 of the 21 real extra detections of this map are fresh burn scars the provided method misses. What it misses is subtle: tailings beaches wetting and drying, burn edges, small waste tips. Recall intervals are wide because real change is rare in the large "no change" groups; more points there would tighten them.
+💡 **What this means.** *Precise but conservative.* Where both maps agree, 72 % of points really changed; 16 of the 21 real extra detections of this map are fresh burn scars the provided method misses. What it misses is subtle: tailings beaches wetting and drying, burn edges, small waste tips. Recall intervals are wide because real change is rare in the large "no change" groups; more points there would tighten them.
 
 ## 🧭 3. Interpretation
 
-**What the changes represent**, in the brief's categories: the mine is operating normally.
+🧭 **What the changes represent**, in the brief's categories: the mine is operating normally.
 
 | Category | Area | What it is |
 |---|---:|---|
-| ⛏️ Mining activity | **3.4 km²** | Tailings deposition, waste dumping, pit work, a likely dam-wall raise |
+| ⛏️ Mining activity | <b class="hl">3.4 km²</b> | Tailings deposition, waste dumping, pit work, a likely dam-wall raise |
 | 🌾 Seasonal vegetation | 0.36 km² | Dry-season browning or burns outside the mine |
 | 🪓 Land clearing | 0.02 km² | Outside the mine; no urban expansion |
 | 〰️ Noise and artifacts | 0.15 km² | Mostly removed by the seam correction; the rest labelled, with unexplained and small builds |
 
 Over three years, in the same dry season, the mine grows and more of the change sits outside the named facilities.
 
-**How to read each pattern.** Every type is a hypothesis, with what could fake it in RGB and what would confirm it:
+📖 **How to read each pattern.** Every type is a hypothesis, with what could fake it in RGB and what would confirm it:
 
 | Pattern | Likely meaning | Could also be | Confirm with |
 |---|---|---|---|
@@ -233,7 +233,7 @@ Over three years, in the same dry season, the mine grows and more of the change 
 > [!WARNING]
 > **Confidence is not accuracy.** "Confidence" is a change-magnitude score. Precision and recall are measured on a random sample ([how accurate](#how-accurate-is-it)); a polygon's confidence is not its probability of being right.
 
-**Who acts on it.**
+👥 **Who acts on it.**
 
 | Who | Their question | What this gives them | What it cannot say |
 |---|---|---|---|
@@ -242,14 +242,14 @@ Over three years, in the same dry season, the mine grows and more of the change 
 | 💼 Investors, lenders, insurers | Is the operation running and growing? | Independent activity signals: waste moved, tailings deposited, pits worked | Production, grade or tonnes |
 | 🌱 ESG and community teams | Is clearing or water change spreading? | Clearing and water change outside the register | Social or health impacts |
 
-**As a service**, the pipeline runs monthly on a new clear scene, against last month and the same month last year; changes outside a facility or above a size limit become alerts for an analyst. Each comparison is one more run in the database, already keyed by run.
+🔔 **As a service**, the pipeline runs monthly on a new clear scene, against last month and the same month last year; changes outside a facility or above a size limit become alerts for an analyst. Each comparison is one more run in the database, already keyed by run.
 
 ## 🚧 4. Limitations and next steps
 
 > [!WARNING]
-> **The map misses most subtle change.** Recall is 0.17 ± 0.11: it is built to avoid false alarms, so faint tailings and burn changes fall below the threshold.
+> **The map misses most subtle change.** Recall is <b class="bad">0.17 ± 0.11</b>: it is built to avoid false alarms, so faint tailings and burn changes fall below the threshold.
 
-**Next validation step.** A human analyst relabels the 200 points, plus about 200 more in the "no change" groups, on very-high-resolution imagery from the same weeks (Planet or Esri Wayback). That tightens recall, replaces AI labels, and gives the first training set for a learned model; a per-type threshold would recover the missed tailings changes.
+🔬 **Next validation step.** A human analyst relabels the 200 points, plus about 200 more in the "no change" groups, on very-high-resolution imagery from the same weeks (Planet or Esri Wayback). That tightens recall, replaces AI labels, and gives the first training set for a learned model; a per-type threshold would recover the missed tailings changes.
 
 | | Gap | Why it matters | Next step |
 |---|---|---|---|

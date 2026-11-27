@@ -105,3 +105,10 @@
 @media (hover: hover) and (pointer: fine) { .prose table.kpi tr:hover td { background: var(--surface); } }
 @media (max-width: 700px) { .prose table.kpi tr { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media print { .prose .table-wrap:has(> table.kpi) { border: 0; } .prose table.kpi td { box-shadow: none; border: 0.5pt solid #e2e8f0; break-inside: avoid; } }
+
+/* Coloured emphasis in report.md: <b class="good|bad|hl">; plain bold on GitHub, which strips classes. */
+.prose b.good { color: #15803d; }
+.prose b.bad { color: #b91c1c; }
+.prose b.hl { color: #b45309; }
+.prose table.kpi td b.good { color: #15803d; }
+.prose table.kpi td b.bad { color: #b91c1c; }
