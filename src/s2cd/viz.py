@@ -151,16 +151,9 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
     fig, ax = plt.subplots(1, 2, figsize=(13, 5))
     ax[0].hist(np.log10(np.clip(p.cva.d2[p.valid], 1e-3, None)), bins=200, color="0.4")
     far = p.summary["noise_calibration"]["far"] if cal else 1e-3
-    for (v, lab), y in zip(
-        [
-            (p.summary["thresholds"]["cva_d2_low"], f"grow (nominal {far:g})"),
-            (p.summary["thresholds"]["cva_d2_high"], "seed (nominal 100x stricter)"),
-        ],
-        (0.5, 0.15),
-        strict=True,
-    ):
-        ax[0].axvline(np.log10(v), color="C3", ls="--")
-        ax[0].text(np.log10(v), ax[0].get_ylim()[1] * y, " " + lab, color="C3", fontsize=9)
+    v = p.summary["thresholds"]["cva_d2"]
+    ax[0].axvline(np.log10(v), color="C3", ls="--")
+    ax[0].text(np.log10(v), ax[0].get_ylim()[1] * 0.5, f" threshold (nominal {far:g})", color="C3", fontsize=9)
     ax[0].set_xlabel("log10 d2 (all valid pixels)")
     ax[0].set_yscale("log")
     ax[0].set_title("Distribution of the change statistic")

@@ -61,39 +61,11 @@
           25.944378082147733
         ]
       ]
-    },
-    "sr_before": {
-      "url": "sr_before.webp",
-      "label": "Super-resolved 2.5 m (SEN2SR), nominal 2023-08-12 (mosaic of 2023-07-01/07-04)",
-      "bounds": [
-        [
-          -12.320309822198688,
-          25.79001102217236
-        ],
-        [
-          -12.17529130101085,
-          25.94442418939384
-        ]
-      ]
-    },
-    "sr_after": {
-      "url": "sr_after.webp",
-      "label": "Super-resolved 2.5 m (SEN2SR), nominal 2023-09-02 (mosaic of 2023-08-25/09-02)",
-      "bounds": [
-        [
-          -12.320309822198688,
-          25.79001102217236
-        ],
-        [
-          -12.17529130101085,
-          25.94442418939384
-        ]
-      ]
     }
   },
   "summary": {
     "euclidean_baseline": 11143.36,
-    "robust_cva": 413.3
+    "robust_cva": 417.16
   },
   "vectors": {
     "changes": "change_features.geojson",

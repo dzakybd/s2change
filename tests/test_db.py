@@ -12,7 +12,8 @@ from conftest import make_grid
 from s2cd import db, vectorize
 
 SHAPE = (60, 100)
-LOW, HIGH = vectorize.BinaryRule().thresholds(3)
+LOW = vectorize.BinaryRule().threshold(3)
+HIGH = LOW * 1.6  # a stricter level for the strong_fraction attribute
 
 
 def _polygons(rng, grid):

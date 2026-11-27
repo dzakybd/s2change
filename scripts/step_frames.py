@@ -55,7 +55,7 @@ def main() -> None:
         return np.clip((r[::-1] - lo[::-1]) / (hi[::-1] - lo[::-1]), 0, 1).transpose(1, 2, 0) ** 0.8
 
     mag, binary, zones = band("change_map"), band("change_binary") == 1, band("radiometric_zones")
-    low = json.loads((PROC / "run_summary.json").read_text())["thresholds"]["cva_d2_low"]
+    low = json.loads((PROC / "run_summary.json").read_text())["thresholds"]["cva_d2"]
     raw = valid & (np.nan_to_num(mag, nan=-9) > np.log10(low))
 
     g = gpd.read_file(PROC / "change_features.geojson")

@@ -25,7 +25,7 @@ import rasterio.features
 from . import register, vectorize
 from .pipeline import Config, run
 
-FAR_LOW = (1e-2, 1e-3, 1e-4, 1e-5)  # nominal region-growing false-alarm rate; the seed rate is 100x stricter
+FARS = (1e-2, 1e-3, 1e-4, 1e-5)  # nominal per-pixel false-alarm rate
 MMU_HA = (0.1, 0.2, 0.5, 1.0)
 
 
@@ -39,20 +39,20 @@ def sweep(cfg: Config | None = None) -> pd.DataFrame:
     disturbed = vectorize.disturbed_footprint(p.refl_before, p.valid)
     in_mine = rasterio.features.geometry_mask([register.footprint(p.facilities)], p.valid.shape, grid.transform, invert=True)
     rows = []
-    for far in FAR_LOW:
+    for far in FARS:
         for mmu in MMU_HA:
-            rule = replace(base.rule, far_low=far, far_high=far / 100, mmu_ha=mmu, fill_holes_ha=mmu)
+            rule = replace(base.rule, far=far, mmu_ha=mmu, fill_holes_ha=mmu)
             binary = vectorize.binary_from_d2(p.cva.d2, p.valid, p.seam_dist, len(base.bands), rule, grid.transform.a)
             n = max(binary.sum(), 1)
             rows.append(
                 {
-                    "far_low": far,
+                    "far": far,
                     "mmu_ha": mmu,
                     "changed_ha": round(binary.sum() * px_ha, 1),
                     "changed_pct_of_aoi": round(100 * binary[p.valid].mean(), 2),
                     "share_in_mine_footprint": round((binary & disturbed).sum() / n, 3),
                     "share_in_register_mine_classes": round((binary & in_mine).sum() / n, 3),
-                    "is_default": far == base.rule.far_low and mmu == base.rule.mmu_ha,
+                    "is_default": far == base.rule.far and mmu == base.rule.mmu_ha,
                 }
             )
     return pd.DataFrame(rows)

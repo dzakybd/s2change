@@ -17,7 +17,7 @@ def test_config_from_default_yaml():
     assert cfg.bands == ("B02", "B03", "B04")
     assert cfg.before.name == "sentinel2_20230812" and cfg.after.name == "sentinel2_20230902"
     assert cfg.rule.mmu_ha == 0.2 and cfg.rule.seam_buffer_m == 90
-    assert cfg.rule.far_high < cfg.rule.far_low
+    assert cfg.rule.far == 1e-3
     assert cfg.database_url is None
 
 

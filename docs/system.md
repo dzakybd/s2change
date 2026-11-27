@@ -36,7 +36,7 @@ sequenceDiagram
 | Layer | Technology | Why |
 |---|---|---|
 | Environment and quality | Python 3.12, uv, ruff, pytest | One lockfile, one command to run, one linter; tests run in CI |
-| Raster and numerics | rasterio, numpy, scipy, scikit-image | Windowed GeoTIFF/COG I/O, the robust covariance and statistics, hysteresis and morphology |
+| Raster and numerics | rasterio, numpy, scipy, scikit-image | Windowed GeoTIFF/COG I/O, the robust covariance and statistics and morphology |
 | Vector | geopandas, shapely, pyogrio, pyproj | Polygons, validity repair, EPSG:32735 areas in m² |
 | Source scenes | pystac-client, planetary-computer | Optional extra: recovers the true acquisitions behind each mosaic, B02-B04 only |
 | Storage | PostGIS 16 with a GiST index, Supabase, SpatiaLite, SQLAlchemy, psycopg | A geospatial DB as the brief asks; the app reads through a `SELECT`-only role |

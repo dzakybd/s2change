@@ -125,7 +125,7 @@ DOWNLOADS = [
             ("data/processed/change_significance.tif", "−log10 p of the change under the noise model.", "magnitude"),
             (
                 "data/processed/change_binary.tif",
-                "Changed (1) or not (0) after hysteresis and the 2,000 m² minimum mapping unit; 255 = no data.",
+                "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
                 "binary",
             ),
             (

@@ -111,7 +111,7 @@ def build() -> str:
         for r in csv.DictReader(fh):
             rows.append(
                 {
-                    "far": float(r["far_low"]),
+                    "far": float(r["far"]),
                     "mmu": float(r["mmu_ha"]),
                     "area": float(r["changed_ha"]) / 100,
                     "share": float(r["share_in_register_mine_classes"]) * 100,

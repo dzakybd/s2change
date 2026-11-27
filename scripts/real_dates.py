@@ -46,8 +46,8 @@ def main() -> None:
         if name == WEB_PAIR:
             viz.export_web(p, WEB)
             DOWNLOADS.mkdir(parents=True, exist_ok=True)
-            for name in DOWNLOAD_FILES:
-                shutil.copyfile(out / name, DOWNLOADS / name)
+            for f in DOWNLOAD_FILES:
+                shutil.copyfile(out / f, DOWNLOADS / f)
         s = p.summary
         rows.append(
             {

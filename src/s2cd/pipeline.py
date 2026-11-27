@@ -19,6 +19,7 @@ import pandas as pd
 import rasterio.features
 import yaml
 from rasterio.enums import Resampling
+from scipy import stats
 
 from . import db, interpret, methods, provenance, radiometry, register, vectorize
 from .io import Scene, check_consistency, load_scene, write_raster
@@ -213,10 +214,11 @@ def run(cfg: Config) -> Products:
     base_prob = methods.euclidean_baseline(r1, r2, valid)
     base_bin, otsu_t = vectorize.binary_from_otsu(base_prob, valid, rule, px_m)
 
-    cva = methods.robust_cva(r1, r2n, zones, pif, norm.noise_pif, rule.far_low, cfg.noise)
+    cva = methods.robust_cva(r1, r2n, zones, pif, norm.noise_pif, rule.far, cfg.noise)
     cva_bin = vectorize.binary_from_d2(cva.d2, valid, seam_dist, nb, rule, px_m)
 
-    low, high = rule.thresholds(nb)
+    low = rule.threshold(nb)
+    high = float(stats.chi2.isf(vectorize.STRONG_FAR, nb))  # for the strong_fraction attribute only
     tags = {
         "NOMINAL_DATE_BEFORE": before.acquired,
         "NOMINAL_DATE_AFTER": after.acquired,
@@ -266,7 +268,7 @@ def run(cfg: Config) -> Products:
         binary(cva_bin),
         grid,
         nodata_u8,
-        [f"1 = change (robust CVA, hysteresis nominal FAR {rule.far_low:g}/{rule.far_high:g})"],
+        [f"1 = change (robust CVA, nominal FAR {rule.far:g})"],
         tags,
         overview_resampling=nearest,
     )
@@ -335,7 +337,7 @@ def run(cfg: Config) -> Products:
             ),
             "final": _area_ha(cva_bin, px),
         },
-        "thresholds": {"baseline_otsu": round(otsu_t, 4), "cva_d2_low": round(low, 2), "cva_d2_high": round(high, 2)},
+        "thresholds": {"baseline_otsu": round(otsu_t, 4), "cva_d2": round(low, 2)},
         "seam_buffer_m": rule.seam_buffer_m,
         "valid_share_within_seam_buffer": round(float((valid & (seam_dist < rule.seam_buffer_px(px_m))).sum() / valid.sum()), 4),
         "changed_area_ha": {

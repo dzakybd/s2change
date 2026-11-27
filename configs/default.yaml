@@ -12,8 +12,7 @@ bands: [B02, B03, B04]
 # Binary change rule (robust CVA). FAR = nominal per-pixel false-alarm rate under the chi2(3) noise model; the realised
 # rate on held-out no-change pixels is reported in run_summary.json under noise_calibration. Sizes are in ha and metres.
 rule:
-  far_low: 1.0e-3        # region growing threshold (nominal)
-  far_high: 1.0e-5       # every region must contain at least one pixel this significant (nominal)
+  far: 1.0e-3            # threshold: noise passes 1 pixel in 1,000 (nominal)
   seam_buffer_m: 90      # ignore pixels within 90 m (9 px) of a source-scene / stripe boundary; also used by interpret
   opening_radius_m: 10   # morphological opening, removes 1-2 px lines and speckle
   mmu_ha: 0.2            # minimum mapping unit (20 px at 10 m)

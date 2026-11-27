@@ -10,7 +10,8 @@ from s2cd.vectorize import BinaryRule
 
 RULE = BinaryRule()
 PX = 10.0  # pixel size in metres
-LOW, HIGH = RULE.thresholds(3)
+LOW = RULE.threshold(3)
+HIGH = LOW * 1.6  # a stricter level, only for the strong_fraction attribute
 
 
 def _score(shape, blocks):
@@ -22,8 +23,6 @@ def _score(shape, blocks):
 
 def test_thresholds_follow_chi2():
     assert pytest.approx(16.27, abs=0.01) == LOW  # chi2(3) upper 1e-3 quantile
-    assert pytest.approx(25.90, abs=0.02) == HIGH  # chi2(3) upper 1e-5 quantile
-    assert LOW < HIGH
 
 
 class TestBinaryFromD2:
@@ -55,13 +54,9 @@ class TestBinaryFromD2:
         assert not out[seam < RULE.seam_buffer_px(PX)].any()
         assert out[11:39, 41:50].all() and out[11:39, 70:79].all()  # both sides of the seam survive, beyond the 9 px buffer
 
-    def test_region_needs_one_strongly_significant_pixel(self):
-        weak = _score(self.shape, [((5, 25, 5, 25), (LOW + HIGH) / 2)])  # above growing threshold, never above seed threshold
-        assert not self._run(weak).any()
-        seeded = weak.copy()
-        seeded[15, 15] = HIGH + 5
-        out = self._run(seeded)
-        assert out[6:24, 6:24].all()  # the weak region is kept once it contains a seed
+    def test_one_threshold(self):
+        assert not self._run(_score(self.shape, [((5, 25, 5, 25), LOW * 0.99)])).any()
+        assert self._run(_score(self.shape, [((5, 25, 5, 25), LOW * 1.01)]))[6:24, 6:24].all()
 
     def test_invalid_pixels_never_change(self):
         d2 = _score(self.shape, [((10, 30, 10, 30), 100)])

@@ -69,7 +69,7 @@ flowchart LR
   P --> N
   N --> C[Robust CVA<br/>brightness-aware noise model]
   C --> K[Calibrated thresholds<br/>held-out stable pixels]
-  K --> B[Hysteresis + seam buffer<br/>+ 2,000 m² MMU]
+  K --> B[1-in-1,000 threshold + seam buffer<br/>+ 2,000 m² MMU]
   B --> V[Valid polygons]
   R[Facility register<br/>8 named facilities] --> T
   V --> T[Change type + 'why'<br/>RGB evidence + facility]
@@ -134,7 +134,7 @@ src/s2cd/
   provenance.py          STAC source scenes behind each provided date (B02-B04 only)
   radiometry.py          reflectance, zones (seams), per-zone normalization
   methods.py             provided baseline, robust CVA (calibrated)
-  vectorize.py           hysteresis, cleanup, valid polygons
+  vectorize.py           threshold, cleanup, valid polygons
   rgb.py                 visible-band indices and rules (greenness, redness, water, bare)
   register.py            facility register: outlines from imagery, change per facility
   interpret.py           change type + brief category + explanation per polygon

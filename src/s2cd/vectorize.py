@@ -1,7 +1,7 @@
 """Turn change rasters into a clean binary mask and attributed polygons.
 
-Binary rule: hysteresis thresholding (Canny 1986: grow from strong seeds through weaker connected pixels) of the chi-square
-change statistic, then seam masking, a morphological opening and a minimum mapping unit. The baseline uses Otsu's (1979)
+Binary rule: one threshold on the chi-square change statistic (a nominal per-pixel false-alarm rate), then seam masking,
+a morphological opening and a minimum mapping unit. The baseline uses Otsu's (1979)
 histogram threshold instead. Polygons are the 8-connected regions of the mask, made valid and stored as MultiPolygons.
 """
 
@@ -16,24 +16,25 @@ import shapely
 from scipy import ndimage as ndi
 from scipy import stats
 from skimage import morphology
-from skimage.filters import apply_hysteresis_threshold, threshold_otsu
+from skimage.filters import threshold_otsu
 
 from .io import Grid
+
+STRONG_FAR = 1e-5  # descriptive only: a polygon's strong_fraction is its share of pixels this unlikely under noise
 
 
 @dataclass(frozen=True)
 class BinaryRule:
     """The binary change rule. Sizes are in ha and metres so the rule does not depend on the pixel size (``*_px`` converts)."""
 
-    far_low: float = 1e-3  # nominal per-pixel false-alarm rate (under the noise model) for growing regions
-    far_high: float = 1e-5  # stricter nominal rate a region must reach somewhere to be kept (hysteresis seed)
+    far: float = 1e-3  # nominal per-pixel false-alarm rate under the noise model: noise passes 1 pixel in 1,000
     seam_buffer_m: float = 90.0  # ignore pixels this close to a source-scene / stripe boundary (see seam_buffer_px)
     opening_radius_m: float = 10.0  # removes 1-2 px lines and speckle (misregistration, field edges)
     mmu_ha: float = 0.2  # minimum mapping unit
     fill_holes_ha: float = 0.2
 
-    def thresholds(self, dof: int) -> tuple[float, float]:
-        return float(stats.chi2.isf(self.far_low, dof)), float(stats.chi2.isf(self.far_high, dof))
+    def threshold(self, dof: int) -> float:
+        return float(stats.chi2.isf(self.far, dof))
 
     def seam_buffer_px(self, pixel_m: float) -> float:
         """The single seam-buffer constant, in pixels; used by ``binary_from_d2`` and by ``interpret``."""
@@ -60,14 +61,13 @@ def clean_mask(mask: np.ndarray, rule: BinaryRule, pixel_m: float) -> np.ndarray
 def binary_from_d2(
     d2: np.ndarray, valid: np.ndarray, seam_dist: np.ndarray, dof: int, rule: BinaryRule, pixel_m: float
 ) -> np.ndarray:
-    """Hysteresis threshold on the chi-square statistic, then seam masking and morphological cleanup.
+    """Threshold the chi-square statistic, then seam masking and morphological cleanup.
 
     ``seam_dist`` is the distance to the nearest zone boundary in pixels; pixels closer than ``rule.seam_buffer_px`` are never
     changes. Invalid pixels (NaN or outside ``valid``) are not changes either.
     """
-    low, high = rule.thresholds(dof)
-    score = np.where(valid & (seam_dist >= rule.seam_buffer_px(pixel_m)), d2, 0)
-    return clean_mask(apply_hysteresis_threshold(score, low, high), rule, pixel_m)
+    keep = valid & (seam_dist >= rule.seam_buffer_px(pixel_m)) & (np.nan_to_num(d2) > rule.threshold(dof))
+    return clean_mask(keep, rule, pixel_m)
 
 
 def binary_from_otsu(prob: np.ndarray, valid: np.ndarray, rule: BinaryRule, pixel_m: float) -> tuple[np.ndarray, float]:

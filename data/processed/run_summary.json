@@ -273,20 +273,19 @@
     "realised_far_final": 0.00103
   },
   "cva_changed_area_ha_by_noise_model": {
-    "previous_design_nominal_thresholds": 1317.02,
-    "brightness_aware_nominal_thresholds": 733.03,
-    "final": 413.3
+    "previous_design_nominal_thresholds": 1320.91,
+    "brightness_aware_nominal_thresholds": 740.45,
+    "final": 417.16
   },
   "thresholds": {
     "baseline_otsu": 0.041,
-    "cva_d2_low": 16.27,
-    "cva_d2_high": 25.9
+    "cva_d2": 16.27
   },
   "seam_buffer_m": 90,
   "valid_share_within_seam_buffer": 0.0241,
   "changed_area_ha": {
     "euclidean_baseline": 11143.36,
-    "robust_cva": 413.3
+    "robust_cva": 417.16
   },
   "changed_fraction_by_zone": {
     "euclidean_baseline": [
@@ -297,36 +296,36 @@
     "robust_cva": [
       0.0108,
       0.01,
-      0.0195
+      0.0197
     ]
   },
   "n_features": {
-    "robust_cva": 215,
+    "robust_cva": 223,
     "euclidean_baseline": 1561
   },
   "agreement_cva_vs_baseline_iou": 0.031,
   "footprint": {
     "brightness_heuristic": {
       "share_of_aoi": 0.311,
-      "share_of_change": 0.809
+      "share_of_change": 0.802
     },
     "register_mine_classes": {
       "share_of_aoi": 0.242,
-      "share_of_change": 0.817
+      "share_of_change": 0.81
     },
     "register_all_facilities": {
       "share_of_aoi": 0.299,
-      "share_of_change": 0.817
+      "share_of_change": 0.81
     }
   },
   "change_type_ha": {
-    "tailings_deposition": 185.6,
+    "tailings_deposition": 185.7,
     "waste_dumping": 74.8,
     "tailings_dam_raise": 43.8,
     "pit_excavation": 39.8,
-    "seasonal_vegetation_or_burn": 35.9,
+    "seasonal_vegetation_or_burn": 38.6,
     "water_level_change": 18.3,
-    "noise_or_artifact": 8.9,
+    "noise_or_artifact": 10.1,
     "unexplained": 3.4,
     "land_clearing": 1.8,
     "infrastructure_or_settlement": 0.9
@@ -334,9 +333,9 @@
   "facility_changed_ha": {
     "PLANT": 1.4,
     "WD-E": 20.7,
-    "PIT-S": 55.0,
+    "PIT-S": 55.2,
     "PIT-NW": 41.1,
-    "TSF": 219.4,
+    "TSF": 219.5,
     "DAM": 0.0,
     "CAMP": 0.0,
     "TOWN": 0.0
@@ -346,9 +345,9 @@
       "from": "bare ground",
       "to": "bare ground",
       "same_class": true,
-      "pixels": 12208,
-      "area_km2": 1.221,
-      "share": 0.295
+      "pixels": 12227,
+      "area_km2": 1.223,
+      "share": 0.293
     },
     {
       "from": "bare ground",
@@ -356,7 +355,7 @@
       "same_class": false,
       "pixels": 7523,
       "area_km2": 0.752,
-      "share": 0.182
+      "share": 0.18
     },
     {
       "from": "vegetation or dark ground",
@@ -364,7 +363,7 @@
       "same_class": false,
       "pixels": 6235,
       "area_km2": 0.624,
-      "share": 0.151
+      "share": 0.149
     },
     {
       "from": "bright surface (tailings, roofs, roads)",
@@ -372,32 +371,32 @@
       "same_class": false,
       "pixels": 5379,
       "area_km2": 0.538,
-      "share": 0.13
+      "share": 0.129
     },
     {
       "from": "water",
       "to": "water",
       "same_class": true,
-      "pixels": 4038,
+      "pixels": 4043,
       "area_km2": 0.404,
-      "share": 0.098
+      "share": 0.097
     },
     {
       "from": "bare ground",
       "to": "water",
       "same_class": false,
-      "pixels": 1771,
-      "area_km2": 0.177,
-      "share": 0.043
+      "pixels": 2027,
+      "area_km2": 0.203,
+      "share": 0.049
     },
     {
       "from": "other",
       "to": "other",
       "same_class": false,
-      "pixels": 4176,
-      "area_km2": 0.418,
-      "share": 0.101
+      "pixels": 4282,
+      "area_km2": 0.428,
+      "share": 0.103
     }
   ],
-  "runtime_s": 14.4
+  "runtime_s": 12.4
 }

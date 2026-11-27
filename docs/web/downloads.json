@@ -75,7 +75,7 @@
     {
      "path": "data/processed/change_binary.tif",
      "title": "change_binary.tif",
-     "desc": "Changed (1) or not (0) after hysteresis and the 2,000 m² minimum mapping unit; 255 = no data.",
+     "desc": "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
      "size": "40 KB",
      "kind": "binary",
      "facts": [
@@ -85,7 +85,7 @@
       ],
       [
        "Bands",
-       "1 = change (robust CVA, hysteresis nominal FAR 0.001/1e-05)"
+       "1 = change (robust CVA, nominal FAR 0.001)"
       ],
       [
        "Type",
@@ -369,7 +369,7 @@
       ],
       [
        "Bands",
-       "1 = change (robust CVA, hysteresis nominal FAR 0.001/1e-05)"
+       "1 = change (robust CVA, nominal FAR 0.001)"
       ],
       [
        "Type",
@@ -394,12 +394,12 @@
      "path": "docs/web/true_passes/change_features.geojson",
      "title": "change_features.geojson",
      "desc": "The change polygons of this pair, typed like the main result.",
-     "size": "367 KB",
+     "size": "372 KB",
      "kind": "vector",
      "facts": [
       [
        "Features",
-       "134"
+       "137"
       ],
       [
        "Geometry",
@@ -490,7 +490,7 @@
       },
       {
        "name": "change_features",
-       "rows": 1776,
+       "rows": 1784,
        "columns": [
         "id",
         "run_id",
@@ -560,12 +560,12 @@
      "path": "docs/web/change_features.geojson",
      "title": "change_features.geojson",
      "desc": "The change polygons with type, plain-language description, confidence and facility (web export).",
-     "size": "646 KB",
+     "size": "665 KB",
      "kind": "vector",
      "facts": [
       [
        "Features",
-       "215"
+       "223"
       ],
       [
        "Geometry",
@@ -637,7 +637,7 @@
      "facts": [
       [
        "Features",
-       "1,776"
+       "1,784"
       ],
       [
        "Geometry",
@@ -756,7 +756,7 @@
         "South pit complex",
         "pit_dump_complex",
         "2,483.70",
-        "55.00"
+        "55.20"
        ],
        [
         "PIT-NW",
@@ -770,7 +770,7 @@
         "Tailings storage facility",
         "tailings",
         "2,184.40",
-        "219.40"
+        "219.50"
        ]
       ]
      },
