@@ -1,7 +1,7 @@
 import type { RasterKey } from "../types";
 
-/** "auto": Esri, with Bing for the z18+ close-ups Esri lacks over the AOI. */
-export type Basemap = "auto" | "esri" | "bing";
+/** "auto": Esri, with Bing for the z18+ close-ups Esri lacks over the AOI; or Bing alone; or an Esri Wayback capture. */
+export type Basemap = "auto" | "bing" | { tiles: string };
 
 /**
  * What each entry of the layer menu shows. The map is two synced MapLibre maps: `right` is what the interactive map
@@ -25,12 +25,12 @@ export interface LayerDef {
   typed?: boolean;
   /** Shows the provided baseline's change mask (provided pair only). */
   baseline?: boolean;
-  /** The swipe compares two high-res basemaps instead of the Sentinel-2 dates. */
-  basemaps?: { left: Basemap; right: Basemap };
+  /** The swipe compares two high-res captures (picked in the workspace) instead of the Sentinel-2 dates. */
+  hires?: boolean;
 }
 
 export const LAYERS: readonly LayerDef[] = [
-  { id: "imagery", label: "Changes on high-res imagery", hint: "Sharp satellite imagery under the changes found in Sentinel-2; swipe between Esri and Bing, captured on other dates than the analysed pair", right: {}, left: {}, polygons: "fill", facilities: false, swipe: true, typed: true, basemaps: { left: "esri", right: "bing" } },
+  { id: "imagery", label: "Changes on high-res imagery", hint: "Sharp satellite imagery under the changes found in Sentinel-2; swipe between two capture dates (Esri Wayback, 2012-2024)", right: {}, left: {}, polygons: "fill", facilities: false, swipe: true, typed: true, hires: true },
   { id: "types", label: "Changes on Sentinel-2", hint: "The analysed 10 m images: swipe between before and after", right: { after_normalized: 1 }, left: { before: 1 }, polygons: "fill", facilities: false, swipe: true, typed: true },
   { id: "intensity", label: "Change intensity", hint: "log10 of the robust distance d², before thresholding", right: { after_normalized: 0.55, change_intensity: 0.95 }, left: { before: 0.55 }, polygons: "outline", facilities: false, swipe: true },
   { id: "baseline", label: "Provided baseline, the trap", hint: "What the brief's Euclidean + Otsu method calls change (red): mostly seams and haze", right: { after_normalized: 0.7 }, left: { before: 0.7 }, polygons: "outline", facilities: false, swipe: false, providedOnly: true, baseline: true },

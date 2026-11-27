@@ -4,7 +4,7 @@ import type { Feature } from "geojson";
 import type { MapGeoJSONFeature } from "maplibre-gl";
 import type { AppContext, View } from "../app";
 import { fetchRun, STATIC_RUN_IDS } from "../api";
-import { loadAoi, loadDefaultDataset, loadFacilities, loadTruePasses, loadTruePassesManifest, TRUE_PASSES_ID } from "../data";
+import { loadAoi, loadDefaultDataset, loadWayback, loadFacilities, loadTruePasses, loadTruePassesManifest, TRUE_PASSES_ID } from "../data";
 import { q, qa } from "../domain";
 import { DEFAULT_LAYER, LAYERS, layerById } from "../map/layers";
 import type { LayerDef } from "../map/layers";
@@ -12,13 +12,13 @@ import { Menu } from "../map/menu";
 import { DatePicker } from "../map/picker";
 import { MapStage } from "../map/stage";
 import { Swipe } from "../map/swipe";
-import { esriCaptureDate } from "../map/esri";
 import { facilityCard, featureCard, legendHtml } from "../map/cards";
 import type { ListUi } from "../map/changes";
 import { featureBounds, RunOverlay } from "../overlays";
 import type { Route } from "../router";
 import { replaceParams } from "../router";
-import type { ChangeProps, Dataset, FacilityProps } from "../types";
+import type { ChangeProps, Dataset, FacilityProps, HiResCapture } from "../types";
+import type { Basemap } from "../map/layers";
 import type { AgentHost } from "./analyst";
 
 const ICON_SWIPE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M10 3v14M6.5 7 3 10l3.5 3M13.5 7 17 10l-3.5 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -47,7 +47,7 @@ const TEMPLATE = `
         </div>
       </div>
     </div>
-    <div class="hud hud-tl"><div class="hud-row" id="hud-layer"></div><div id="hud-cmp"></div></div>
+    <div class="hud hud-tl"><div class="hud-row" id="hud-layer"></div><div id="hud-cmp"></div><div class="hires glass" hidden><span class="hires-k">High-res</span><select id="hr-left" aria-label="High-res capture left of the swipe"></select><span aria-hidden="true">⟷</span><select id="hr-right" aria-label="High-res capture right of the swipe"></select></div></div>
     <div class="hud hud-tr">
       <div class="tools glass">
         <button type="button" class="tool" id="t-changes" aria-pressed="true" title="Show or hide the changes, to see the imagery underneath">${ICON_EYE}<span>Changes</span></button>
@@ -84,6 +84,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
   async function init(): Promise<void> {
     const [provided, aoi, facilities] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities()]);
     const truePasses = await loadTruePassesManifest().catch(() => null);
+    const captures = await loadWayback().catch((): HiResCapture[] => []);
     let ds: Dataset = provided;
     const facName = new Map(facilities.features.map((f) => [f.properties.facility_id, f.properties.name]));
     const hidden = new Set<string>();
@@ -154,22 +155,46 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         return { id: l.id, label: l.label, hint: l.hint, disabled: !!l.providedOnly && !ds.nominal, disabledReason: "Only for the provided pair" };
       });
 
-    // On the high-res layer the swipe compares two imagery providers, whose capture dates differ from the analysed pair.
-    let esriDate: string | null = null;
-    const labels = () => {
-      const hires = !!layerById(state.layer).basemaps;
-      q(el, ".swipe-label.l").textContent = hires ? `Esri · ${esriDate ?? "date …"}` : `Before · ${ds.dates.before}`;
-      q(el, ".swipe-label.r").textContent = hires ? "Bing · date not published" : `After · ${ds.dates.after}`;
+    /* ---------- high-res date swipe ---------- */
+    // Esri Wayback captures (real 0.3-0.5 m imagery, 2012-2024) plus Bing, whose capture date is not published.
+    interface HiResOption { id: string; label: string; basemap: Basemap }
+    const hiresOptions: HiResOption[] = [
+      ...captures.map((c) => ({
+        id: String(c.release),
+        label: c.dates.length > 1 ? `${c.date} (parts ${c.dates[0]?.slice(0, 4)})` : c.date,
+        detail: `${c.sensor}, ${c.res_m} m`,
+        basemap: { tiles: c.tiles } as Basemap,
+      })).map(({ detail, ...o }) => ({ ...o, label: `${o.label} · ${detail}` })),
+      { id: "bing", label: "Bing · date not published", basemap: "bing" },
+    ];
+    // Defaults bracket the analysed pair: the last capture before it and the first one after it.
+    const hiresDefault = {
+      left: String([...captures].reverse().find((c) => c.date < provided.dates.before)?.release ?? captures[0]?.release ?? "bing"),
+      right: String(captures.find((c) => c.date > provided.dates.after)?.release ?? captures.at(-1)?.release ?? "bing"),
     };
-    let dateTimer = 0;
-    const refreshEsriDate = () => {
-      if (!layerById(state.layer).basemaps || !st.swipeActive) return;
-      clearTimeout(dateTimer);
-      dateTimer = window.setTimeout(async () => {
-        const c = st.main.getCenter();
-        esriDate = await esriCaptureDate(c.lng, c.lat);
-        labels();
-      }, 400);
+    const hiresById = (id: string | null | undefined, fallback: string) => hiresOptions.find((o) => o.id === id) ?? (hiresOptions.find((o) => o.id === fallback) as HiResOption);
+    const hiresSel = { left: q<HTMLSelectElement>(el, "#hr-left"), right: q<HTMLSelectElement>(el, "#hr-right") };
+    for (const sel of Object.values(hiresSel)) sel.innerHTML = hiresOptions.map((o) => `<option value="${o.id}">${o.label}</option>`).join("");
+    const setHiRes = (left: string | null | undefined, right: string | null | undefined) => {
+      const l = hiresById(left, hiresDefault.left);
+      const r = hiresById(right, hiresDefault.right);
+      hiresSel.left.value = l.id;
+      hiresSel.right.value = r.id;
+      st.setHiRes(l.basemap, r.basemap);
+      labels();
+    };
+    for (const sel of Object.values(hiresSel))
+      sel.addEventListener("change", () => {
+        setHiRes(hiresSel.left.value, hiresSel.right.value);
+        syncHash();
+      });
+
+    const labels = () => {
+      const hires = !!layerById(state.layer).hires;
+      const short = (sel: HTMLSelectElement) => (sel.selectedOptions[0]?.textContent ?? "").split(" · ")[0] ?? "";
+      q(el, ".swipe-label.l").textContent = hires ? short(hiresSel.left) : `Before · ${ds.dates.before}`;
+      q(el, ".swipe-label.r").textContent = hires ? short(hiresSel.right) : `After · ${ds.dates.after}`;
+      q(el, ".hires").hidden = !(hires && st.swipeActive);
     };
 
     const renderLegend = () => {
@@ -181,16 +206,17 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       const def = layerById(state.layer);
       const btn = q<HTMLButtonElement>(el, "#t-swipe");
       btn.setAttribute("aria-pressed", String(def.swipe && state.swipe));
-      btn.title = def.basemaps ? "Compare the Esri and Bing high-res imagery" : def.swipe ? "Compare with the before image" : "Swipe between the two Sentinel-2 dates (switches to that layer)";
+      btn.title = def.hires ? "Compare two high-res capture dates" : def.swipe ? "Compare with the before image" : "Swipe between the two Sentinel-2 dates (switches to that layer)";
       swipe.setEnabled(st.swipeActive);
       labels();
-      refreshEsriDate();
     };
 
     const syncHash = () => {
       replaceParams("map", {
         layer: state.layer === DEFAULT_LAYER ? undefined : state.layer,
         result: ds.id === TRUE_PASSES_ID ? "true" : undefined,
+        hl: hiresSel.left.value === hiresDefault.left ? undefined : hiresSel.left.value,
+        hr: hiresSel.right.value === hiresDefault.right ? undefined : hiresSel.right.value,
         swipe: state.swipe ? undefined : "0",
         changes: state.changes ? undefined : "0",
         oblique: state.oblique ? undefined : "0",
@@ -302,7 +328,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       st.setBearing(state.bearing);
     });
     bearingIn.addEventListener("change", syncHash);
-    st.main.on("moveend", refreshEsriDate);
     st.main.on("rotateend", () => {
       if (!state.oblique) return;
       state.bearing = Math.round((st.main.getBearing() + 360) % 360);
@@ -525,6 +550,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         state.bearing = Number.isFinite(bearing) ? Math.round(((bearing % 360) + 360) % 360) : DEFAULT_BEARING;
         showBearing();
         setChanges(p.get("changes") !== "0");
+        setHiRes(p.get("hl"), p.get("hr"));
         extrudeIn.checked = state.extrude = p.get("extrude") !== "0";
         st.setExtrude(state.extrude);
         const wantOblique = p.get("oblique") !== "0";

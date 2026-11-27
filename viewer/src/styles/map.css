@@ -235,3 +235,10 @@
   .menu-pop, .cmp-pop, .oblique-panel, .inspector.enter { animation: none; }
   .seg button, .ch-row, .tech summary::before { transition: none; }
 }
+
+/* High-res date swipe: two capture pickers, shown on the high-res layer while the swipe is on. */
+.hires { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2); padding: 6px var(--s-2) 6px var(--s-3); width: max-content; max-width: calc(100vw - 24px); font-size: var(--fs-xs); color: var(--text-3); }
+.hires[hidden] { display: none; }
+.hires-k { font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; }
+.hires select { height: 28px; max-width: 210px; border: 0; border-radius: 6px; padding: 0 6px; background: rgb(15 23 42 / 0.07); color: var(--text); font: inherit; font-weight: 600; }
+@media (max-width: 720px) { .hires-k { display: none; } .hires select { max-width: 40vw; } }

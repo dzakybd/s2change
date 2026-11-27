@@ -72,6 +72,17 @@ export interface Dataset {
   summary?: Record<string, number>;
 }
 
+/** One high-res capture over the AOI in the Esri World Imagery Wayback archive (docs/web/wayback.json). */
+export interface HiResCapture {
+  release: number;
+  /** Capture date over most of the mine; `dates` lists every capture date seen across it. */
+  date: string;
+  dates: string[];
+  sensor: string;
+  res_m: number;
+  tiles: string;
+}
+
 export type AoiCollection = FeatureCollection<Polygon>;
 
 export type AgentAction =
