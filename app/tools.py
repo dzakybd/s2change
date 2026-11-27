@@ -98,7 +98,7 @@ def read_context(topic: Literal[*knowledge.TOPICS]) -> str:  # type: ignore[vali
     """Background notes (markdown) for questions about meaning rather than numbers. Topics: use_case (who it is for),
     site (the mine and its surroundings), facilities (what each facility class is and looks like at 10 m), seasons (wet/dry
     season, fire, dambos), method (how change and facilities were derived), interpretation (signal -> likely cause -> how to
-    confirm), business (who acts on the results; the fixed multi-year same-season numbers). Other numbers still come from
+    confirm), business (who acts on the results). Other numbers still come from
     the database tools."""
     return {"topic": topic, "text": knowledge.read(topic)}
 

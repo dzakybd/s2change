@@ -44,7 +44,7 @@ src/s2cd/                the pipeline (Python package, CLI `s2cd`)
   vectorize.py             threshold, seam buffer, cleanup, polygons
   rgb.py, interpret.py     colour rules, change type and a plain sentence per polygon
   register.py              the 8 named mine facilities and the change in each
-  scenes.py, catalog.py, compare.py   other dates (multi-year comparison)
+  scenes.py                download single Sentinel-2 passes (true-pass check)
   sensitivity.py           re-runs with stricter and looser settings
   pipeline.py, cli.py, db.py, viz.py, site.py   orchestration, database, figures, web export
 configs/                 settings (default.yaml) and the facility register

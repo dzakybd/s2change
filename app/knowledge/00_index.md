@@ -10,4 +10,4 @@ Short context notes the agent reads with `read_context(topic)` when a question n
 | `seasons` | 04_seasons.md | Zambian wet/dry season, fire, dambos: the main confounders |
 | `method` | 05_method.md | How change, facilities and indices were derived; caveats |
 | `interpretation` | 06_interpretation.md | Playbook: signal → likely cause → how to confirm |
-| `business` | 07_business.md | What the results mean for regulators, investors, ESG and the operator; the multi-year (same-season) view |
+| `business` | 07_business.md | What the results mean for regulators, investors, ESG and the operator |

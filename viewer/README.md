@@ -29,7 +29,6 @@ uv run python -m s2cd.site   # docs/web/downloads.json + previews/, facilities/ 
 ## URLs
 
 - Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&swipe=0`.
-  `#/map?before=provided-before&after=2026-11-02` runs the other-date comparison when the API is reachable.
   Layers: `types` (default), `after`, `before`, `intensity`, `facilities`.
 - `?mock` serves every API call from `fixtures/` (`fixtures/agent/*.json` for the chat, `fixtures/api/*.json` for the
   database, dates, comparison job and brief). `?mock=429` / `?mock=error` simulate chat failures.

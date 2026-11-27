@@ -5,7 +5,7 @@
     uv run --with playwright python scripts/at_a_glance.py
 
 Images are the web overlays (docs/web/*.webp, EPSG:3857) with the change polygons drawn on top; numbers come from
-data/processed/run_summary.json. The multi-year figures are the season-matched comparisons quoted in report.md section 2.
+data/processed/run_summary.json.
 """
 
 from __future__ import annotations
@@ -32,7 +32,6 @@ TYPE_LABELS = {
 }
 TRANSITION_COLORS = {"bare ground": "#d97706", "bright surface (tailings, roofs, roads)": "#0891b2", "water": "#2563eb"}
 # Season-matched yearly comparisons (report.md section 2): Aug 2023 -> Aug 2024 / 2025 / 2026, km².
-YEARS = [("1 yr", 5.7, 5.6), ("2 yr", 14.5, 12.9), ("3 yr", 20.2, 18.2)]
 
 
 def merc_y(lat: float) -> float:
@@ -91,10 +90,6 @@ def build() -> str:
     )
     legend = "".join(
         f'<li><i style="background:{TYPE_COLORS[k]}"></i>{v} <b>{km2(types.get(k, 0))}</b></li>' for k, v in TYPE_LABELS.items()
-    )
-    years = "".join(
-        f'<div class="yr"><span>{y}</span><b>{w:.1f}</b><em>waste dumped</em><b class="o">{o:.1f}</b><em>outside facilities</em></div>'
-        for y, w, o in YEARS
     )
     facts = [
         ("Area", "16.7 × 16.0 km around the mine, 25.79–25.94 °E, 12.18–12.32 °S"),
@@ -174,15 +169,14 @@ td small {{ color: #64748b; }}
 <div class="row2"><div><h2>Land cover of the changed area <small>from → to, km²</small></h2>
 <table><tr><th>Transition</th><th class="n">km²</th><th class="n">Share</th></tr>{trans_rows}</table></div>
 <div><h2>Change by type</h2><ul class="legend">{legend}</ul></div></div></section>
-<section><h2>Over three years <small>same season each year, km², from Aug 2023</small></h2><div class="yrs">{years}</div><p class="caveat">Area of change, not new disturbance: re-worked ground counts too. Outside = not in any of the 8 register facilities (no licence boundaries in the data).</p></section></div>
+</div>
 <div class="col"><section class="tells"><h2>What it tells you</h2><ul>
 <li><span class="dot"></span><div><b>Operating, not spreading</b> (two months): tailings deposited, waste tipped, pits worked; no new clearing outside the mine.</div></li>
 <li><span class="dot"></span><div><b>Dam wall likely raised</b>: {km2(types.get("tailings_dam_raise", 0))} of fresh fill on the tailings dam's south-east edge. First thing for dam-safety teams.</div></li>
-<li><span class="dot"></span><div><b>Growing over years</b>: waste movement and change outside named facilities both more than triple in three years.</div></li>
 <li><span class="dot"></span><div><b>Every change explained</b>: a type, a place and a plain sentence, queryable in PostGIS.</div></li></ul></section>
 <section class="next"><h2>Next steps</h2><ul>
-<li>Validate a stratified sample on very-high-resolution imagery (accuracy, area uncertainty)</li>
-<li>Add NIR (B08) for NDVI and the L2A scene-classification mask</li>
+<li>Relabel the accuracy sample on very-high-resolution imagery, with more points where the map says no change</li>
+<li>Add near- and short-wave infrared bands (B08, B11, B12) to catch subtle change</li>
 <li>Licence and permit boundaries, to flag change outside them</li>
 <li>Monthly runs with alerts; super-resolution (SEN2SR) only as a display layer</li></ul></section>
 <section class="outcome"><h2>Outcome</h2><p>A defensible, explained view of mining activity from free imagery: where it changed, what it most likely is, and who should look at it.</p></section></div>

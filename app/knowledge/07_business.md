@@ -2,22 +2,6 @@
 
 Change maps are leads for decisions, not proof. Every statement here is an *indicator* to confirm with the operator's records, licence boundaries, very-high-resolution imagery or a site visit.
 
-## The multi-year view (same season, from the monthly date catalogue)
-
-Fixed results of precomputed comparisons from the provided before date (nominal 2023-08-12, a dry-season mosaic) to later August scenes, so the season matches. They are not in the database; quote them as "from the yearly comparisons".
-
-| After | Changed | Waste dumping | Tailings deposition | Pit excavation | Land clearing | Inside the 8 facilities | Outside them |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| 2024-08-27 (1 year) | 15.8 km² | 2.3 km² | 7.0 km² | 3.4 km² | 1.2 km² | 12.4 km² | 3.3 km² |
-| 2025-08-07 (2 years) | 33.8 km² | 5.5 km² | 9.4 km² | 5.9 km² | 1.6 km² | 24.6 km² | 9.2 km² |
-| 2026-08-14 (3 years) | 33.3 km² | 11.3 km² | 6.4 km² | 5.2 km² | 1.8 km² | 18.9 km² | 14.3 km² |
-
-Reading it:
-- **Waste movement dominates and keeps growing** (2.3 → 5.5 → 11.3 km² labelled waste dumping). Stripping waste rock is what a mine does to open up or deepen pits, so this is consistent with sustained development of the pits, not a mine winding down.
-- **The tailings facility stays active** (7.3–10.7 km² of its 21.8 km² changed between dates; by 2026 a new cell is being walled off on its north side), which indicates the process plant kept running.
-- **Change outside the named facilities grows** (3.3 → 9.2 → 14.3 km²): the footprint is spreading beyond the regions in the register (new dumps, haul roads, clearing). That is the first thing a regulator would check against licence boundaries.
-- Area of change is not new disturbed area: re-worked ground inside the footprint counts too. The two-month pair (the assignment) shows only operations (4.17 km², 81 % inside facilities, no clearing beyond the footprint).
-
 ## Who acts on it
 
 | Who | Question they ask | What this provides | What it cannot say |

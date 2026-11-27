@@ -1,5 +1,5 @@
 # ruff: noqa: E501  (the figure CSS is markup, not code)
-"""Shared pieces of the report figures drawn as HTML and printed by Chromium (fig_change_types, fig_multi_year):
+"""Shared pieces of the report figures drawn as HTML and printed by Chromium (fig_change_types):
 the app's design tokens as CSS, true-colour crops as base64, and the Playwright print.
 
 Also the legend read from viewer/src/domain.ts (``app_types``, ``icon``), so the figures, the map and the report share one

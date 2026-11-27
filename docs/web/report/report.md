@@ -150,7 +150,7 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 
 | Tool | Used for | Changes the detection? |
 |---|---|---|
-| 🛰️ [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a) Sentinel-2 catalogue (STAC) | Tracing every pixel to its satellite pass (section 2); the true single passes and the multi-year dates (section 4) | ✅ Yes: it gives the three zones |
+| 🛰️ [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a) Sentinel-2 catalogue (STAC) | Tracing every pixel to its satellite pass (section 2); the true single passes (section 4) | ✅ Yes: it gives the three zones |
 | 🔍 SEN2SR super-resolution (Aybar et al. 2026) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
 | 🤖 AI vision labellers | Labelling the accuracy points (section 5) | ❌ No, accuracy only |
 
@@ -210,14 +210,6 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 
 - Without seams the provided method gets *worse* (<b class="bad">194 km²</b>): its real weakness is the haze and brightness difference between dates, which step 2 removes.
 - The dam-wall fill happened <b class="hl">between 4 Jul and 8 Aug</b>, before the nominal before date; the mosaics catch it only because their "12 Aug" is really early July. The supplied pair stays the main result, because it is what the brief supplies.
-
-📈 **Over three years** *(exploratory, not validated)*. The supplied before date against later August scenes, so the season matches. Beyond the brief; no accuracy check.
-
-![multi-year](figures/13_multi_year.png)
-
-*"Outside" means outside all 8 register facilities. Area of change counts re-worked ground too, so it is not all new disturbance.*
-
-Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?before=provided-before&after=2024-08-27) · [→ Aug 2025](https://s2change.dzaky.ai.id/#/map?before=provided-before&after=2025-08-07) · [→ Aug 2026](https://s2change.dzaky.ai.id/#/map?before=provided-before&after=2026-08-14)
 
 ## 🎯 5. How accurate is it?
 
@@ -287,7 +279,6 @@ The real fix starts with **more and better labels**, so a few uncertain points n
 - 🧱 **Fresh fill on the tailings dam's south-east wall, likely a wall raise:** <b class="hl">0.39 km²</b> where vegetation was. The first thing a dam-safety team would want to see.
 - 🪤 **The data had a trap**, and the provided method maps it as change (<b class="bad">111 km²</b>); found, proved and corrected.
 - 🎯 **Precise:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), and it catches <b class="good">57 of 63</b> sampled changes; recall is low (0.17) because three colour bands cannot tell subtle change from noise: more bands and more labels would raise it.
-- 📈 **Over three years the footprint grows** (exploratory): change outside the named facilities rises from 3.3 to <b class="hl">14.3 km²</b>.
 
 🧭 **In the brief's categories**, the mine is operating normally:
 
