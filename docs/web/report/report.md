@@ -144,6 +144,19 @@ Two numbers in the method are choices, not facts: **how strict the cut-off is** 
 
 💡 **What it means.** The exact area depends on how strict one is, so read 4.17 km² as "a few km²", not as a precise figure. The *conclusion* does not move: in every run most change is in the mine, and the stricter the test, the larger that share. The strongest changes are the mining ones.
 
+### 🧰 Other tools behind the result
+
+The change itself is measured on the three 10 m bands only. Other tools helped to find the trap, to show and to check the result:
+
+| Tool | Used for | Changes the detection? |
+|---|---|---|
+| 🛰️ [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a) Sentinel-2 catalogue (STAC) | Tracing every pixel to its satellite pass (section 2); the true single passes and the multi-year dates (section 4) | ✅ Yes: it gives the three zones |
+| 🔍 [SEN2SR](https://github.com/ESAOpenSR/SEN2SR) super-resolution (ESA OpenSR) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
+| 🗺️ Esri World Imagery and Bing Aerial basemaps | Very-high-resolution background on the map; context for drawing the facility register | Only through the facility names, not the change mask |
+| 🤖 AI vision labellers | Labelling the 200 accuracy points (section 5) | ❌ No, accuracy only |
+| 🧪 [AnyChange](https://arxiv.org/abs/2402.01188) (Segment Any Change, NeurIPS 2024) | A zero-shot foundation-model alternative, tried as a comparison | ❌ Not used: it resizes the site to ~16 m pixels and found only about 1 in 10 of the changes found here (tested on the earlier version of the map) |
+| 💬 Gemini agent | Answering questions about the results in the app (section 7) | ❌ No, it reads the stored results |
+
 ## 📍 4. What changed
 
 <table class="kpi">
@@ -214,7 +227,7 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 <table class="kpi">
 <tr>
 <td align="center"><b class="good">0.67</b><br>precision<br><sub>right 2 times in 3 when it says "changed"</sub></td>
-<td align="center"><b class="bad">0.17</b><br>recall<br><sub>finds about a fifth of real change</sub></td>
+<td align="center"><b class="bad">0.17</b><br>recall<br><sub>an estimate that rests on 6 disputed points, see below</sub></td>
 <td align="center"><b>0.94</b><br>overall accuracy<br><sub>provided method: 0.62</sub></td>
 <td align="center"><b>16.6 km²</b><br>estimated real change<br><sub>± 10.9; the 4.17 km² is its core</sub></td>
 </tr>
@@ -234,7 +247,19 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 | When it says "changed", it is right (precision) | <b class="good">0.67 ± 0.11</b> | <b class="bad">0.12 ± 0.08</b> |
 | Share of all real change it finds (recall) | <b class="bad">0.17 ± 0.11</b> | 0.80 ± 0.31 |
 
-💡 **What this means.** *Precise but conservative.* Where both maps agree, 72 % of points really changed; 16 of the 21 real extra detections of this map are fresh burn scars the provided method misses. What it misses is subtle: tailings beaches wetting and drying, burn edges, small waste tips. Recall intervals are wide because real change is rare in the large "no change" groups; more points there would tighten them.
+💡 **What this means.** *Precise, and the recall figure is weaker than it looks.* Where both maps agree, 72 % of points really changed; 16 of the 21 real extra detections of this map are fresh burn scars the provided method misses.
+
+🔎 **Why recall is 0.17, and can it be raised?** Of the 63 sample points labelled "changed", this map catches **57**. The 6 it misses all lie in the two big groups where this map says "no change" (2.6 million pixels), so each of them stands for **2–3 km²** of change, about 14 km² in total. That is where the "16.6 km² of real change" and the low recall come from. All 6 are points where the two labellers **disagreed**, mostly with low confidence ("tone shift", "tailings band now pale", "burn along a drainage line").
+
+Re-scoring the same points with looser settings shows that tuning does not fix it:
+
+| Setting | Changed area | Precision | Recall | Missed points caught |
+|---|---:|---:|---:|---:|
+| ⭐ Ours (1 in 1,000) | 4.17 km² | <b class="good">0.67 ± 0.11</b> | 0.17 ± 0.11 | 57 of 63 |
+| Looser (1 in 100) | 6.69 km² | 0.58 ± 0.37 | 0.30 ± 0.26 | 58 of 63 |
+| Much looser (1 in 10) | 14.5 km² | <b class="bad">0.34 ± 0.29</b> | 0.30 ± 0.26 | 58 of 63 |
+
+*Loosening catches one more point and adds mostly false alarms.* The real fix is **more and better labels** in the "no change" groups, on very-high-resolution imagery, so a few uncertain points no longer decide the number (see [next steps](#-8-limitations-and-next-steps)). After that, a per-type threshold for tailings could recover the subtle changes the labellers argued about.
 
 ## 🧭 6. What it means
 
@@ -243,7 +268,7 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 - ⛏️ **The mine was working, not spreading.** Tailings spread, waste tipped, pits worked; outside the mine only 0.02 km² is clearing.
 - 🧱 **Fresh fill on the tailings dam's south-east wall, likely a wall raise:** <b class="hl">0.39 km²</b> where vegetation was. The first thing a dam-safety team would want to see.
 - 🪤 **The data had a trap**, and the provided method maps it as change (<b class="bad">111 km²</b>); found, proved and corrected.
-- 🎯 **Precise but conservative:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), but it finds only <b class="hl">about a fifth</b> of all real change.
+- 🎯 **Precise:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), and it catches <b class="good">57 of 63</b> sampled changes; the low recall estimate (0.17) rests on 6 disputed points and needs more labels.
 - 📈 **Over three years the footprint grows** (exploratory): change outside the named facilities rises from 3.3 to <b class="hl">14.3 km²</b>.
 
 🧭 **In the brief's categories**, the mine is operating normally:
@@ -415,7 +440,14 @@ Security controls of the app are in [docs/system.md](https://github.com/dzakybd/
 
 ### References
 
-Malila (1980) change vector analysis; Otsu (1979); Canty & Nielsen (2008) *Remote Sens. Environ.* 112:1025 (automatic radiometric normalization); Olofsson et al. (2014) *Remote Sens. Environ.* 148:42.
+- Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385.
+- Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold.*
+- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2.*
+- Olofsson et al. (2014). [Good practices for estimating area and assessing accuracy of land change](https://doi.org/10.1016/j.rse.2014.02.015). *Remote Sens. Environ.* 148:42–57. *Section 5.*
+- Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample.*
+- Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ).*
+- Zheng et al. (2024). [Segment Any Change](https://arxiv.org/abs/2402.01188). NeurIPS 2024. *AnyChange comparison.*
+- ESA OpenSR. [SEN2SR: Sentinel-2 super-resolution to 2.5 m](https://github.com/ESAOpenSR/SEN2SR). *Map display layer.*
 
 ---
 
