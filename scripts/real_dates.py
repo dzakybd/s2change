@@ -6,6 +6,7 @@ Each provided "date" is a mosaic of two passes (2023-07-01/07-04 and 2023-08-25/
 single-pass scenes of relative orbit 121 that cover the whole AOI: 2023-07-04, 2023-08-08 (the clear date closest to the
 nominal 08-12) and 2023-09-02. Each pair below is run through the same pipeline (no provenance zones: a single pass
 has no seams) and the provided method, and the table is written to data/experiments/real_dates.json.
+The 2023-08-08 -> 2023-09-02 pair is also exported to docs/web/true_passes/, the map's "Ours, true passes" result.
 """
 
 from __future__ import annotations
@@ -14,9 +15,11 @@ import json
 from datetime import date
 from pathlib import Path
 
-from s2cd import pipeline, scenes
+from s2cd import pipeline, scenes, viz
 
 OUT = Path("data/experiments")
+WEB = Path("docs/web/true_passes")
+WEB_PAIR = "single pass 2023-08-08 -> 2023-09-02"
 PAIRS = {
     "provided mosaics (nominal 2023-08-12 -> 2023-09-02)": ("inputs/data/sentinel2_20230812", "inputs/data/sentinel2_20230902"),
     "single pass 2023-08-08 -> 2023-09-02": ("2023-08-08", "2023-09-02"),
@@ -35,7 +38,10 @@ def main() -> None:
         cfg = pipeline.Config(before=folder(before), after=folder(after), out_dir=out, sqlite_path=out / "db.sqlite")
         if "/" not in before:
             cfg.provenance_dir = out / "none"  # a single pass has no seams: do not borrow the mosaics' zones
-        s = pipeline.run(cfg).summary
+        p = pipeline.run(cfg)
+        if name == WEB_PAIR:
+            viz.export_web(p, WEB)
+        s = p.summary
         rows.append(
             {
                 "pair": name,

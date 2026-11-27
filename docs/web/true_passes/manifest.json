@@ -1,0 +1,75 @@
+{
+  "date_before": "2023-08-08",
+  "date_after": "2023-09-02",
+  "date_labels": {
+    "before": "nominal 2023-08-08",
+    "after": "nominal 2023-09-02"
+  },
+  "rasters": {
+    "before": {
+      "url": "before.webp",
+      "label": "Sentinel-2 RGB, nominal 2023-08-08",
+      "bounds": [
+        [
+          -12.320287299499615,
+          25.79001102217236
+        ],
+        [
+          -12.17529130101085,
+          25.944378082147733
+        ]
+      ]
+    },
+    "after_normalized": {
+      "url": "after_normalized.webp",
+      "label": "Sentinel-2 RGB, nominal 2023-09-02 (normalized)",
+      "bounds": [
+        [
+          -12.320287299499615,
+          25.79001102217236
+        ],
+        [
+          -12.17529130101085,
+          25.944378082147733
+        ]
+      ]
+    },
+    "change_intensity": {
+      "url": "change_intensity.webp",
+      "label": "Change intensity (log10 d2)",
+      "bounds": [
+        [
+          -12.320287299499615,
+          25.79001102217236
+        ],
+        [
+          -12.17529130101085,
+          25.944378082147733
+        ]
+      ]
+    },
+    "baseline": {
+      "url": "baseline.webp",
+      "label": "Provided baseline change mask (Euclidean + Otsu)",
+      "bounds": [
+        [
+          -12.320287299499615,
+          25.79001102217236
+        ],
+        [
+          -12.17529130101085,
+          25.944378082147733
+        ]
+      ]
+    }
+  },
+  "summary": {
+    "euclidean_baseline": 19439.49,
+    "robust_cva": 225.27
+  },
+  "vectors": {
+    "changes": "change_features.geojson",
+    "facilities": "facilities.geojson",
+    "aoi": "aoi.geojson"
+  }
+}

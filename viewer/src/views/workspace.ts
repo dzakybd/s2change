@@ -4,7 +4,7 @@ import type { Feature } from "geojson";
 import type { MapGeoJSONFeature } from "maplibre-gl";
 import type { AppContext, View } from "../app";
 import { fetchRun, STATIC_RUN_IDS } from "../api";
-import { loadAoi, loadDefaultDataset, loadFacilities } from "../data";
+import { loadAoi, loadDefaultDataset, loadFacilities, loadTruePasses, loadTruePassesManifest, TRUE_PASSES_ID } from "../data";
 import { q, qa } from "../domain";
 import { DEFAULT_LAYER, LAYERS, layerById } from "../map/layers";
 import type { LayerDef } from "../map/layers";
@@ -26,6 +26,9 @@ const ICON_OBLIQUE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidde
 const ICON_AGENT = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4 4.5h12a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3H4a1.5 1.5 0 0 1-1.5-1.5V6A1.5 1.5 0 0 1 4 4.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6.5 8.5h7M6.5 11h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
 const ICON_EYE = `<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M1.8 10S4.8 4.5 10 4.5 18.2 10 18.2 10 15.2 15.5 10 15.5 1.8 10 1.8 10Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
 const DEFAULT_BEARING = 24;
+/** Which result the map shows: the brief's method, this method on the provided mosaics, or on true single-pass dates. */
+type ResultId = "original" | "mosaic" | "true" | "other";
+const km2 = (ha: number | undefined) => (ha === undefined ? "" : `${(ha / 100).toFixed(2)} km²`);
 const phone = window.matchMedia("(max-width: 720px)");
 /** Wide screens open with the agent beside the map; narrower ones, where it would stack over the map, open on the map alone. */
 const agentByDefault = (): boolean => window.matchMedia("(min-width: 901px)").matches;
@@ -79,6 +82,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
 
   async function init(): Promise<void> {
     const [provided, aoi, facilities] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities()]);
+    const truePasses = await loadTruePassesManifest().catch(() => null);
     let ds: Dataset = provided;
     const facName = new Map(facilities.features.map((f) => [f.properties.facility_id, f.properties.name]));
     const hidden = new Set<string>();
@@ -142,6 +146,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     /* ---------- layer menu ---------- */
     const menu = new Menu("Layer", (id) => setLayer(id));
     q(el, "#hud-layer").prepend(menu.root);
+    const resultMenu = new Menu("Result", (id) => void setResult(id as ResultId));
+    q(el, "#hud-layer").prepend(resultMenu.root);
     const menuItems = () =>
       LAYERS.map((l) => {
         return { id: l.id, label: l.label, hint: l.hint, disabled: !!l.providedOnly && !ds.nominal, disabledReason: "Only for the provided pair" };
@@ -169,6 +175,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     const syncHash = () => {
       replaceParams("map", {
         layer: state.layer === DEFAULT_LAYER ? undefined : state.layer,
+        result: ds.id === TRUE_PASSES_ID ? "true" : undefined,
         swipe: state.swipe ? undefined : "0",
         changes: state.changes ? undefined : "0",
         oblique: state.oblique ? undefined : "0",
@@ -188,12 +195,45 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       state.layer = def.id;
       st.setLayer(def);
       menu.setValue(def.id);
+      syncResult();
       syncSwipeUi();
       renderLegend();
       syncHash();
     }
 
     menu.setItems(menuItems(), state.layer);
+
+    /* ---------- result: original method, ours on the mosaics, ours on true passes ---------- */
+    const currentResult = (): ResultId =>
+      ds.id === TRUE_PASSES_ID ? "true" : ds.id !== provided.id ? "other" : state.layer === "baseline" ? "original" : "mosaic";
+    const resultItems = () => {
+      const items: { id: ResultId; label: string; hint: string; disabled?: boolean; disabledReason?: string }[] = [
+        { id: "original", label: "Original, as is", hint: `The brief's Euclidean + Otsu method on the provided mosaics: ${km2(provided.summary?.["euclidean_baseline"])}, mostly pass seams and haze` },
+        { id: "mosaic", label: "Ours, mosaic passes", hint: `This method on the provided rasters, each a mosaic of two passes, normalised per pass: ${km2(provided.summary?.["robust_cva"])}` },
+        {
+          id: "true",
+          label: "Ours, true passes",
+          hint: truePasses ? `This method on single-pass scenes of the true dates, ${truePasses.date_before} → ${truePasses.date_after}: ${km2(truePasses.summary["robust_cva"])}` : "",
+          disabled: !truePasses,
+          disabledReason: "The true-pass export is not available",
+        },
+      ];
+      if (currentResult() === "other") items.push({ id: "other", label: "Other dates", hint: "Chosen with Other dates", disabled: true });
+      return items;
+    };
+    const syncResult = () => resultMenu.setItems(resultItems(), currentResult());
+
+    async function setResult(id: ResultId): Promise<void> {
+      if (id === "true") {
+        if (ds.id !== TRUE_PASSES_ID) useDataset(await loadTruePasses());
+      } else if (id === "original" || id === "mosaic") {
+        if (ds.id !== provided.id) useDataset(provided);
+        if (id === "original") setLayer("baseline");
+        else if (state.layer === "baseline") setLayer(DEFAULT_LAYER);
+      }
+      syncResult();
+      syncHash();
+    }
 
     q(el, "#t-swipe").addEventListener("click", () => {
       // Only the Sentinel-2 layers have a before/after pair; the high-res imagery is one undated mosaic.
@@ -323,20 +363,17 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     legend.addEventListener("pointerleave", () => st.setHover(null));
 
     /* ---------- date picker ---------- */
-    const picker = new DatePicker({
-      api: ctx.api,
-      provided,
-      onDataset: (next) => {
-        ds = next;
-        st.setDataset(next);
-        picker.setDataset(next);
-        closeInspector();
-        hidden.clear();
-        st.setHiddenTypes(hidden);
-        menu.setItems(menuItems(), state.layer);
-        setLayer(state.layer);
-      },
-    });
+    function useDataset(next: Dataset): void {
+      ds = next;
+      st.setDataset(next);
+      picker.setDataset(next);
+      closeInspector();
+      hidden.clear();
+      st.setHiddenTypes(hidden);
+      menu.setItems(menuItems(), state.layer);
+      setLayer(state.layer);
+    }
+    const picker = new DatePicker({ api: ctx.api, provided, onDataset: useDataset });
     q(el, "#hud-cmp").append(picker.root);
 
     inspector.addEventListener("click", (e) => {
@@ -476,6 +513,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         st.setExtrude(state.extrude);
         const wantOblique = p.get("oblique") !== "0";
         if (wantOblique !== state.oblique) setOblique(wantOblique, !el.dataset["init"] ? !phone.matches : true);
+        const wantTrue = p.get("result") === "true";
+        if (wantTrue ? ds.id !== TRUE_PASSES_ID : ds.id === TRUE_PASSES_ID) void setResult(wantTrue ? "true" : "mosaic");
         const [b, a] = [p.get("before"), p.get("after")];
         if (b && a && !el.dataset["linked"]) {
           el.dataset["linked"] = "1";

@@ -68,6 +68,8 @@ export interface Dataset {
   nominal: boolean;
   rasters: Record<RasterKey, { url: string; bounds: Bounds }> & { baseline?: { url: string; bounds: Bounds } };
   changes: ChangeCollection;
+  /** Changed area in hectares per method, for static exports. */
+  summary?: Record<string, number>;
 }
 
 export type AoiCollection = FeatureCollection<Polygon>;

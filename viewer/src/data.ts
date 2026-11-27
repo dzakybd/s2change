@@ -37,10 +37,6 @@ export const loadFacilities = memo(async () => {
   const m = await loadManifest();
   return getJson<FacilityCollection>(dataUrl(m.vectors.facilities ?? "facilities.geojson"));
 });
-const loadChanges = memo(async () => {
-  const m = await loadManifest();
-  return indexed(await getJson<ChangeCollection>(dataUrl(m.vectors.changes)));
-});
 
 /** Give every feature a sequential `fid`: the key for hover/selection feature-state. */
 export function indexed(fc: ChangeCollection): ChangeCollection {
@@ -51,16 +47,20 @@ export function indexed(fc: ChangeCollection): ChangeCollection {
   return fc;
 }
 
-export async function loadDefaultDataset(): Promise<Dataset> {
-  const [manifest, changes] = await Promise.all([loadManifest(), loadChanges()]);
-  const rasters = Object.fromEntries(
-    Object.entries(manifest.rasters).map(([k, r]) => [k, { url: dataUrl(r.url).href, bounds: r.bounds }]),
-  ) as Dataset["rasters"];
-  return {
-    id: "provided",
-    dates: { before: manifest.date_before, after: manifest.date_after },
-    nominal: true,
-    rasters,
-    changes,
-  };
+/** A static export (manifest.json + overlays + change polygons) in `dir` under the data base, as a map dataset. */
+async function loadStatic(dir: string, id: string, nominal: boolean, manifest?: Manifest): Promise<Dataset> {
+  const url = (path: string) => dataUrl(dir + path);
+  const m = manifest ?? (await getJson<Manifest>(url("manifest.json")));
+  const changes = indexed(await getJson<ChangeCollection>(url(m.vectors.changes)));
+  const rasters = Object.fromEntries(Object.entries(m.rasters).map(([k, r]) => [k, { url: url(r.url).href, bounds: r.bounds }])) as Dataset["rasters"];
+  return { id, dates: { before: m.date_before, after: m.date_after }, nominal, rasters, changes, summary: m.summary };
 }
+
+/** The provided pair: two-pass mosaics with nominal dates. */
+export const loadDefaultDataset = memo(async () => loadStatic("", "provided", true, await loadManifest()));
+
+/** The same AOI from single-pass scenes on the true acquisition dates (scripts/real_dates.py). */
+export const TRUE_PASSES_ID = "true-passes";
+const TRUE_PASSES_DIR = "true_passes/";
+export const loadTruePassesManifest = memo(() => getJson<Manifest>(dataUrl(`${TRUE_PASSES_DIR}manifest.json`)));
+export const loadTruePasses = memo(async () => loadStatic(TRUE_PASSES_DIR, TRUE_PASSES_ID, false, await loadTruePassesManifest()));

@@ -1,0 +1,7 @@
+{
+"type": "FeatureCollection",
+"name": "aoi",
+"features": [
+{ "type": "Feature", "properties": { "name": "Unknown" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 25.790701, -12.319634 ], [ 25.943776, -12.319634 ], [ 25.943776, -12.175975 ], [ 25.790701, -12.175975 ], [ 25.790701, -12.319634 ] ] ] } }
+]
+}
