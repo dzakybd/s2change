@@ -12,10 +12,10 @@ from langchain_core.messages import AIMessage, AnyMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app import collector
+from app.analyst import model_name
 from app.tools import ALL_TOOLS
 
 log = logging.getLogger("s2cd.app")
-DEFAULT_MODEL = "gemini-3.5-flash"
 # Answers are short. Without a cap the provider reserves the model maximum (65k tokens) per call, which OpenRouter
 # refuses when the balance is low (HTTP 402).
 MAX_OUTPUT_TOKENS = 4096
@@ -74,12 +74,6 @@ Caveats to state when relevant
   noise_or_artifact are probably not land change. in_disturbed_area is a heuristic footprint, not ground truth.
 - Seasons confound everything: Zambia's dry season (May-October) brings fires and dust, and ponds and dambos follow the rains.
   Dates two months apart in the dry season mostly show mining activity and fire, not vegetation growth."""
-
-
-def model_name() -> str:
-    if os.environ.get("LLM_PROVIDER", "google") == "openrouter":
-        return os.environ.get("AGENT_OPENROUTER_MODEL", f"google/{DEFAULT_MODEL}")
-    return os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
 
 
 def _model():
@@ -157,37 +151,8 @@ def _clip(v, n=400):
     return v[:n] if isinstance(v, str) else v
 
 
-# The viewer's starter questions (viewer/src/views/analyst.ts SUGGESTIONS). Their first-turn answers are cached and warmed at
-# start-up, so the first click is instant; the data only changes when results are republished (and the API restarts).
-STARTERS = (
-    "How much changed and why?",
-    "Show the 5 largest changes in the mine footprint",
-    "Which facility changed the most?",
-    "Which changes are likely burn scars?",
-)
-_cache: dict[str, dict] = {}
-
-
-def warm() -> None:
-    for q in STARTERS:
-        try:
-            run_chat([{"role": "user", "content": q}])
-        except Exception:
-            log.exception("warming the analyst cache failed for %r", q)
-
-
-def run_chat(messages: list[dict]) -> dict:
-    """Run one chat turn and return the API response body. Single-turn starter questions are served from a cache."""
-    key = messages[0]["content"].strip() if len(messages) == 1 and messages[0].get("role") == "user" else None
-    if key in STARTERS and key in _cache:
-        return _cache[key]
-    out = _run(messages)
-    if key in STARTERS and not out["answer"].startswith("I could not"):
-        _cache[key] = out
-    return out
-
-
-def _run(messages: list[dict]) -> dict:
+def run(messages: list[dict]) -> dict:
+    """Run one chat turn through the LLM and return the API response body."""
     c = collector.start()
     result = get_agent().invoke({"messages": messages}, config={"recursion_limit": 30})
     out: list[AnyMessage] = result["messages"]

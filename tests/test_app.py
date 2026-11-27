@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 
 from app import agent as agent_mod  # noqa: E402
-from app import auth, collector, main, tools  # noqa: E402
+from app import analyst, auth, collector, main, tools  # noqa: E402
 from app.guard import SqlRejected, guard_sql  # noqa: E402
 
 # --- SQL guard ----------------------------------------------------------------------------------------------------
@@ -382,6 +382,43 @@ def test_out_of_credit_is_reported_plainly(client, monkeypatch):
         except PaymentRequired as e:
             raise RuntimeError("agent graph failed") from e
 
-    monkeypatch.setattr(main.agent, "run_chat", boom)
+    monkeypatch.setattr(main.analyst, "run_chat", boom)
     r = chat(client)
     assert r.status_code == 503 and "credit is used up" in r.json()["detail"]
+
+
+@pytest.fixture
+def starters(monkeypatch, tmp_path):
+    """A fresh process: empty memory cache, disk cache in tmp_path, fixed fingerprint."""
+
+    def restart(fp="fp1"):
+        monkeypatch.setattr(analyst, "_cache", {})
+        monkeypatch.setattr(analyst, "_fingerprint", None)
+        monkeypatch.setattr(analyst, "fingerprint", lambda: fp)
+
+    monkeypatch.setenv("ANALYST_CACHE", str(tmp_path / "starters.json"))
+    restart()
+    return restart
+
+
+def test_starter_answers_survive_a_restart(client, starters):
+    q = analyst.STARTERS[0]
+    assert chat(client, q).status_code == 200 and len(client.fake.seen) == 1
+    starters()  # deploy: new process, same code and data
+    assert chat(client, q, ip="6.6.6.6").json()["answer"] == "**Done**: 1,345 ha"
+    assert len(client.fake.seen) == 1  # served from disk, no LLM call
+    starters(fp="fp2")  # republished results or a new model: the old answers are dropped
+    chat(client, q, ip="7.7.7.7")
+    assert len(client.fake.seen) == 2
+
+
+def test_warm_stops_at_the_first_failure(client, starters, monkeypatch):
+    calls = []
+
+    def boom(messages):
+        calls.append(messages)
+        raise RuntimeError("429 RESOURCE_EXHAUSTED")
+
+    monkeypatch.setattr(agent_mod, "run", boom)
+    analyst.warm()
+    assert len(calls) == 1

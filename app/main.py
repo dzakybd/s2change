@@ -18,7 +18,7 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import OperationalError
 
-from app import agent, auth, db, explorer, results
+from app import analyst, auth, db, explorer, results
 
 load_dotenv()
 log = logging.getLogger("s2cd.app")
@@ -83,7 +83,7 @@ def check_auth() -> None:
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "db": db.ping(), "model": agent.model_name()}
+    return {"ok": True, "db": db.ping(), "model": analyst.model_name()}
 
 
 @app.get("/api/runs")
@@ -220,7 +220,7 @@ class ChatRequest(BaseModel):
 def warm_analyst() -> None:
     """Answer the starter questions in the background so their first click is instant (needs an LLM key)."""
     if any(os.environ.get(k) for k in ("OPENROUTER_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY")):
-        threading.Thread(target=agent.warm, name="analyst-warm", daemon=True).start()
+        threading.Thread(target=analyst.warm, name="analyst-warm", daemon=True).start()
 
 
 @app.post("/api/agent/chat", dependencies=[Depends(auth.require_access)])
@@ -232,7 +232,7 @@ def chat(request: Request, body: ChatRequest):
     if not daily.take():
         raise HTTPException(429, "The analyst has reached its daily question limit. Please come back tomorrow.")
     try:
-        return agent.run_chat(messages)
+        return analyst.run_chat(messages)
     except Exception as e:
         log.exception("agent failed")
         if _status(e) == 402:  # the LLM account is out of credit: retrying cannot help, so say so
