@@ -2,6 +2,7 @@
 
     uv run python scripts/validation.py sample   # draw points, cut chips, write blind labelling sheets
     uv run python scripts/validation.py score    # combine labeller files, adjudicate, estimate accuracy and area with 95 % CIs
+    uv run python scripts/validation.py sample true_passes   # the same for the true single-pass pair (scripts/real_dates.py)
 
 Strata cross the two maps (both change, this map only, baseline only, neither), so one sample scores both maps without bias
 (Stehman 2014). Reference labels come from visual interpretation of before/after chips of the same Sentinel-2 data by two
@@ -22,8 +23,18 @@ from PIL import Image, ImageDraw, ImageFont
 from shapely.geometry import Point
 
 ROOT = Path(__file__).resolve().parents[1]
-PROC = ROOT / "data/processed"
-OUT = ROOT / "data/validation"
+PAIRS = {  # pair -> (outputs folder, before stack, after stack, validation folder)
+    "provided": ("data/processed", "sentinel2_20230812_stack.tif", "sentinel2_20230902_stack.tif", "data/validation"),
+    "true_passes": (
+        "data/experiments/2023-08-08_2023-09-02",
+        "sentinel2_20230808_stack.tif",
+        "sentinel2_20230902_stack.tif",
+        "data/validation/true_passes",
+    ),
+}
+PAIR = sys.argv[2] if __name__ == "__main__" and len(sys.argv) > 2 else "provided"
+PROC, OUT = ROOT / PAIRS[PAIR][0], ROOT / PAIRS[PAIR][3]
+BEFORE, AFTER = PAIRS[PAIR][1], PAIRS[PAIR][2]
 SEED = 20231202
 N_PER_STRATUM = 50
 CHIP = 48  # pixels (480 m); the label is for the 3 x 3 pixel square in the centre
@@ -114,7 +125,7 @@ def sample() -> None:
         w.writeheader()
         w.writerows(points)
 
-    before, after = rgb(PROC / "sentinel2_20230812_stack.tif"), rgb(PROC / "sentinel2_20230902_stack.tif")
+    before, after = rgb(PROC / BEFORE), rgb(PROC / AFTER)
     sheets = OUT / "sheets"
     sheets.mkdir(exist_ok=True)
     font = ImageFont.load_default(size=22)

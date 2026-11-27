@@ -1,0 +1,201 @@
+id,change,type,confidence,note
+P001,0,,medium,tone shift only
+P002,0,,low,tailings tone shift
+P003,1,tailings_deposition,medium,tailings beach advanced into pond
+P004,0,,medium,no change
+P005,1,waste_dumping,medium,grey material over dark ground
+P006,0,,medium,no change
+P007,0,,low,tone shift only
+P008,1,water_level_change,medium,pond water colour and fill changed
+P009,1,waste_dumping,high,dark new material on light ground
+P010,1,waste_dumping,medium,bright road covered
+P011,0,,high,no change
+P012,0,,low,haze after
+P013,0,,medium,no change
+P014,0,,high,no change
+P015,0,,high,no change
+P016,0,,low,haze after
+P017,0,,high,no change
+P018,1,waste_dumping,medium,dark ridge gone new material
+P019,1,waste_dumping,medium,grey pond area covered by earth
+P020,0,,medium,tone shift only
+P021,0,,high,no change
+P022,0,,high,no change
+P023,0,,medium,no change
+P024,0,,medium,no change
+P025,0,,high,no change
+P026,0,,medium,tone shift only
+P027,0,,medium,no change
+P028,1,tailings_deposition,medium,tailings beach advanced into pond
+P029,0,,medium,no change
+P030,0,,medium,tone shift only
+P031,0,,medium,no change
+P032,1,vegetation_loss_or_burn,low,green patch now bare pink
+P033,1,tailings_deposition,low,brighter deposit at square
+P034,0,,high,no change
+P035,0,,high,water unchanged
+P036,0,,medium,water unchanged
+P037,0,,low,tone shift only
+P038,0,,high,no change
+P039,0,,medium,no change
+P040,0,,medium,tone shift only
+P041,0,,low,tone shift only
+P042,0,,medium,no change
+P043,0,,high,no change
+P044,1,waste_dumping,high,grey area covered by orange earth
+P045,0,,medium,no change
+P046,0,,high,no change
+P047,0,,high,no change
+P048,0,,low,haze after
+P049,0,,high,water unchanged
+P050,0,,medium,no change
+P051,0,,medium,no change
+P052,0,,high,no change
+P053,1,waste_dumping,medium,orange material expanded into dark
+P054,1,waste_dumping,low,pattern rearranged
+P055,0,,medium,no change
+P056,0,,low,bright patch nearby
+P057,0,,high,no change
+P058,0,,medium,no change
+P059,0,,high,water unchanged
+P060,0,,low,cloud in before
+P061,0,,medium,no change
+P062,1,waste_dumping,medium,new orange spot
+P063,0,,medium,no change
+P064,1,vegetation_loss_or_burn,medium,dark burn scar on bare strip
+P065,0,,low,cloud in before
+P066,1,other,medium,new dark spot
+P067,0,,high,no change
+P068,0,,medium,no change
+P069,0,,medium,no change
+P070,0,,high,no change
+P071,0,,medium,no change
+P072,0,,medium,no change
+P073,0,,medium,no change
+P074,1,water_level_change,medium,pond colour and edge changed
+P075,0,,low,haze after
+P076,0,,medium,no change
+P077,0,,medium,tone shift only
+P078,0,,medium,no change
+P079,0,,low,haze after
+P080,0,,low,no clear change
+P081,0,,high,no change
+P082,0,,medium,no change
+P083,0,,low,cloud in before
+P084,0,,medium,no change
+P085,0,,medium,no change
+P086,0,,medium,no change
+P087,0,,high,no change
+P088,0,,medium,no change
+P089,0,,medium,no change
+P090,0,,low,new track nearby
+P091,0,,medium,no change
+P092,0,,medium,water unchanged
+P093,0,,low,haze after
+P094,0,,high,no change
+P095,0,,medium,tone shift only
+P096,0,,low,cloud in before
+P097,0,,medium,no change
+P098,1,vegetation_loss_or_burn,high,dark burn patch
+P099,0,,medium,no change
+P100,0,,medium,tone shift only
+P101,0,,medium,no change
+P102,0,,medium,no change
+P103,0,,medium,no change
+P104,1,waste_dumping,high,grey pond area covered by earth
+P105,0,,high,water unchanged
+P106,0,,high,water unchanged
+P107,0,,medium,no change
+P108,0,,medium,no change
+P109,1,waste_dumping,low,surface pattern changed
+P110,0,,medium,no change
+P111,0,,medium,no change
+P112,0,,medium,no change
+P113,1,waste_dumping,medium,new orange spot
+P114,1,other,low,dark area expanded
+P115,1,vegetation_loss_or_burn,medium,new dark burn patch
+P116,1,vegetation_loss_or_burn,medium,bare area darkened burn
+P117,0,,high,no change
+P118,0,,medium,no change
+P119,0,,low,haze after
+P120,0,,medium,no change
+P121,0,,high,no change
+P122,0,,medium,no change
+P123,0,,medium,no change
+P124,1,other,medium,new dark spot
+P125,0,,medium,no change
+P126,0,,medium,no change
+P127,0,,low,cloud after
+P128,0,,low,cloud in before
+P129,0,,medium,tone shift only
+P130,1,waste_dumping,medium,orange strip turned grey
+P131,1,vegetation_loss_or_burn,low,green turned bare pink
+P132,1,vegetation_loss_or_burn,high,dark burn scar
+P133,0,,medium,no change
+P134,0,,low,tone shift only
+P135,0,,low,tone shift only
+P136,1,vegetation_loss_or_burn,medium,area darkened burn
+P137,0,,high,water unchanged
+P138,0,,medium,no change
+P139,0,,low,haze after
+P140,0,,low,cloud after
+P141,1,vegetation_loss_or_burn,medium,dark burn scar on bare strip
+P142,0,,medium,no change
+P143,0,,low,tone shift only
+P144,1,other,medium,bright deposit edge darkened
+P145,0,,low,tone shift only
+P146,1,waste_dumping,medium,grey surface now orange
+P147,0,,high,no change
+P148,0,,low,haze after
+P149,0,,medium,tone shift only
+P150,0,,high,no change
+P151,0,,medium,no change
+P152,0,,low,no clear change
+P153,1,waste_dumping,high,new bright orange material
+P154,0,,medium,tailings tone shift
+P155,0,,medium,no change
+P156,1,tailings_deposition,medium,dark line buried
+P157,0,,medium,tone shift only
+P158,0,,medium,no change
+P159,0,,medium,no change
+P160,0,,medium,no change
+P161,0,,medium,tone shift only
+P162,1,water_level_change,medium,green water strip gone
+P163,0,,medium,no change
+P164,0,,high,no change
+P165,0,,medium,no change
+P166,0,,low,cloud after
+P167,0,,low,haze after
+P168,0,,high,water unchanged
+P169,0,,low,tone shift only
+P170,1,waste_dumping,medium,grey pond area covered by earth
+P171,0,,medium,no change
+P172,0,,medium,water glint only
+P173,0,,medium,no change
+P174,1,waste_dumping,medium,orange band on benches
+P175,1,tailings_deposition,high,water replaced by grey tailings
+P176,1,other,low,dark area expanded
+P177,0,,high,no change
+P178,0,,low,tone shift only
+P179,0,,high,no change
+P180,0,,medium,no change
+P181,0,,medium,no change
+P182,0,,high,water unchanged
+P183,0,,low,tone shift only
+P184,0,,low,tone shift only
+P185,0,,medium,no change
+P186,0,,medium,no change
+P187,0,,medium,no change
+P188,0,,low,bright patch nearby
+P189,0,,low,no clear change
+P190,0,,medium,tone shift only
+P191,0,,medium,no change
+P192,0,,low,haze after
+P193,1,tailings_deposition,high,grey material over light surface
+P194,0,,medium,no change
+P195,0,,medium,water edge stable
+P196,0,,low,haze after
+P197,0,,low,cloud in before
+P198,0,,medium,no change
+P199,0,,low,cloud after
+P200,0,,low,tone shift only

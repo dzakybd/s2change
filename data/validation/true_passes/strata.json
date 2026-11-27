@@ -1,0 +1,15 @@
+{
+  "seed": 20231202,
+  "pixel_counts": {
+    "1": 21063,
+    "2": 1532,
+    "3": 1922886,
+    "4": 726300
+  },
+  "names": {
+    "1": "both change",
+    "2": "this map only",
+    "3": "baseline only",
+    "4": "neither"
+  }
+}

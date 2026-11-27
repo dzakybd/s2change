@@ -1,0 +1,201 @@
+id,change,type,confidence,note
+P001,0,,low,vegetation tone shift
+P002,0,,medium,stretch tone change only
+P003,1,water_level_change,medium,water edge receded to square
+P004,0,,medium,vegetation unchanged
+P005,1,waste_dumping,high,new grey material strip
+P006,0,,low,pink pit surface similar
+P007,0,,low,grey ridge similar
+P008,1,water_level_change,medium,pond colour and fill changed
+P009,1,waste_dumping,medium,new dark material blob
+P010,1,waste_dumping,medium,bright road covered by dark material
+P011,0,,medium,bright tailings band unchanged
+P012,0,,low,haze in after
+P013,0,,high,bright patch unchanged
+P014,0,,high,dark area between roads
+P015,0,,medium,bright band unchanged
+P016,0,,low,shoreline hazy
+P017,0,,high,no change
+P018,0,,low,new bright patch just outside square
+P019,1,water_level_change,medium,teal pond replaced by tan
+P020,0,,medium,vegetation unchanged
+P021,0,,high,dark vegetation unchanged
+P022,0,,medium,mottled area unchanged
+P023,0,,medium,grey surface unchanged
+P024,0,,low,pit surface similar
+P025,0,,medium,woodland unchanged
+P026,0,,low,vegetation tone shift
+P027,0,,medium,edge of bright patch same
+P028,1,water_level_change,medium,water receded from square
+P029,0,,medium,edge of bright patch same
+P030,0,,low,haze noise only
+P031,0,,medium,channel edge unchanged
+P032,1,vegetation_loss_or_burn,low,pink cleared patch appears
+P033,0,,medium,bright surface unchanged
+P034,0,,high,dark vegetation unchanged
+P035,0,,high,open water unchanged
+P036,0,,high,open water unchanged
+P037,1,vegetation_loss_or_burn,medium,dark burn scar over square
+P038,0,,high,dark area unchanged
+P039,0,,medium,orange ground unchanged
+P040,0,,medium,vegetation unchanged
+P041,0,,low,hazy colour shift
+P042,0,,medium,grey surface unchanged
+P043,0,,high,dark channel unchanged
+P044,1,waste_dumping,medium,dark area covered by tan fill
+P045,0,,low,mottled ground same
+P046,0,,high,bright tailings unchanged
+P047,0,,medium,dark area unchanged
+P048,0,,low,haze over shore
+P049,0,,high,open water unchanged
+P050,0,,medium,dark area unchanged
+P051,0,,low,grey surface similar
+P052,0,,high,dark area unchanged
+P053,1,waste_dumping,medium,orange strip extends to square
+P054,1,other,low,pit surface pattern changed
+P055,0,,medium,bright patch edge same
+P056,1,tailings_deposition,low,bright tailings surface darkened
+P057,0,,high,bright band unchanged
+P058,1,vegetation_loss_or_burn,low,darkening possible burn
+P059,0,,high,open water unchanged
+P060,0,,low,cloud in before
+P061,0,,low,grey surface similar
+P062,1,construction_or_road,medium,new orange road through square
+P063,0,,medium,near bright patch same
+P064,1,vegetation_loss_or_burn,high,dark burn scar over valley
+P065,0,,low,cloud in before
+P066,1,vegetation_loss_or_burn,low,new dark spot at square
+P067,0,,medium,bright band unchanged
+P068,0,,medium,bright surface unchanged
+P069,0,,medium,surface unchanged
+P070,0,,high,vegetation unchanged
+P071,0,,medium,woodland unchanged
+P072,0,,low,pit surface similar
+P073,0,,medium,surface unchanged
+P074,1,water_level_change,low,pond edge shifted
+P075,0,,low,haze in after
+P076,0,,medium,surface unchanged
+P077,0,,medium,ground unchanged
+P078,1,tailings_deposition,low,new bright spot at square
+P079,0,,low,haze in after
+P080,0,,low,pit surface similar
+P081,0,,high,dark area unchanged
+P082,0,,medium,road unchanged
+P083,0,,low,cloud in before
+P084,0,,low,ground similar
+P085,0,,medium,bright patch edge same
+P086,0,,low,boundary unchanged
+P087,0,,high,dark pond unchanged
+P088,0,,medium,pit surface unchanged
+P089,0,,medium,surface unchanged
+P090,0,,low,new track near not in square
+P091,0,,medium,bright surface unchanged
+P092,0,,medium,water tone shift
+P093,0,,low,haze in after
+P094,0,,high,dark area unchanged
+P095,0,,low,vegetation noise
+P096,0,,low,cloud in before
+P097,0,,medium,ground unchanged
+P098,1,vegetation_loss_or_burn,medium,dark burn patch at square
+P099,0,,medium,dark area unchanged
+P100,0,,low,vegetation noise
+P101,0,,medium,woodland unchanged
+P102,0,,medium,bright patch edge same
+P103,0,,medium,surface unchanged
+P104,1,water_level_change,medium,teal pond replaced by tan
+P105,0,,high,open water unchanged
+P106,0,,high,open water unchanged
+P107,0,,medium,surface unchanged
+P108,0,,medium,bright surface unchanged
+P109,1,waste_dumping,low,red surface turned grey brown
+P110,0,,medium,surface unchanged
+P111,0,,low,grey surface similar
+P112,0,,low,grey surface similar
+P113,1,construction_or_road,medium,new orange road through square
+P114,0,,low,dark patch similar
+P115,1,vegetation_loss_or_burn,medium,dark burn patch at square
+P116,1,vegetation_loss_or_burn,medium,tan ground turned dark burn
+P117,0,,medium,water edge unchanged
+P118,0,,high,woodland unchanged
+P119,0,,low,vegetation tone shift
+P120,0,,low,slight colour shift only
+P121,0,,high,dark area unchanged
+P122,0,,medium,mottled ground unchanged
+P123,0,,medium,surface unchanged
+P124,1,vegetation_loss_or_burn,medium,new dark spot at square
+P125,0,,medium,surface unchanged
+P126,0,,low,surface similar
+P127,0,,low,haze in after
+P128,0,,low,cloud in before
+P129,0,,low,vegetation tone shift
+P130,1,construction_or_road,low,road band darkened grey
+P131,1,vegetation_loss_or_burn,low,pink cleared patch appears
+P132,1,vegetation_loss_or_burn,high,dark burn scar over square
+P133,0,,high,bright surface unchanged
+P134,0,,low,vegetation tone shift
+P135,0,,low,track similar
+P136,1,vegetation_loss_or_burn,medium,woodland turned dark burn
+P137,0,,high,open water unchanged
+P138,0,,medium,surface unchanged
+P139,0,,low,haze in after
+P140,0,,low,haze in after
+P141,1,vegetation_loss_or_burn,high,dark burn scar over valley
+P142,0,,low,grey surface similar
+P143,0,,low,vegetation tone shift
+P144,1,other,low,bright dump edge darkened
+P145,0,,low,vegetation tone shift
+P146,1,waste_dumping,medium,grey replaced by orange material
+P147,0,,medium,surface unchanged
+P148,0,,low,haze in after
+P149,0,,low,vegetation noise
+P150,0,,high,dark area unchanged
+P151,0,,low,vegetation tone shift
+P152,0,,low,surface similar
+P153,1,waste_dumping,high,new orange material band
+P154,0,,medium,stretch tone change only
+P155,0,,medium,surface unchanged
+P156,1,tailings_deposition,medium,dark line covered by tailings
+P157,0,,low,vegetation noise
+P158,0,,medium,surface unchanged
+P159,0,,medium,surface unchanged
+P160,0,,low,grey surface similar
+P161,0,,low,vegetation noise
+P162,1,water_level_change,medium,green pond edge disappeared
+P163,0,,medium,shore edge unchanged
+P164,0,,high,woodland unchanged
+P165,0,,medium,surface unchanged
+P166,0,,low,haze in after
+P167,1,vegetation_loss_or_burn,low,bluish dark burn near square
+P168,0,,high,open water unchanged
+P169,0,,low,vegetation tone shift
+P170,1,water_level_change,medium,teal pond replaced by tan
+P171,0,,low,ground tone shift
+P172,0,,medium,water glint change only
+P173,0,,low,grey surface similar
+P174,1,waste_dumping,medium,orange material on dark band
+P175,1,water_level_change,high,water replaced by grey tailings
+P176,0,,low,surface similar
+P177,0,,medium,bright surface unchanged
+P178,0,,low,vegetation tone shift
+P179,0,,medium,dark area unchanged
+P180,0,,medium,vegetation edge unchanged
+P181,0,,medium,surface unchanged
+P182,0,,high,open water unchanged
+P183,0,,low,vegetation tone shift
+P184,0,,low,vegetation noise
+P185,0,,medium,ground unchanged
+P186,0,,medium,bright surface unchanged
+P187,0,,medium,dark area near bright same
+P188,0,,low,bright surface similar
+P189,0,,low,bright surface similar
+P190,0,,low,vegetation tone shift
+P191,0,,medium,road edge unchanged
+P192,0,,low,vegetation tone shift
+P193,1,tailings_deposition,high,dark tailings spread over square
+P194,0,,medium,track unchanged
+P195,0,,medium,water unchanged
+P196,0,,low,road edge unchanged
+P197,0,,low,cloud in before
+P198,0,,medium,surface unchanged
+P199,0,,low,haze in after
+P200,0,,low,vegetation tone shift

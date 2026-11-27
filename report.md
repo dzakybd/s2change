@@ -79,7 +79,7 @@ Looking at the two images side by side, a straight diagonal line runs through bo
 
 Two methods run on the same images and are stored in the same database:
 
-- **The provided example, unchanged:** the colour distance between the dates, cut with one automatic (Otsu) threshold (`change_map_baseline.tif`, `change_binary_baseline.tif`).
+- **The provided example, unchanged:** the colour distance between the dates, cut with one automatic threshold (Otsu 1979) (`change_map_baseline.tif`, `change_binary_baseline.tif`).
 - **This work: a calibrated change vector analysis** (Malila 1980). The question per pixel: *how far did its colour move, compared with how far colour moves on ground that did not change?* (`change_map.tif`, `change_binary.tif`)
 
 ### 🪜 Six steps, and why each is needed
@@ -146,16 +146,13 @@ Two numbers in the method are choices, not facts: **how strict the cut-off is** 
 
 ### 🧰 Other tools behind the result
 
-The change itself is measured on the three 10 m bands only. Other tools helped to find the trap, to show and to check the result:
+The change itself is measured on the three 10 m bands only. Three more tools went into the result:
 
 | Tool | Used for | Changes the detection? |
 |---|---|---|
 | 🛰️ [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a) Sentinel-2 catalogue (STAC) | Tracing every pixel to its satellite pass (section 2); the true single passes and the multi-year dates (section 4) | ✅ Yes: it gives the three zones |
-| 🔍 [SEN2SR](https://github.com/ESAOpenSR/SEN2SR) super-resolution (ESA OpenSR) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
-| 🗺️ Esri World Imagery and Bing Aerial basemaps | Very-high-resolution background on the map; context for drawing the facility register | Only through the facility names, not the change mask |
-| 🤖 AI vision labellers | Labelling the 200 accuracy points (section 5) | ❌ No, accuracy only |
-| 🧪 [AnyChange](https://arxiv.org/abs/2402.01188) (Segment Any Change, NeurIPS 2024) | A zero-shot foundation-model alternative, tried as a comparison | ❌ Not used: it resizes the site to ~16 m pixels and found only about 1 in 10 of the changes found here (tested on the earlier version of the map) |
-| 💬 Gemini agent | Answering questions about the results in the app (section 7) | ❌ No, it reads the stored results |
+| 🔍 SEN2SR super-resolution (Aybar et al. 2026) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
+| 🤖 AI vision labellers | Labelling the accuracy points (section 5) | ❌ No, accuracy only |
 
 ## 📍 4. What changed
 
@@ -233,12 +230,12 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 </tr>
 </table>
 
-200 random points, 50 in each of four groups (both maps say change, only this map, only the provided method, neither), so one sample scores both maps without bias (Olofsson et al. 2014).
+200 random points, 50 in each of four groups (both maps say change, only this map, only the provided method, neither), so one sample scores both maps without bias (Olofsson et al. 2014; Stehman 2014).
 
 🏷️ **How the points were labelled:**
 
 - **Two independent AI vision labellers**, from before/after image chips, blind to both maps.
-- Agreement 80 % (Cohen's κ 0.46, moderate); the 40 disagreements settled by a third look with a wider view.
+- Agreement 80 % (Cohen's κ 0.46, moderate; Cohen 1960); the 40 disagreements settled by a third look with a wider view.
 - Visual labels from the same 10 m imagery, not field truth (`scripts/validation.py`, `data/validation/`).
 
 | 95 % intervals | This method | Provided method |
@@ -259,7 +256,16 @@ Re-scoring the same points with looser settings shows that tuning does not fix i
 | Looser (1 in 100) | 6.69 km² | 0.58 ± 0.37 | 0.30 ± 0.26 | 58 of 63 |
 | Much looser (1 in 10) | 14.5 km² | <b class="bad">0.34 ± 0.29</b> | 0.30 ± 0.26 | 58 of 63 |
 
-*Loosening catches one more point and adds mostly false alarms.* The real fix is **more and better labels** in the "no change" groups, on very-high-resolution imagery, so a few uncertain points no longer decide the number (see [next steps](#-8-limitations-and-next-steps)). After that, a per-type threshold for tailings could recover the subtle changes the labellers argued about.
+*Loosening catches one more point and adds mostly false alarms.*
+
+🪤 **Is the data trap to blame?** No. The 6 missed points lie 340–4,550 m from the nearest seam. The same check was also run on the **true single passes** (8 Aug → 2 Sep, no seams), with 200 new points and the same blind labelling:
+
+| Pair | Labellers agree | Precision | Recall | Real change (estimate) |
+|---|---:|---:|---:|---:|
+| Supplied mosaics (52–60 days) | 80 % | <b class="good">0.67 ± 0.11</b> | 0.17 ± 0.11 | 16.6 ± 10.9 km² |
+| True single passes (25 days) | 96 % | 0.30 ± 0.12 | <b class="bad">0.03 ± 0.02</b> | 26 ± 16 km² |
+
+Without the trap, recall is *not* higher. With only 25 days between passes there is little strong change: the method maps 2.26 km², and the labellers see many small, subtle changes it leaves out. So low recall is a property of the method, not of the trap. It only flags what noise rarely does, and three 10 m colour bands cannot tell subtle real change (tailings wetting, burn edges, small tips) from normal flicker. *The labellers also agree much more on the true passes (96 % vs 80 %): the mosaics' longer, mixed gap makes changes harder to judge.* The real fix is **more and better labels** in the "no change" groups, on very-high-resolution imagery, so a few uncertain points no longer decide the number (see [next steps](#-8-limitations-and-next-steps)). After that, a per-type threshold for tailings could recover the subtle changes the labellers argued about.
 
 ## 🧭 6. What it means
 
@@ -440,14 +446,13 @@ Security controls of the app are in [docs/system.md](docs/system.md).
 
 ### References
 
-- Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385.
-- Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold.*
-- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2.*
+- Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385. *Change vector analysis, section 3.*
+- Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold, section 3.*
+- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, matching brightness per zone.*
 - Olofsson et al. (2014). [Good practices for estimating area and assessing accuracy of land change](https://doi.org/10.1016/j.rse.2014.02.015). *Remote Sens. Environ.* 148:42–57. *Section 5.*
-- Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample.*
-- Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ).*
-- Zheng et al. (2024). [Segment Any Change](https://arxiv.org/abs/2402.01188). NeurIPS 2024. *AnyChange comparison.*
-- ESA OpenSR. [SEN2SR: Sentinel-2 super-resolution to 2.5 m](https://github.com/ESAOpenSR/SEN2SR). *Map display layer.*
+- Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample, section 5.*
+- Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ), section 5.*
+- Aybar et al. (2026). [A radiometrically and spatially consistent super-resolution framework for Sentinel-2](https://doi.org/10.1016/j.rse.2025.115222). *Remote Sens. Environ.* 334:115222. *SEN2SR, the map's 2.5 m display layer.*
 
 ---
 
