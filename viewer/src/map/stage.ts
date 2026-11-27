@@ -16,12 +16,21 @@ maplibregl.setWorkerUrl(workerUrl);
 const ESRI_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const ESRI_ATTRIBUTION = 'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics';
 
+// Esri has no imagery over the AOI past z17 (it serves "Map data not yet available" tiles), so z17 is overzoomed and
+// Bing Aerial, which has real z18-19 imagery here, is drawn on top from z18. Mapbox Satellite was cloudy and soft there.
+const BING_TILES = [0, 1, 2, 3].map((n) => `https://ecn.t${n}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1`);
+const BING_ATTRIBUTION = 'Close-up imagery &copy; <a href="https://www.microsoft.com/maps" target="_blank" rel="noopener">Microsoft</a>';
+
 const BASE_STYLE: StyleSpecification = {
   version: 8,
-  sources: { esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 17 /* Esri has no imagery here at z18+: it serves "Map data not yet available" tiles, so overzoom z17 */, attribution: ESRI_ATTRIBUTION } },
+  sources: {
+    esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 17, attribution: ESRI_ATTRIBUTION },
+    bing: { type: "raster", tiles: BING_TILES, tileSize: 256, minzoom: 18, maxzoom: 19, attribution: BING_ATTRIBUTION },
+  },
   layers: [
     { id: "background", type: "background", paint: { "background-color": "#e9edf2" } },
     { id: "esri", type: "raster", source: "esri", paint: { "raster-resampling": "linear", "raster-fade-duration": 120 } },
+    { id: "bing", type: "raster", source: "bing", minzoom: 18, paint: { "raster-resampling": "linear", "raster-fade-duration": 120 } },
   ],
 };
 
