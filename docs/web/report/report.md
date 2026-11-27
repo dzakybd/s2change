@@ -73,11 +73,11 @@ Co-registration was checked per zone by phase correlation in 8 windows: the shif
 
 **The claim.** Neither supplied "date" is one image. Each file is stitched from two Sentinel-2 passes taken days apart, so the supplied pair holds brightness jumps that are not on the ground. Three independent checks support it.
 
-**1. The jumps are straight lines that ignore the landscape.** The before/after brightness ratio steps along straight lines at 12.6° that cut through bush, roads and pits alike (a). The same ground seen in true single passes, one scene on 8 Aug against one on 2 Sep, has no such lines (b); the black lines there only mark where the supplied files switch pass. Across the seams, on natural ground north of the mine, the supplied pair jumps by about −0.21 and −0.12 in log brightness (about 19 % and 11 %) exactly where a file switches pass; the single passes stay within ±0.03 (c).
+**1. Each file, set against a true single pass of its own date, steps at a straight line.** The catalogue holds single-pass scenes that cover the whole site, so each supplied file was compared with one, before with before and after with after (a, b). Where a supplied file is the same day as the single pass the ratio is flat at 0: the west of the "2 Sep" file *is* the 2 Sep pass (median difference 0.5 %, from ESA's 2024 reprocessing). Where it is another day it shifts, and the shift switches along a straight 12.6° line that cuts through bush, roads and pits alike. On natural ground north of the mine the "2 Sep" file drops by 0.19 in log brightness (about 17 %) at that line, the east being 25 Aug; the "12 Aug" file jumps by 0.15 at its own line, its west being 4 Jul and its east 1 Jul (c).
 
-![Brightness change in the supplied pair and in true single passes, with its profile across the seams](figures/07_trap_proof.png)
+![Each supplied file against a true single pass of its own date, with the profile across its seam](figures/07_trap_proof.png)
 
-*Same ground, two pairs: the brightness steps sit exactly where the supplied files switch pass, and vanish in single passes (`scripts/fig_trap_proof.py`).*
+*Before with before, after with after: flat where the supplied file is the same scene, a step exactly where it switches pass (`scripts/fig_trap_proof.py`).*
 
 **2. The pixels match four catalogue scenes exactly.** Matching every pixel against the Planetary Computer catalogue (`s2cd provenance`) found all three bands **identical, pixel for pixel**, to two scenes per date, with no pixel left unexplained:
 
