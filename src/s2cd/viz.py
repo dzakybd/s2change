@@ -292,5 +292,12 @@ def export_web(p: Products, out_dir: Path) -> dict:
     write_geojson(facilities, out_dir / "facilities.geojson")
     p.aoi.to_crs(4326).to_file(out_dir / "aoi.geojson", driver="GeoJSON", layer_options={"RFC7946": "YES"})
     manifest["vectors"] = {"changes": "change_features.geojson", "facilities": "facilities.geojson", "aoi": "aoi.geojson"}
-    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
+    path = out_dir / "manifest.json"
+    if (
+        path.exists()
+    ):  # keep layers other scripts added (scripts/super_resolution.py: sr_before, sr_after) while their file exists
+        for key, entry in json.loads(path.read_text()).get("rasters", {}).items():
+            if key not in manifest["rasters"] and (out_dir / entry["url"]).exists():
+                manifest["rasters"][key] = entry
+    path.write_text(json.dumps(manifest, indent=2))
     return manifest
