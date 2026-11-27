@@ -73,7 +73,7 @@ Co-registration was checked per zone by phase correlation in 8 windows: the shif
 
 **The claim.** Neither supplied "date" is one image. Each file is stitched from two Sentinel-2 passes taken days apart, so the supplied pair holds brightness jumps that are not on the ground. Three independent checks support it.
 
-**1. The jumps are straight lines that ignore the landscape.** The before/after brightness ratio steps along straight lines at 12.6° that cut through bush, roads and pits alike (a). The same ground seen in single passes has no such lines (b). Across the seams, on natural ground north of the mine, the supplied pair jumps by about −0.21 and −0.12 in log brightness (about 19 % and 11 %) exactly where a file switches pass; the single passes stay within ±0.03 (c).
+**1. The jumps are straight lines that ignore the landscape.** The before/after brightness ratio steps along straight lines at 12.6° that cut through bush, roads and pits alike (a). The same ground seen in true single passes, one scene on 8 Aug against one on 2 Sep, has no such lines (b); the black lines there only mark where the supplied files switch pass. Across the seams, on natural ground north of the mine, the supplied pair jumps by about −0.21 and −0.12 in log brightness (about 19 % and 11 %) exactly where a file switches pass; the single passes stay within ±0.03 (c).
 
 ![Brightness change in the supplied pair and in true single passes, with its profile across the seams](docs/figures/07_trap_proof.png)
 

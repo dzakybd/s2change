@@ -71,8 +71,8 @@ def main() -> None:
     lim = np.nanpercentile(np.abs(np.r_[supplied[ok0] - np.median(supplied[ok0]), single[ok1] - np.median(single[ok1])]), 97)
     for k, (img, ok, title) in enumerate(
         [
-            (supplied, ok0, "(a) Supplied pair: nominal 12 Aug → 2 Sep"),
-            (single, ok1, "(b) True single passes: 8 Aug → 2 Sep"),
+            (supplied, ok0, '(a) Supplied "12 Aug" → "2 Sep", two passes each\nbefore = 1 + 4 Jul · after = 25 Aug + 2 Sep'),
+            (single, ok1, "(b) True single passes, one scene each\nbefore = 8 Aug · after = 2 Sep"),
         ]
     ):
         ax = fig.add_subplot(gs[k])
@@ -81,13 +81,13 @@ def main() -> None:
         ys, xs = np.nonzero(seam_line & ok0)
         ax.scatter(xs[::4], ys[::4], s=0.15, c="black", alpha=0.5, linewidths=0)
         ax.axhline(NORTH * img.shape[0], color="#0f172a", lw=0.8, ls=":")
-        ax.set_title(title, fontsize=11, loc="left")
+        ax.set_title(title, fontsize=10.5, loc="left", linespacing=1.4)
         ax.set_axis_off()
     fig.text(
         0.13,
         -0.01,
-        "Brightness change, log(after / before), centred: red brighter, blue darker. Thin lines: where the supplied files"
-        " switch pass. Above the dotted line: the ground profiled in (c).",
+        "Brightness change, log(after / before), centred: red brighter, blue darker. Thin black lines, drawn on both panels"
+        " for reference: where the supplied files switch pass. Above the dotted line: the ground profiled in (c).",
         fontsize=9,
         color="#475569",
     )
