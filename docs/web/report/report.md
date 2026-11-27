@@ -57,8 +57,7 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 
 *Every layer is the real data around the same place, the tailings dam's south-east wall. The output is a typed polygon with a plain sentence, stored and shown on the [map](https://s2change.dzaky.ai.id/#/map).*
 
-<details>
-<summary>Each step in detail, close-up and whole site</summary>
+**Each step, close-up and whole site:**
 
 | Step | Close-up: the tailings dam wall | Whole site | What we do, and why |
 |---|---|---|---|
@@ -70,8 +69,6 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 | 🔬 Analysis<br>**4. Threshold** | <img src="figures/close_06.jpg" width="200" alt="Raw threshold, close-up"> | <img src="figures/wide_06.jpg" width="200" alt="Raw threshold, whole site"> | Keep the pixels that noise would produce only **1 time in 1,000**, with the threshold calibrated on held-out stable pixels. Result: 6.74 km² in 4,479 specks, including thin lines along the seams. |
 | 🔬 Analysis<br>**5. Clean** | <img src="figures/close_07.jpg" width="200" alt="Cleaned change mask, close-up"> | <img src="figures/wide_07.jpg" width="200" alt="Cleaned change mask, whole site"> | Keep a region only if part of it is very strong (noise would produce it 1 time in 100,000), so faint seam lines drop out (hysteresis, Canny 1986). Then smooth edges by one pixel and drop regions under 2,000 m². Result: **4.13 km² in 215 regions**. |
 | 📤 Output<br>**Outline, type and explain** | <img src="figures/close_08.jpg" width="200" alt="Typed change polygons, close-up"> | <img src="figures/wide_08.jpg" width="200" alt="Typed change polygons, whole site"> | Each region becomes a polygon. Its type comes from the colour change and the facility it sits in, and it gets one plain sentence. Here: **Tailings dam wall likely raised**, 0.39 km² in the south-east of the tailings storage facility, where green vegetation became bright, rust-coloured bare ground. *Check the dam-raise plan and inspect the embankment.* |
-
-</details>
 
 ![methods](figures/03_method_comparison.png)
 
@@ -115,18 +112,16 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 - Without seams the provided method gets *worse* (194 km²): its real weakness is the haze and brightness difference between dates, which the normalisation removes.
 - The dam-wall fill happened **between 4 Jul and 8 Aug**, before the nominal before date; the mosaics catch it only because their "12 Aug" is really early July. The provided pair stays the main result, because it is what the brief supplies.
 
-<details>
-<summary>Was the data already corrected? Yes, it is ESA Level-2A</summary>
+**Was the data already corrected?** Yes:
 
-The pixel match above shows the files are ESA's Level-2A product, bit for bit: calibrated, orthorectified and atmospherically corrected to surface reflectance. The files carry no level tag; the −1000 offset in the darkest pixels agrees. Reflectance is `(DN − 1000) / 10000`.
+- **ESA Level-2A, bit for bit** (the pixel match above): calibrated, orthorectified, atmospherically corrected.
+- No level tag in the files; the −1000 offset in the darkest pixels agrees. Reflectance = `(DN − 1000) / 10000`.
 
 | Correction | In the supplied data | Added here |
 |---|---|---|
 | Calibration, orthorectification, atmosphere | Done by ESA | Nothing redone; L2A scale and offset applied |
 | Haze and scene-to-scene differences, seams | **Not corrected** | Per-zone normalisation on stable pixels, seam buffer |
 | Sun and view angle (BRDF) | Not corrected | Treated as a confounder on slopes |
-
-</details>
 
 ### Does it depend on one threshold?
 
@@ -199,12 +194,11 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 
 200 random points, 50 in each of four groups (both maps say change, only this map, only the provided method, neither), so one sample scores both maps without bias (Olofsson et al. 2014).
 
-<details>
-<summary>How the points were labelled</summary>
+**How the points were labelled:**
 
-Each point was labelled from before/after image chips by **two independent AI vision labellers** that saw neither map. They agreed on 80 % of points (Cohen's κ 0.46, moderate); the 40 disagreements were settled by a third look with a wider view. These are careful visual labels from the same 10 m imagery, not field truth. Script and labels: `scripts/validation.py`, `data/validation/`.
-
-</details>
+- **Two independent AI vision labellers**, from before/after image chips, blind to both maps.
+- Agreement 80 % (Cohen's κ 0.46, moderate); the 40 disagreements settled by a third look with a wider view.
+- Visual labels from the same 10 m imagery, not field truth (`scripts/validation.py`, `data/validation/`).
 
 | 95 % intervals | This method | Provided method |
 |---|---:|---:|
