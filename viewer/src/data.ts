@@ -33,10 +33,6 @@ export const dataUrl = (path: string): URL => new URL(path, base);
 
 const loadManifest = memo(() => getJson<Manifest>(dataUrl("manifest.json")));
 export const loadAoi = memo(() => getJson<AoiCollection>(dataUrl("aoi.geojson")));
-export const loadFacilities = memo(async () => {
-  const m = await loadManifest();
-  return getJson<FacilityCollection>(dataUrl(m.vectors.facilities ?? "facilities.geojson"));
-});
 
 /** Give every feature a sequential `fid`: the key for hover/selection feature-state. */
 export function indexed(fc: ChangeCollection): ChangeCollection {
@@ -52,9 +48,13 @@ export function indexed(fc: ChangeCollection): ChangeCollection {
 async function loadStatic(dir: string, id: string, nominal: boolean, manifest?: Manifest): Promise<Dataset> {
   const url = (path: string) => dataUrl(dir + path);
   const m = manifest ?? (await getJson<Manifest>(url("manifest.json")));
-  const changes = indexed(await getJson<ChangeCollection>(url(m.vectors.changes)));
+  const [raw, facilities] = await Promise.all([
+    getJson<ChangeCollection>(url(m.vectors.changes)),
+    getJson<FacilityCollection>(url(m.vectors.facilities ?? "facilities.geojson")),
+  ]);
+  const changes = indexed(raw);
   const rasters = Object.fromEntries(Object.entries(m.rasters).map(([k, r]) => [k, { url: url(r.url).href, bounds: r.bounds }])) as Dataset["rasters"];
-  return { id, dates: { before: m.date_before, after: m.date_after }, nominal, rasters, changes, summary: m.summary };
+  return { id, dates: { before: m.date_before, after: m.date_after }, nominal, rasters, changes, facilities, summary: m.summary };
 }
 
 /** The provided pair: two-pass mosaics with nominal dates. */

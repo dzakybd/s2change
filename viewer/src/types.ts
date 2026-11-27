@@ -68,6 +68,8 @@ export interface Dataset {
   nominal: boolean;
   rasters: Record<RasterKey, { url: string; bounds: Bounds }> & { baseline?: { url: string; bounds: Bounds } };
   changes: ChangeCollection;
+  /** The facility register with this pair's change inside each facility. */
+  facilities: FacilityCollection;
   /** Changed area in hectares per method, for static exports. */
   summary?: Record<string, number>;
 }

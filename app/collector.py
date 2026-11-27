@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 MAX_IDS, MAX_POINTS, MAX_ROWS, MAX_ITEMS = 500, 200, 100, 6
 # Layer ids of the viewer's layer menu (viewer/src/map/layers.ts).
-LAYERS = ("sr", "imagery", "types", "intensity", "baseline", "facilities")
+LAYERS = ("sr", "types", "intensity", "baseline", "facilities")
 
 
 @dataclass

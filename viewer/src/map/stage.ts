@@ -4,7 +4,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, StyleSpecification } from "maplibre-gl";
 import { CHANGE_TYPES, esc, FACILITY_COLORS, FACILITY_FALLBACK, facilityColor, facilityIcon, fmtKm2, prefersReducedMotion, typeIcon, typeIconSvg } from "../domain";
 import { RASTER_KEYS } from "../types";
-import type { AoiCollection, Bounds, ChangeCollection, ChangeProps, Dataset, FacilityCollection, FacilityProps } from "../types";
+import type { AoiCollection, Bounds, ChangeCollection, ChangeProps, Dataset, FacilityProps } from "../types";
 import { featureBounds } from "../overlays";
 import { LABEL_COUNT, labelTargets, labelText } from "./changes";
 import { labelPoint } from "./geo";
@@ -83,7 +83,6 @@ interface StageOptions {
   main: HTMLElement;
   compare: HTMLElement;
   aoi: AoiCollection;
-  facilities: FacilityCollection;
   dataset: Dataset;
   initialLayer: LayerDef;
   initialSwipe: boolean;
@@ -142,7 +141,7 @@ export class MapStage {
   }
 
   private addLayers(m: maplibregl.Map): void {
-    const { aoi, facilities } = this.opts;
+    const { aoi } = this.opts;
     for (const id of RASTER_KEYS) {
       const { url, bounds } = this.dataset.rasters[id];
       m.addSource(id, { type: "image", url, coordinates: corners(bounds) });
@@ -153,7 +152,7 @@ export class MapStage {
       m.addSource("baseline", { type: "image", url: base.url, coordinates: corners(base.bounds) });
       m.addLayer({ id: "baseline", type: "raster", source: "baseline", layout: { visibility: "none" }, paint: { "raster-fade-duration": 0, "raster-resampling": "nearest" } });
     }
-    m.addSource("facilities", { type: "geojson", data: facilities });
+    m.addSource("facilities", { type: "geojson", data: this.dataset.facilities });
     m.addLayer({ id: "fac-fill", type: "fill", source: "facilities", layout: { visibility: "none" }, paint: { "fill-color": colorByFacility, "fill-opacity": ["case", hovered, 0.3, 0.14] } });
     m.addLayer({ id: "fac-line", type: "line", source: "facilities", layout: { visibility: "none" }, paint: { "line-color": colorByFacility, "line-width": 2, "line-opacity": 0.95 } });
     m.addSource("aoi", { type: "geojson", data: aoi });
@@ -199,7 +198,9 @@ export class MapStage {
   }
 
   private addFacilityLabels(): void {
-    for (const f of this.opts.facilities.features) {
+    for (const mk of this.markers) mk.remove();
+    this.markers = [];
+    for (const f of this.dataset.facilities.features) {
       const pt = labelPoint(f.geometry);
       if (!pt) continue;
       const p = f.properties;
@@ -353,7 +354,10 @@ export class MapStage {
       }
       (m.getSource("changes") as maplibregl.GeoJSONSource).setData(ds.changes);
       (m.getSource("change-points") as maplibregl.GeoJSONSource).setData(changePoints(ds.changes));
+      (m.getSource("facilities") as maplibregl.GeoJSONSource).setData(ds.facilities);
     }
+    this.addFacilityLabels();
+    for (const mk of this.markers) mk.getElement().hidden = !this.layer.facilities;
     this.hover = null;
     this.select(null);
     this.buildChangeLabels();

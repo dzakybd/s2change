@@ -4,7 +4,7 @@ import type { Feature } from "geojson";
 import type { MapGeoJSONFeature } from "maplibre-gl";
 import type { AppContext, View } from "../app";
 import { fetchRun, STATIC_RUN_IDS } from "../api";
-import { loadAoi, loadDefaultDataset, loadFacilities, loadTruePasses, loadTruePassesManifest, TRUE_PASSES_ID } from "../data";
+import { loadAoi, loadDefaultDataset, loadTruePasses, loadTruePassesManifest, TRUE_PASSES_ID } from "../data";
 import { q, qa } from "../domain";
 import { DEFAULT_LAYER, LAYERS, layerById } from "../map/layers";
 import type { LayerDef } from "../map/layers";
@@ -80,10 +80,10 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
   let applyRoute: (route: Route) => void = () => {};
 
   async function init(): Promise<void> {
-    const [provided, aoi, facilities] = await Promise.all([loadDefaultDataset(), loadAoi(), loadFacilities()]);
+    const [provided, aoi] = await Promise.all([loadDefaultDataset(), loadAoi()]);
     const truePasses = await loadTruePassesManifest().catch(() => null);
     let ds: Dataset = provided;
-    const facName = new Map(facilities.features.map((f) => [f.properties.facility_id, f.properties.name]));
+    const facName = new Map(provided.facilities.features.map((f) => [f.properties.facility_id, f.properties.name]));
     const hidden = new Set<string>();
     const list: ListUi = { tab: "list", showAll: false, noise: false };
     let selectedFid: number | null = null;
@@ -120,7 +120,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       main: q(el, "#map"),
       compare: q(el, "#map-compare"),
       aoi,
-      facilities,
       dataset: ds,
       initialLayer,
       initialSwipe: state.swipe,
@@ -163,7 +162,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     };
 
     const renderLegend = () => {
-      legend.innerHTML = legendHtml(layerById(state.layer), ds, hidden, list, selectedFid, facilities.features.map((f) => f.properties));
+      legend.innerHTML = legendHtml(layerById(state.layer), ds, hidden, list, selectedFid, ds.facilities.features.map((f) => f.properties));
       legend.querySelector(".lg-head")?.setAttribute("aria-expanded", String(!legend.classList.contains("collapsed")));
     };
 
@@ -247,7 +246,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         setLayer("types");
         swipeReturn = from;
       } else if (state.swipe && swipeReturn) {
-        // Swipe was only opened to compare: go back to the layer the user was on (high-res imagery, facilities, ...).
+        // Swipe was only opened to compare: go back to the layer the user was on (intensity, facilities, ...).
         const back = swipeReturn;
         setLayer(back);
       } else {
@@ -317,7 +316,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         return renderLegend();
       }
       const fac = t.closest<HTMLElement>("[data-fac]")?.dataset["fac"];
-      if (fac) return void host.showFacility(fac);
+      if (fac) return void openFacility(fac);
       const chg = t.closest<HTMLElement>("[data-fid]");
       if (chg) return void openChange(Number(chg.dataset["fid"]));
       const row = t.closest<HTMLElement>("[data-type]");
@@ -339,6 +338,17 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       }
     });
     if (phone.matches) legend.classList.add("collapsed");
+
+    /** Zoom to a facility of the current pair and open its card (with this pair's numbers). */
+    const openFacility = (facilityId: string): string | null => {
+      const f = ds.facilities.features.find((x) => x.properties.facility_id === facilityId);
+      if (!f) return `No facility ${facilityId}.`;
+      setLayer("facilities");
+      fit([f as Feature], 15);
+      st.select(null);
+      showInspector(facilityCard(f.properties));
+      return null;
+    };
 
     /** Fly to a change, select it and open its card: the "What changed" list rows and the card share this path. */
     const openChange = (fid: number) => {
@@ -456,14 +466,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         return null;
       },
       showFacility(facilityId) {
-        const f = facilities.features.find((x) => x.properties.facility_id === facilityId);
-        if (!f) return `No facility ${facilityId}.`;
-        if (ds.id !== provided.id) useDataset(provided); // facility numbers belong to the provided pair
-        setLayer("facilities");
-        fit([f as Feature], 15);
-        stage?.select(null);
-        showInspector(facilityCard(f.properties));
-        return null;
+        if (ds.id !== provided.id) useDataset(provided); // the agent's facility numbers come from the provided pair
+        return openFacility(facilityId);
       },
       reset: () => runs.setHighlight([]),
     };

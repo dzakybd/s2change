@@ -194,14 +194,14 @@ def map_action(
     bbox: list[float] | None = None,
     run_id: str | None = None,
     ids: list[int] | None = None,
-    layer: Literal["sr", "imagery", "types", "intensity", "baseline", "facilities"] | None = None,
+    layer: Literal["sr", "types", "intensity", "baseline", "facilities"] | None = None,
     swipe: bool | None = None,
     oblique: bool | None = None,
     facility_id: str | None = None,
 ) -> str:
     """Control the map the user is looking at (several actions per answer are fine; they run in order).
     fly_to: bbox=[west, south, east, north] lon/lat. highlight: run_id + polygon ids (from top_changes). show_run: switch the
-    displayed run. set_layer: layer = sr (change polygons on the analysed Sentinel-2 dates super-resolved to 2.5 m, the default; with swipe for before/after), imagery (change polygons on sharp high-res imagery from other dates), types (change polygons on the 10 m Sentinel-2 images; with swipe for before/after), intensity
+    displayed run. set_layer: layer = sr (change polygons on the analysed Sentinel-2 dates super-resolved to 2.5 m, the default; with swipe for before/after), types (change polygons on the 10 m Sentinel-2 images; with swipe for before/after), intensity
     (change magnitude heat map), baseline (the provided method's mask: seams and haze), facilities (facility register). set_view: swipe (before/after slider) and/or oblique (tilted 2.5D view) true/false. show_facility: facility_id (from
     facility_summary) -> zoom to it and open its card. Only act on ids, runs and facilities returned by other tools."""
     if run_id is not None:
