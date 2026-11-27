@@ -224,7 +224,7 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 <table class="kpi">
 <tr>
 <td align="center"><b class="good">0.67</b><br>precision<br><sub>right 2 times in 3 when it says "changed"</sub></td>
-<td align="center"><b class="bad">0.17</b><br>recall<br><sub>an estimate that rests on 6 disputed points, see below</sub></td>
+<td align="center"><b class="bad">0.17</b><br>recall<br><sub>subtle change hides in RGB noise; five reasons below</sub></td>
 <td align="center"><b>0.94</b><br>overall accuracy<br><sub>provided method: 0.62</sub></td>
 <td align="center"><b>16.6 km²</b><br>estimated real change<br><sub>± 10.9; the 4.17 km² is its core</sub></td>
 </tr>
@@ -265,7 +265,19 @@ Re-scoring the same points with looser settings shows that tuning does not fix i
 | Supplied mosaics (52–60 days) | 80 % | <b class="good">0.67 ± 0.11</b> | 0.17 ± 0.11 | 16.6 ± 10.9 km² |
 | True single passes (25 days) | 96 % | 0.30 ± 0.12 | <b class="bad">0.03 ± 0.02</b> | 26 ± 16 km² |
 
-Without the trap, recall is *not* higher. With only 25 days between passes there is little strong change: the method maps 2.26 km², and the labellers see many small, subtle changes it leaves out. So low recall is a property of the method, not of the trap. It only flags what noise rarely does, and three 10 m colour bands cannot tell subtle real change (tailings wetting, burn edges, small tips) from normal flicker. *The labellers also agree much more on the true passes (96 % vs 80 %): the mosaics' longer, mixed gap makes changes harder to judge.* The real fix is **more and better labels** in the "no change" groups, on very-high-resolution imagery, so a few uncertain points no longer decide the number (see [next steps](#-8-limitations-and-next-steps)). After that, a per-type threshold for tailings could recover the subtle changes the labellers argued about.
+Without the trap, recall is *not* higher. With only 25 days between passes there is little strong change: the method maps 2.26 km², and the labellers see many small, subtle changes it leaves out. *The labellers also agree much more on the true passes (96 % vs 80 %): the mosaics' longer, mixed gap makes changes harder to judge.*
+
+🧩 **So why is recall low? Five reasons, in order of weight:**
+
+| # | Reason | What it does to recall | What would fix it |
+|---|---|---|---|
+| 1 | 🎨 **Only three colour bands (RGB).** Sentinel-2 has 13 bands; the brief supplies B02, B03, B04 | Subtle real change looks like normal flicker in colour alone: wet vs dry tailings, a burn vs dark wet soil, grass drying vs ground. It stays under the cut-off | **More bands:** near-infrared (B08, 10 m) separates vegetation and burns; short-wave infrared (B11, B12, 20 m) separates wet from dry ground and fresh rock |
+| 2 | 🎯 **Conservative by design.** A pixel must move more than noise does 999 times in 1,000 | Precision first: an alert should be worth checking. Faint change is left out on purpose | A looser cut-off only adds false alarms (table above); a per-type cut-off, e.g. for tailings, once labels allow it |
+| 3 | 🔲 **10 m pixels.** One pixel is 100 m² | Small tips, narrow benches and patch edges mix changed and unchanged ground and dilute the signal | Higher-resolution imagery (commercial, 0.5–3 m) |
+| 4 | 📆 **Only two dates.** | One pair cannot tell a real change from a one-off difference, so the noise allowance must be wide | A time series: a change that persists over several passes is real |
+| 5 | 🏷️ **Uncertain labels, few points.** AI labels from the same 10 m RGB | 6 disputed points in the big "no change" groups decide the recall figure; intervals are wide | More points, labelled by an analyst on very-high-resolution imagery |
+
+The real fix starts with **more and better labels**, so a few uncertain points no longer decide the number, then **more bands** (see [next steps](#-8-limitations-and-next-steps)).
 
 ## 🧭 6. What it means
 
@@ -274,7 +286,7 @@ Without the trap, recall is *not* higher. With only 25 days between passes there
 - ⛏️ **The mine was working, not spreading.** Tailings spread, waste tipped, pits worked; outside the mine only 0.02 km² is clearing.
 - 🧱 **Fresh fill on the tailings dam's south-east wall, likely a wall raise:** <b class="hl">0.39 km²</b> where vegetation was. The first thing a dam-safety team would want to see.
 - 🪤 **The data had a trap**, and the provided method maps it as change (<b class="bad">111 km²</b>); found, proved and corrected.
-- 🎯 **Precise:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), and it catches <b class="good">57 of 63</b> sampled changes; the low recall estimate (0.17) rests on 6 disputed points and needs more labels.
+- 🎯 **Precise:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), and it catches <b class="good">57 of 63</b> sampled changes; recall is low (0.17) because three colour bands cannot tell subtle change from noise: more bands and more labels would raise it.
 - 📈 **Over three years the footprint grows** (exploratory): change outside the named facilities rises from 3.3 to <b class="hl">14.3 km²</b>.
 
 🧭 **In the brief's categories**, the mine is operating normally:
@@ -420,13 +432,13 @@ erDiagram
 ## 🚧 8. Limitations and next steps
 
 > [!WARNING]
-> **The map misses most subtle change.** Recall is <b class="bad">0.17 ± 0.11</b>: it is built to avoid false alarms, so faint tailings and burn changes fall below the threshold.
+> **The map misses most subtle change.** Recall is <b class="bad">0.17 ± 0.11</b>: it is built to avoid false alarms, and three colour bands cannot separate faint tailings and burn changes from noise (the [five reasons](#-5-how-accurate-is-it)).
 
 🔬 **Next validation step.** A human analyst relabels the 200 points, plus about 200 more in the "no change" groups, on very-high-resolution imagery from the same weeks (Planet or Esri Wayback). That tightens recall, replaces AI labels, and gives the first training set for a learned model; a per-type threshold would recover the missed tailings changes.
 
 | | Gap | Why it matters | Next step |
 |---|---|---|---|
-| 🎨 | RGB only | Water, shadow and dark wet soil look alike; burns look like wet ground | Add NIR (B08) for NDVI at the same 10 m, and the L2A cloud and shadow mask |
+| 🎨 | RGB only | Water, shadow and dark wet soil look alike; burns look like wet ground; subtle change hides in noise, the main cause of low recall | Add NIR (B08, 10 m) for vegetation and burns, SWIR (B11, B12, 20 m) for moisture and fresh rock, and the L2A cloud and shadow mask |
 | ⛰️ | No elevation | No volumes; pits versus dumps rest on context | Stereo very-high-resolution imagery or LiDAR |
 | ✏️ | Hand-drawn facility regions | Facility edges are an analyst's call | Licence boundaries or a maintained facility database |
 | 🔍 | Super-resolution | Models like SEN2SR invent detail that differs between dates, creating false change | Display only: the map's 2.5 m layer is SEN2SR on the analysed dates; detection stays on the 10 m bands |
