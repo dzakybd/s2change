@@ -77,7 +77,7 @@ Co-registration was checked per zone by phase correlation in 8 windows: the shif
 
 ![Brightness change in the supplied pair and in true single passes, with its profile across the seams](docs/figures/07_trap_proof.png)
 
-*`scripts/fig_trap_proof.py`. Red brighter, blue darker after; thin lines: where the supplied files switch pass.*
+*Same ground, two pairs: the brightness steps sit exactly where the supplied files switch pass, and vanish in single passes (`scripts/fig_trap_proof.py`).*
 
 **2. The pixels match four catalogue scenes exactly.** Matching every pixel against the Planetary Computer catalogue (`s2cd provenance`) found all three bands **identical, pixel for pixel**, to two scenes per date, with no pixel left unexplained:
 
