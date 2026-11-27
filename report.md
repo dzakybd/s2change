@@ -71,11 +71,19 @@ Co-registration was checked per zone by phase correlation in 8 windows: the shif
 
 ### The data trap: each "date" is two passes
 
+**The claim.** Neither supplied "date" is one image. Each file is stitched from two Sentinel-2 passes taken days apart, so the supplied pair holds brightness jumps that are not on the ground. Three independent checks support it.
+
+**1. The jumps are straight lines that ignore the landscape.** The before/after brightness ratio steps along straight lines at 12.6° that cut through bush, roads and pits alike (a). The same ground seen in single passes has no such lines (b). Across the seams, on natural ground north of the mine, the supplied pair jumps by about −0.21 and −0.12 in log brightness (about 19 % and 11 %) exactly where a file switches pass; the single passes stay within ±0.03 (c).
+
+![Brightness change in the supplied pair and in true single passes, with its profile across the seams](docs/figures/07_trap_proof.png)
+
+*`scripts/fig_trap_proof.py`. Red brighter, blue darker after; thin lines: where the supplied files switch pass.*
+
+**2. The pixels match four catalogue scenes exactly.** Matching every pixel against the Planetary Computer catalogue (`s2cd provenance`) found all three bands **identical, pixel for pixel**, to two scenes per date, with no pixel left unexplained:
+
 ![provenance](docs/figures/06_provenance.png)
 
 *Source scene of each pixel on both dates. The seams follow the swath edge of one orbit.*
-
-The difference image showed straight brightness steps at 12.6°. Matching every pixel against the Planetary Computer catalogue (`s2cd provenance`) found all three bands **identical, pixel for pixel**, to two scenes per date:
 
 | Nominal date | Really made of (tile 35LLG, baseline 05.09) |
 |---|---|
@@ -84,7 +92,7 @@ The difference image showed straight brightness steps at 12.6°. Matching every 
 
 So the gap between dates is 52–60 days, not 21. The pipeline splits the area into three zones, each a single before→after scene pair, normalises each zone on its own, and excludes 90 m around seams (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method's 111 km² in red, the western pass almost entirely flagged.
 
-**Check with the true dates.** The catalogue also holds single-pass scenes that cover the whole site, so the same pipeline was re-run on them (`scripts/real_dates.py`):
+**3. Re-running on true single passes changes the answer.** The catalogue also holds single-pass scenes that cover the whole site, so the same pipeline was re-run on them (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"; the scenes are in Downloads):
 
 | Pair | Provided method | This method | Dam-wall fill |
 |---|---:|---:|---:|
@@ -213,7 +221,7 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 | 🎨 | RGB only | Water, shadow and dark wet soil look alike; burns look like wet ground | Add NIR (B08) for NDVI at the same 10 m, and the L2A cloud and shadow mask |
 | ⛰️ | No elevation | No volumes; pits versus dumps rest on context | Stereo very-high-resolution imagery or LiDAR |
 | ✏️ | Hand-drawn facility regions | Facility edges are an analyst's call | Licence boundaries or a maintained facility database |
-| 🔍 | Super-resolution | Models like SEN2SR invent detail that differs between dates, creating false change | Use it for display only, never as detection input |
+| 🔍 | Super-resolution | Models like SEN2SR invent detail that differs between dates, creating false change | Display only: the map's 2.5 m layer is SEN2SR on the analysed dates; detection stays on the 10 m bands |
 | 📆 | Two mosaicked dates | Sun angle and pass mixes differ | Per-pixel acquisition dates, same-season pairs, per-pair calibration (as here) |
 
 ### ✅ The brief, covered
@@ -235,4 +243,4 @@ Malila (1980) change vector analysis; Otsu (1979); Canny (1986) hysteresis; Cant
 
 ---
 
-*Contains modified Copernicus Sentinel-2 data (2023–2026). Basemap in the app: Esri World Imagery. Built by Dzaky Zakiyal Fawwaz for the Solafune geospatial take-home.*
+*Contains modified Copernicus Sentinel-2 data (2023–2026). Map imagery in the app: the analysed scenes super-resolved with SEN2SR (ESA OpenSR, display only), over Esri World Imagery and Bing Aerial basemaps. Built by Dzaky Zakiyal Fawwaz for the Solafune geospatial take-home.*

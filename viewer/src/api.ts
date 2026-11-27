@@ -153,9 +153,6 @@ export const dbUri = (s: ReadyApi) => call<{ uri: string }>(s, "GET", "/api/db/c
 /** The SQL dump is a plain file download from the same origin (one table, or every table when omitted). */
 export const dbExportUrl = (s: ReadyApi, table?: string) => `${s.base}/api/db/export.sql${table ? `?table=${encodeURIComponent(table)}` : ""}`;
 
-/* ---------- other dates ---------- */
-
-
 /** Human message for a failed API call. */
 export function friendlyError(err: unknown, what = "the service"): string {
   if (err instanceof ApiError) {

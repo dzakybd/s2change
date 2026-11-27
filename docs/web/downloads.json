@@ -251,6 +251,220 @@
    ]
   },
   {
+   "title": "True single passes (comparison)",
+   "blurb": "The same site from single-pass scenes on the true acquisition dates, with no seams: the check behind the data trap (scripts/real_dates.py; on the map: Result, Ours, true passes).",
+   "items": [
+    {
+     "path": "data/processed/true_passes/sentinel2_20230808_stack.tif",
+     "title": "sentinel2_20230808_stack.tif",
+     "desc": "2023-08-08, one pass (B02, B03, B04).",
+     "size": "14.2 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/data_processed_true_passes_sentinel2_20230808_stack_tif.webp"
+    },
+    {
+     "path": "data/processed/true_passes/sentinel2_20230902_stack.tif",
+     "title": "sentinel2_20230902_stack.tif",
+     "desc": "2023-09-02, one pass (B02, B03, B04).",
+     "size": "13.0 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/data_processed_true_passes_sentinel2_20230902_stack_tif.webp"
+    },
+    {
+     "path": "data/processed/true_passes/change_map.tif",
+     "title": "change_map.tif",
+     "desc": "Robust change magnitude per pixel for this pair.",
+     "size": "11.3 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "change intensity: log10 Mahalanobis d2"
+      ],
+      [
+       "Type",
+       "float32"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-9999"
+      ]
+     ],
+     "image": "previews/data_processed_true_passes_change_map_tif.webp"
+    },
+    {
+     "path": "data/processed/true_passes/change_binary.tif",
+     "title": "change_binary.tif",
+     "desc": "Changed (1) or not (0) for this pair; 255 = no data.",
+     "size": "22 KB",
+     "kind": "binary",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "1 = change (robust CVA, hysteresis nominal FAR 0.001/1e-05)"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/data_processed_true_passes_change_binary_tif.webp"
+    },
+    {
+     "path": "docs/web/true_passes/change_features.geojson",
+     "title": "change_features.geojson",
+     "desc": "The change polygons of this pair, typed like the main result.",
+     "size": "367 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "134"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "26: d_blue, d_green, d_red, d_brightness, brightness_before, brightness_after, disturbed_fraction, confidence, neglog10_p, strong_fraction, touches_aoi_edge, zone, area_m2, perimeter_m, compactness, change_direction, in_disturbed_area, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, description"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "change_type",
+       "headline",
+       "area_m2",
+       "confidence"
+      ],
+      "rows": [
+       [
+        "DAM",
+        "water_level_change",
+        "Water level changed",
+        "241,100.00",
+        "0.21"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "235,300.00",
+        "0.13"
+       ],
+       [
+        "PIT-S",
+        "pit_excavation",
+        "Pit worked or deepened",
+        "172,000.00",
+        "0.28"
+       ],
+       [
+        "PIT-NW",
+        "pit_excavation",
+        "Pit worked or deepened",
+        "130,200.00",
+        "0.16"
+       ],
+       [
+        "TSF",
+        "water_level_change",
+        "Water level changed",
+        "96,300.00",
+        "0.22"
+       ]
+      ]
+     },
+     "image": "previews/docs_web_true_passes_change_features_geojson.webp"
+    }
+   ]
+  },
+  {
    "title": "Database and vectors",
    "blurb": "The SpatiaLite file holds the same tables the live PostGIS database serves.",
    "items": [
@@ -616,7 +830,7 @@
      "path": "report.md",
      "title": "report.md",
      "desc": "The full write-up, as shown in the Report tab.",
-     "size": "27 KB",
+     "size": "28 KB",
      "kind": "report"
     }
    ]

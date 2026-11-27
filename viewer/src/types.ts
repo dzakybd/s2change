@@ -60,7 +60,7 @@ export interface FacilityProps {
 }
 export type FacilityCollection = FeatureCollection<Geometry, FacilityProps>;
 
-/** What the map shows: the provided pair, or a comparison the API computed for two other dates. */
+/** What the map shows: the provided pair (two-pass mosaics) or the true single passes, both static exports. */
 export interface Dataset {
   id: string;
   dates: { before: string; after: string };

@@ -153,6 +153,26 @@ DOWNLOADS = [
         ],
     ),
     (
+        "True single passes (comparison)",
+        "The same site from single-pass scenes on the true acquisition dates, with no seams: the check behind the data trap"
+        " (scripts/real_dates.py; on the map: Result, Ours, true passes).",
+        [
+            ("data/processed/true_passes/sentinel2_20230808_stack.tif", "2023-08-08, one pass (B02, B03, B04).", "rgb"),
+            ("data/processed/true_passes/sentinel2_20230902_stack.tif", "2023-09-02, one pass (B02, B03, B04).", "rgb"),
+            ("data/processed/true_passes/change_map.tif", "Robust change magnitude per pixel for this pair.", "magnitude"),
+            (
+                "data/processed/true_passes/change_binary.tif",
+                "Changed (1) or not (0) for this pair; 255 = no data.",
+                "binary",
+            ),
+            (
+                "docs/web/true_passes/change_features.geojson",
+                "The change polygons of this pair, typed like the main result.",
+                "vector",
+            ),
+        ],
+    ),
+    (
         "Database and vectors",
         "The SpatiaLite file holds the same tables the live PostGIS database serves.",
         [

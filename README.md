@@ -143,7 +143,7 @@ src/s2cd/
   pipeline.py, cli.py, viz.py, db.py, site.py
 configs/                 thresholds (default.yaml), facility register
 sql/                     PostGIS schema + example queries
-app/                     FastAPI: results, DB explorer, compare jobs, agent (+ knowledge/)
+app/                     FastAPI: results, DB explorer, agent (+ knowledge/)
 viewer/                  TypeScript + MapLibre app (built into docs/viewer and the live site)
 scripts/                 report figures (HTML + Playwright), accuracy sample, AnyChange test, demo GIF
 docs/                    figures, web assets, api.md
