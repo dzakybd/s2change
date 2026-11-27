@@ -12,20 +12,17 @@ const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 export function featureCard(p: ChangeProps, facilityName: string | null): string {
   const t = typeInfo(p.change_type);
   const conf = Math.max(0, Math.min(1, p.confidence));
-  const see = p.evidence?.trim() || p.explanation;
-  const check = p.what_to_check?.trim();
+  const why = p.explanation?.trim() || p.evidence?.trim();
   return `<header class="ins-head">${typeIcon(p.change_type, 28)}<div><h3>${esc(changeTitle(p))}</h3><p class="muted">${esc(sentence(changeWhere(p)))}</p></div>${closeBtn}</header>
   <p class="ins-meta"><b class="num">${fmtArea(p.area_m2)}</b><span>changed</span><span class="chip">${typeIcon(p.change_type, 14)}${esc(t.label)}</span></p>
-  <div class="why"><span>What we see</span><p>${esc(sentence(see || "No evidence recorded."))}</p></div>
-  ${check ? `<div class="why check"><span>What to check</span><p>${esc(check)}</p></div>` : ""}
   ${p.touches_aoi_edge ? '<p class="note">Touches the edge of the area of interest, so its shape may be clipped.</p>' : ""}
-  <details class="tech"><summary>Technical details</summary>
+  <details class="tech" open><summary>Technical details</summary>
   <dl class="facts">
     <div><dt>Change type</dt><dd>${esc(t.label)} <span class="muted">(${esc(p.brief_category || "change")})</span></dd></div>
     <div><dt>Confidence</dt><dd class="num">${p.confidence.toFixed(2)}<span class="meter" aria-hidden="true"><i style="width:${(conf * 100).toFixed(0)}%"></i></span></dd></div>
     <div><dt>Significance</dt><dd class="num">−log10 p = ${p.neglog10_p.toFixed(1)}</dd></div>
     <div><dt>Direction</dt><dd>${esc(p.change_direction)}</dd></div>
-    <div class="wide"><dt>Rule explanation</dt><dd>${esc(sentence(p.explanation || "None recorded."))}</dd></div>
+    <div class="wide"><dt>Rule explanation</dt><dd>${esc(sentence(why || "None recorded."))}</dd></div>
     <div class="wide"><dt>Facility</dt><dd>${p.facility_id ? `${esc(facilityName ?? p.facility_id)} <span class="muted">(${esc(p.facility_id)})</span>` : '<span class="muted">Outside the register</span>'}</dd></div>
   </dl></details>`;
 }

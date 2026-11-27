@@ -87,14 +87,15 @@ const one = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1, minimumFr
 const two = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 
 export const fmtInt = (v: number): string => int.format(v);
-const three = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3, minimumFractionDigits: 3 });
-/** An area given in hectares, shown in km² with sensible precision (the data keeps hectares; 1 km² = 100 ha). */
+/** An area given in hectares: under 0.1 km² it reads in m² to the nearest 100 ("71,000 m²"), above in km². */
 export const fmtKm2 = (ha: number): string => {
   const v = ha / 100;
-  return `${v === 0 ? "0" : v < 0.1 ? three.format(v) : v < 10 ? two.format(v) : v < 100 ? one.format(v) : int.format(v)} km²`;
+  if (v === 0) return "0 km²";
+  if (v < 0.1) return `${int.format(Math.max(100, Math.round(ha * 100) * 100))} m²`;
+  return `${v < 10 ? two.format(v) : v < 100 ? one.format(v) : int.format(v)} km²`;
 };
-/** An area given in m²: small ones stay in m² ("2,900 m²"), from 0.01 km² up they read as km². */
-export const fmtArea = (m2: number): string => (m2 < 10_000 ? `${int.format(m2)} m²` : fmtKm2(m2 / 10_000));
+/** An area given in m², formatted like fmtKm2. */
+export const fmtArea = (m2: number): string => fmtKm2(m2 / 10_000);
 export const fmtPct = (share: number, digits = 0): string => `${(share * 100).toFixed(digits)}%`;
 
 export function ha(m2: number): number {
