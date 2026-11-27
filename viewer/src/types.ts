@@ -6,7 +6,7 @@ export type Bounds = [[number, number], [number, number]];
 /** [west, south, east, north] */
 type BBox = [number, number, number, number];
 
-export const RASTER_KEYS = ["before", "after_normalized", "change_intensity"] as const;
+export const RASTER_KEYS = ["before", "after_normalized", "change_intensity", "sr_before", "sr_after"] as const;
 export type RasterKey = (typeof RASTER_KEYS)[number];
 
 interface RasterEntry {
@@ -72,17 +72,6 @@ export interface Dataset {
   summary?: Record<string, number>;
 }
 
-/** One high-res capture over the AOI in the Esri World Imagery Wayback archive (docs/web/wayback.json). */
-export interface HiResCapture {
-  release: number;
-  /** Capture date over most of the mine; `dates` lists every capture date seen across it. */
-  date: string;
-  dates: string[];
-  sensor: string;
-  res_m: number;
-  tiles: string;
-}
-
 export type AoiCollection = FeatureCollection<Polygon>;
 
 export type AgentAction =
@@ -91,8 +80,7 @@ export type AgentAction =
   | { type: "show_run"; run_id: string }
   | { type: "set_layer"; layer: string }
   | { type: "set_view"; swipe?: boolean; oblique?: boolean }
-  | { type: "show_facility"; facility_id: string }
-  | { type: "compare_dates"; before: string; after: string };
+  | { type: "show_facility"; facility_id: string };
 
 export interface AgentChart {
   type: "bar" | "line";
@@ -167,23 +155,3 @@ export interface DbConnection {
   uri_masked: string;
 }
 
-/** A date from the curated catalogue: one clear scene per month, downloaded in advance. */
-export interface CompareDate {
-  date: string;
-  /** Share of AOI pixels flagged as cloud or shadow by the RGB check. */
-  aoi_cloud: number;
-  /** The comparison with the provided before date is precomputed. */
-  ready: boolean;
-}
-export interface CompareResult {
-  pair: string;
-  summary: { changed_ha: number; by_change_type?: Record<string, number>; by_facility?: Record<string, number> };
-  changes_url: string;
-  overlays: Record<"before" | "after" | "intensity", { url: string; bounds: Bounds }>;
-}
-export interface CompareJob {
-  job_id?: string;
-  status: "queued" | "running" | "done" | "error";
-  message?: string;
-  result?: CompareResult;
-}

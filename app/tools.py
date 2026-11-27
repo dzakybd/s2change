@@ -189,35 +189,21 @@ def readonly_sql(query: str) -> str:
 
 @tool
 @safe
-def list_dates() -> str:
-    """Dates the map can compare besides the provided pair: one clear Sentinel-2 scene per month after it (Sept 2023 to
-    now; rainy-season months are missing). Use them with map_action compare_dates. Their results are not in the database."""
-    from s2cd import catalog
-
-    return {"dates": [e["date"] for e in catalog.load()], "provided": ["provided-before", "provided-after"]}
-
-
-@tool
-@safe
 def map_action(
-    type: Literal["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility", "compare_dates"],
+    type: Literal["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility"],
     bbox: list[float] | None = None,
     run_id: str | None = None,
     ids: list[int] | None = None,
-    layer: Literal["imagery", "types", "intensity", "baseline", "facilities"] | None = None,
+    layer: Literal["sr", "imagery", "types", "intensity", "baseline", "facilities"] | None = None,
     swipe: bool | None = None,
     oblique: bool | None = None,
     facility_id: str | None = None,
-    before: str | None = None,
-    after: str | None = None,
 ) -> str:
     """Control the map the user is looking at (several actions per answer are fine; they run in order).
     fly_to: bbox=[west, south, east, north] lon/lat. highlight: run_id + polygon ids (from top_changes). show_run: switch the
-    displayed run. set_layer: layer = imagery (change polygons on sharp high-res imagery, the default), types (change polygons on the Sentinel-2 images; with swipe for before/after), intensity
+    displayed run. set_layer: layer = sr (change polygons on the analysed Sentinel-2 dates super-resolved to 2.5 m, the default; with swipe for before/after), imagery (change polygons on sharp high-res imagery from other dates), types (change polygons on the 10 m Sentinel-2 images; with swipe for before/after), intensity
     (change magnitude heat map), baseline (the provided method's mask: seams and haze), facilities (facility register). set_view: swipe (before/after slider) and/or oblique (tilted 2.5D view) true/false. show_facility: facility_id (from
-    facility_summary) -> zoom to it and open its card. compare_dates: before/after = 'provided-before', 'provided-after' or a
-    date from list_dates -> the map loads that comparison (results are not in the database). Only act on ids, runs,
-    facilities and dates returned by other tools."""
+    facility_summary) -> zoom to it and open its card. Only act on ids, runs and facilities returned by other tools."""
     if run_id is not None:
         run_id = resolve_run(run_id)
     if type == "highlight":
@@ -227,11 +213,7 @@ def map_action(
         ids = [r["id"] for r in found]
     if type == "show_facility" and not results.facility_rows(facility_id):
         raise ValueError(f"No facility {facility_id!r}. Call facility_summary to list them.")
-    if type == "compare_dates":
-        from s2cd import compare
-
-        compare.validate_pair(before or "", after or "")  # ValueError with a usable message for unknown dates
-    kw = {"layer": layer, "swipe": swipe, "oblique": oblique, "facility_id": facility_id, "before": before, "after": after}
+    kw = {"layer": layer, "swipe": swipe, "oblique": oblique, "facility_id": facility_id}
     return {"ok": True, "action": collector.current().add_action(type, bbox, run_id, ids, **kw)}
 
 
@@ -256,7 +238,6 @@ def make_table(title: str, columns: list[str], rows: list[list[str | float | Non
 
 
 ALL_TOOLS = [
-    list_dates,
     list_runs,
     area_summary,
     change_type_summary,

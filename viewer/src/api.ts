@@ -1,5 +1,5 @@
 import type { PolygonCollection } from "./overlays";
-import type { AgentAction, AgentChart, AgentResponse, AgentTable, AgentToolCall, CompareDate, CompareJob, DbConnection, DbPage, DbTable } from "./types";
+import type { AgentAction, AgentChart, AgentResponse, AgentTable, AgentToolCall, DbConnection, DbPage, DbTable } from "./types";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -37,11 +37,6 @@ export async function resolveApi(): Promise<ApiState> {
     // network error or timeout: fall through to disabled
   }
   return { kind: "disabled", reason: "unreachable" };
-}
-
-/** Absolute URL for a path the API returned (`/api/compare/files/...`) or already-absolute URLs. */
-export function apiUrl(state: ReadyApi, path: string): string {
-  return new URL(path, state.base || location.origin).href;
 }
 
 async function call<T>(state: ReadyApi, method: "GET" | "POST", path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
@@ -97,7 +92,7 @@ export const logout = (s: ReadyApi) => call<AuthState>(s, "POST", "/api/auth/log
 
 const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
-const ACTIONS = new Set(["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility", "compare_dates"]);
+const ACTIONS = new Set(["fly_to", "highlight", "show_run", "set_layer", "set_view", "show_facility"]);
 
 /** Defensive parse: unknown shapes degrade to an answer-only message instead of throwing in the UI. */
 function normalizeResponse(raw: unknown): AgentResponse {
@@ -160,9 +155,6 @@ export const dbExportUrl = (s: ReadyApi, table?: string) => `${s.base}/api/db/ex
 
 /* ---------- other dates ---------- */
 
-export const compareDates = (s: ReadyApi) => call<CompareDate[]>(s, "GET", "/api/compare/dates");
-export const compareStart = (s: ReadyApi, before: string, after: string) => call<CompareJob>(s, "POST", "/api/compare", { before, after });
-export const compareStatus = (s: ReadyApi, jobId: string) => call<CompareJob>(s, "GET", `/api/compare/${encodeURIComponent(jobId)}`);
 
 /** Human message for a failed API call. */
 export function friendlyError(err: unknown, what = "the service"): string {

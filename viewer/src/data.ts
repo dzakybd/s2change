@@ -1,4 +1,4 @@
-import type { AoiCollection, ChangeCollection, Dataset, FacilityCollection, HiResCapture, Manifest } from "./types";
+import type { AoiCollection, ChangeCollection, Dataset, FacilityCollection, Manifest } from "./types";
 
 /**
  * Where the exported web assets live. Resolution order: `?data=` query parameter,
@@ -47,8 +47,6 @@ export function indexed(fc: ChangeCollection): ChangeCollection {
   return fc;
 }
 
-/** High-res captures over the AOI from Esri Wayback (scripts/wayback.py), oldest first. */
-export const loadWayback = memo(() => getJson<HiResCapture[]>(dataUrl("wayback.json")));
 
 /** A static export (manifest.json + overlays + change polygons) in `dir` under the data base, as a map dataset. */
 async function loadStatic(dir: string, id: string, nominal: boolean, manifest?: Manifest): Promise<Dataset> {

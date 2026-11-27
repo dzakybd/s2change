@@ -23,7 +23,6 @@ export interface AgentHost {
   setLayer(layer: string): string | null;
   setView(view: { swipe?: boolean; oblique?: boolean }): string | null;
   showFacility(facilityId: string): string | null;
-  compareDates(before: string, after: string): Promise<string | null>;
   /** Clear anything the agent drew (highlights). */
   reset(): void;
 }
@@ -44,8 +43,6 @@ function actionLabel(a: AgentAction): string {
       return [a.swipe !== undefined ? `Swipe ${a.swipe ? "on" : "off"}` : "", a.oblique !== undefined ? `2.5D ${a.oblique ? "on" : "off"}` : ""].filter(Boolean).join(" · ");
     case "show_facility":
       return `Show ${a.facility_id}`;
-    case "compare_dates":
-      return `Compare ${a.before.replace("provided-", "provided ")} → ${a.after.replace("provided-", "provided ")}`;
   }
 }
 
@@ -172,8 +169,6 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
           return host.setView(a);
         case "show_facility":
           return host.showFacility(a.facility_id);
-        case "compare_dates":
-          return await host.compareDates(a.before, a.after);
       }
     } catch (err) {
       return err instanceof Error ? err.message : "Action failed";

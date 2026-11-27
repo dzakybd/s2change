@@ -608,7 +608,7 @@
      "path": "docs/api.md",
      "title": "api.md",
      "desc": "Every HTTP endpoint behind the map, database console and agent, with request and response shapes.",
-     "size": "5 KB",
+     "size": "4 KB",
      "kind": "markdown",
      "document": "previews/api.md"
     },

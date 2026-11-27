@@ -56,7 +56,6 @@ Inputs are the provided files in `inputs/`, unchanged. Outputs (already committe
 uv run s2cd provenance          # optional, online: STAC source scenes per pixel (B02-B04 only)
 make figures                    # re-render the report figures (HTML + Playwright)
 uv run python -m s2cd.sensitivity   # threshold sweep
-uv run --extra stac python -m s2cd.catalog   # optional, online: one clear scene per month for the date picker
 ```
 
 PostGIS locally: `make db-up && make run-postgis` (docker compose, PostGIS 16). Production publishing: `python -m app.publish` (see `app/README.md`).
@@ -139,7 +138,7 @@ src/s2cd/
   rgb.py                 visible-band indices and rules (greenness, redness, water, bare)
   register.py            facility register: outlines from imagery, change per facility
   interpret.py           change type + brief category + explanation per polygon
-  scenes.py, catalog.py, compare.py   other dates: monthly clear-scene catalogue + precomputed comparisons
+  scenes.py, catalog.py, compare.py   other dates: monthly clear-scene catalogue + comparisons (multi-year figure)
   sensitivity.py
   pipeline.py, cli.py, viz.py, db.py, site.py
 configs/                 thresholds (default.yaml), facility register

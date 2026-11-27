@@ -1,8 +1,5 @@
 import type { RasterKey } from "../types";
 
-/** "auto": Esri, with Bing for the z18+ close-ups Esri lacks over the AOI; or Bing alone; or an Esri Wayback capture. */
-export type Basemap = "auto" | "bing" | { tiles: string };
-
 /**
  * What each entry of the layer menu shows. The map is two synced MapLibre maps: `right` is what the interactive map
  * shows, `left` is what the clipped map shows to the left of the swipe handle. Rasters are listed with their opacity.
@@ -25,19 +22,18 @@ export interface LayerDef {
   typed?: boolean;
   /** Shows the provided baseline's change mask (provided pair only). */
   baseline?: boolean;
-  /** The swipe compares two high-res captures (picked in the workspace) instead of the Sentinel-2 dates. */
-  hires?: boolean;
 }
 
 export const LAYERS: readonly LayerDef[] = [
-  { id: "imagery", label: "Changes on high-res imagery", hint: "Sharp satellite imagery under the changes found in Sentinel-2; swipe between two capture dates (Esri Wayback, 2012-2024)", right: {}, left: {}, polygons: "fill", facilities: false, swipe: true, typed: true, hires: true },
+  { id: "sr", label: "Changes on 2.5 m Sentinel-2", hint: "The analysed dates sharpened 4x by SEN2SR: swipe between before and after. Fine detail is a model estimate, for viewing only", right: { sr_after: 1 }, left: { sr_before: 1 }, polygons: "fill", facilities: false, swipe: true, typed: true },
+  { id: "imagery", label: "Changes on high-res imagery", hint: "Sharp satellite imagery under the changes found in Sentinel-2 (captured on other dates)", right: {}, left: {}, polygons: "fill", facilities: false, swipe: false, typed: true },
   { id: "types", label: "Changes on Sentinel-2", hint: "The analysed 10 m images: swipe between before and after", right: { after_normalized: 1 }, left: { before: 1 }, polygons: "fill", facilities: false, swipe: true, typed: true },
   { id: "intensity", label: "Change intensity", hint: "log10 of the robust distance d², before thresholding", right: { after_normalized: 0.55, change_intensity: 0.95 }, left: { before: 0.55 }, polygons: "outline", facilities: false, swipe: true },
   { id: "baseline", label: "Provided baseline, the trap", hint: "What the brief's Euclidean + Otsu method calls change (red): mostly seams and haze", right: { after_normalized: 0.7 }, left: { before: 0.7 }, polygons: "outline", facilities: false, swipe: false, providedOnly: true, baseline: true },
   { id: "facilities", label: "Facility register", hint: "Mine facilities on high-res imagery, with the area changed in each", right: {}, left: {}, polygons: "outline", facilities: true, swipe: false, providedOnly: true },
 ];
 
-export const DEFAULT_LAYER = "imagery";
+export const DEFAULT_LAYER = "sr";
 
 export function layerById(id: string | null | undefined): LayerDef {
   return LAYERS.find((l) => l.id === id) ?? (LAYERS[0] as LayerDef);

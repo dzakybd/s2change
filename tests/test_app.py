@@ -18,9 +18,8 @@ from fastapi.testclient import TestClient  # noqa: E402
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 
 from app import agent as agent_mod  # noqa: E402
-from app import auth, collector, compare_jobs, main, tools  # noqa: E402
+from app import auth, collector, main, tools  # noqa: E402
 from app.guard import SqlRejected, guard_sql  # noqa: E402
-from s2cd import compare  # noqa: E402
 
 # --- SQL guard ----------------------------------------------------------------------------------------------------
 
@@ -240,28 +239,18 @@ CODE = "open-sesame-2024"
 
 
 @pytest.fixture
-def locked(client, monkeypatch, tmp_path):
+def locked(client, monkeypatch):
     """The same app with the gate closed; https base URL because the session cookie is Secure."""
     monkeypatch.setenv("ACCESS_CODE_HASH", auth.hash_code(CODE, iterations=1000))
     monkeypatch.setenv("SESSION_SECRET", "s" * 40)
     monkeypatch.setattr(main, "LOGIN_RATE", "5/minute")
-    monkeypatch.setattr(
-        main, "jobs", compare_jobs.CompareJobs(12, root=tmp_path, run=lambda *a: (_ for _ in ()).throw(ValueError("stub")))
-    )
     c = TestClient(main.app, base_url="https://testserver")
-    c.fake, c.root = client.fake, tmp_path
+    c.fake = client.fake
     return c
 
 
 def login(c, code=CODE, ip="7.7.7.7"):
     return c.post("/api/auth/login", json={"code": code}, headers={"X-Forwarded-For": ip})
-
-
-def cached_pair(root):
-    pair = compare.pair_id(compare.parse_label("provided-before"), compare.parse_label("provided-after"))
-    (root / pair).mkdir()
-    (root / pair / "summary.json").write_text('{"changed_ha": 1, "by_change_type": {}, "by_facility": {}, "date_labels": {}}')
-    (root / pair / "manifest.json").write_text('{"overlays": {}}')
 
 
 def test_hash_roundtrip_and_malformed_hashes():
@@ -305,7 +294,6 @@ def gated_calls(c):
     return {
         "chat": lambda: chat(c),
         "db uri": lambda: c.get("/api/db/connection/uri"),
-        "compare": lambda: c.post("/api/compare", json={"before": "provided-before", "after": "provided-after"}),
     }
 
 
@@ -321,13 +309,11 @@ def test_gated_endpoints_work_with_the_cookie(locked, monkeypatch):
     login(locked)
     assert chat(locked).status_code == 200
     assert locked.get("/api/db/connection/uri").json() == {"uri": "postgresql://reader@db/x"}
-    assert gated_calls(locked)["compare"]().status_code == 200  # uncached pair, queued for the stub worker
 
 
 def test_public_endpoints_stay_open(locked, monkeypatch):
     monkeypatch.setattr(main.db, "ping", lambda: True)
     assert locked.get("/api/health").status_code == 200
-    assert locked.get("/api/compare/nope").status_code == 404  # reached the handler, not the gate
 
 
 def test_tampered_foreign_and_expired_cookies_are_refused(locked, monkeypatch):
@@ -348,16 +334,6 @@ def test_tampered_foreign_and_expired_cookies_are_refused(locked, monkeypatch):
         assert r.status_code == 401, why
     assert locked.get("/api/db/connection/uri", headers={"Cookie": f"s2c_session={good}"}).status_code == 200
     assert not auth.session_valid("\u00b2.\u00e9")  # non-ASCII digits and signature: refused, not a 500
-
-
-def test_cached_compare_pair_is_public_new_pair_is_not(locked):
-    call = gated_calls(locked)["compare"]
-    assert call().status_code == 401  # nothing cached yet
-    cached_pair(locked.root)
-    r = call()
-    assert r.status_code == 200 and r.json()["status"] == "done"
-    bad = locked.post("/api/compare", json={"before": "provided-after", "after": "provided-before"})
-    assert bad.status_code == 422  # bad dates are reported before the gate
 
 
 def test_login_is_rate_limited_per_ip(locked):

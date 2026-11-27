@@ -1,4 +1,4 @@
-"""FastAPI app: results, database explorer, date comparison and the analyst chat. Run: uvicorn app.main:app"""
+"""FastAPI app: results, database explorer and the analyst chat. Run: uvicorn app.main:app"""
 
 from __future__ import annotations
 
@@ -12,15 +12,13 @@ from typing import Literal
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import OperationalError
 
-from app import agent, auth, compare_jobs, db, explorer, results
-from app.compare_jobs import DailyCap
-from s2cd import compare
+from app import agent, auth, db, explorer, results
 
 load_dotenv()
 log = logging.getLogger("s2cd.app")
@@ -33,14 +31,29 @@ def client_ip(request: Request) -> str:
     return forwarded.split(",")[-1].strip() or (request.client.host if request.client else "unknown")
 
 
+class DailyCap:
+    """Global cap on calls per UTC day (in memory, per process)."""
+
+    def __init__(self, cap: int):
+        self.cap, self.day, self.used, self._lock = cap, date.min, 0, threading.Lock()
+
+    def take(self) -> bool:
+        with self._lock:
+            today = date.today()
+            if today != self.day:
+                self.day, self.used = today, 0
+            if self.used >= self.cap:
+                return False
+            self.used += 1
+            return True
+
+
 limiter = Limiter(key_func=client_ip)
 daily = DailyCap(int(os.environ.get("AGENT_DAILY_CAP", "300")))
 RATE = os.environ.get("AGENT_RATE", "6/minute")
 DB_RATE = os.environ.get("DB_RATE", "60/minute")  # explorer pages: read-only, 5 s timeout
 EXPORT_RATE = os.environ.get("EXPORT_RATE", "6/minute")  # SQL dumps (cached for 10 minutes)
-COMPARE_RATE = os.environ.get("COMPARE_RATE", "10/minute")  # comparison job submissions
 LOGIN_RATE = os.environ.get("LOGIN_RATE", "5/minute")  # access-code attempts, per client IP
-jobs = compare_jobs.CompareJobs(int(os.environ.get("COMPARE_DAILY_CAP", "12")))
 
 app = FastAPI(title="s2change API")
 app.state.limiter = limiter
@@ -189,61 +202,6 @@ def db_connection():
 def db_connection_uri():
     """The read-only role's full URI (password included), for evaluators with the access code."""
     return {"uri": explorer.full_uri()}
-
-
-# ---- Other dates ---------------------------------------------------------------------------------------------------
-
-
-@app.get("/api/compare/dates")
-def compare_dates():
-    """The date catalogue (``s2cd.catalog``): one clear scene per month, already downloaded. ``ready`` marks dates whose
-    comparison with the provided before date is precomputed."""
-    from s2cd import catalog
-
-    before = compare.parse_label("provided-before")
-    return [
-        {
-            "date": e["date"],
-            "aoi_cloud": e["aoi_cloud"],
-            "ready": compare.is_done(jobs.root / compare.pair_id(before, date.fromisoformat(e["date"]))),
-        }
-        for e in catalog.load()
-    ]
-
-
-class CompareRequest(BaseModel):
-    before: str = Field(max_length=20)
-    after: str = Field(max_length=20)
-
-
-@app.post("/api/compare")
-@limiter.limit(lambda: COMPARE_RATE)
-def compare_start(request: Request, body: CompareRequest):
-    try:
-        if not jobs.is_cached(body.before, body.after):
-            auth.require_access(request)  # cached pairs are free to serve; a new run costs compute
-        job = jobs.submit(body.before, body.after)
-    except ValueError as e:
-        raise HTTPException(422, str(e)) from None
-    except compare_jobs.Refused as e:
-        raise HTTPException(429, str(e)) from None
-    return job.public()  # a cached pair is "done" at once, so the result must come with it
-
-
-@app.get("/api/compare/files/{pair}/{file}")
-def compare_file(pair: str, file: str):
-    path = jobs.root / pair / file
-    if not compare.PAIR.fullmatch(pair) or file not in compare_jobs.FILES or not path.is_file():
-        raise HTTPException(404, "No such file.")
-    return FileResponse(path, media_type=compare_jobs.FILES[file], headers={"Cache-Control": "public, max-age=86400"})
-
-
-@app.get("/api/compare/{job_id}")
-def compare_status(job_id: str):
-    job = jobs.get(job_id)
-    if job is None:
-        raise HTTPException(404, "Unknown job. It may have expired; submit the comparison again.")
-    return job.public()
 
 
 # ---- Analyst -------------------------------------------------------------------------------------------------------

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 MAX_IDS, MAX_POINTS, MAX_ROWS, MAX_ITEMS = 500, 200, 100, 6
 # Layer ids of the viewer's layer menu (viewer/src/map/layers.ts).
-LAYERS = ("imagery", "types", "intensity", "baseline", "facilities")
+LAYERS = ("sr", "imagery", "types", "intensity", "baseline", "facilities")
 
 
 @dataclass
@@ -50,12 +50,8 @@ class Collector:
             if not kw.get("facility_id"):
                 raise ValueError("show_facility needs facility_id.")
             action = {"type": type, "facility_id": str(kw["facility_id"])}
-        elif type == "compare_dates":
-            if not kw.get("before") or not kw.get("after"):
-                raise ValueError("compare_dates needs before and after.")
-            action = {"type": type, "before": str(kw["before"]), "after": str(kw["after"])}
         else:
-            types = "fly_to, highlight, show_run, set_layer, set_view, show_facility, compare_dates"
+            types = "fly_to, highlight, show_run, set_layer, set_view, show_facility"
             raise ValueError(f"type must be one of {types}.")
         self.actions.append(action)
         return action

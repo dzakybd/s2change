@@ -8,7 +8,7 @@ import type { AoiCollection, Bounds, ChangeCollection, ChangeProps, Dataset, Fac
 import { featureBounds } from "../overlays";
 import { LABEL_COUNT, labelTargets, labelText } from "./changes";
 import { labelPoint } from "./geo";
-import type { Basemap, LayerDef } from "./layers";
+import type { LayerDef } from "./layers";
 
 // maplibre-gl 6 looks for its worker next to the main module, which a bundler moves; point it at the emitted asset.
 maplibregl.setWorkerUrl(workerUrl);
@@ -16,9 +16,8 @@ maplibregl.setWorkerUrl(workerUrl);
 const ESRI_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const ESRI_ATTRIBUTION = 'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics';
 
-// High-res sources (see Basemap). Esri has no imagery over the AOI past z17 (it serves "Map data not yet available"
-// tiles), so Esri's z17 is overzoomed and Bing Aerial (real z18-19 imagery here) takes over from z18. `pick` shows one
-// Esri Wayback capture for the high-res date swipe. Mapbox Satellite was cloudy and soft there.
+// Esri has no imagery over the AOI past z17 (it serves "Map data not yet available" tiles), so Esri's z17 is overzoomed
+// and Bing Aerial (real z18-19 imagery here) takes over from z18. Mapbox Satellite was cloudy and soft there.
 const BING_TILES = [0, 1, 2, 3].map((n) => `https://ecn.t${n}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1`);
 const BING_ATTRIBUTION = 'Imagery &copy; <a href="https://www.microsoft.com/maps" target="_blank" rel="noopener">Microsoft</a>';
 
@@ -27,13 +26,11 @@ const BASE_STYLE: StyleSpecification = {
   sources: {
     esri: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 17, attribution: ESRI_ATTRIBUTION },
     bing: { type: "raster", tiles: BING_TILES, tileSize: 256, maxzoom: 19, attribution: BING_ATTRIBUTION },
-    pick: { type: "raster", tiles: [ESRI_TILES], tileSize: 256, maxzoom: 17, attribution: 'Archive &copy; <a href="https://livingatlas.arcgis.com/wayback/" target="_blank" rel="noopener">Esri Wayback</a>' },
   },
   layers: [
     { id: "background", type: "background", paint: { "background-color": "#e9edf2" } },
     { id: "esri", type: "raster", source: "esri", paint: { "raster-resampling": "linear", "raster-fade-duration": 120 } },
     { id: "bing", type: "raster", source: "bing", minzoom: 18, paint: { "raster-resampling": "linear", "raster-fade-duration": 120 } },
-    { id: "pick", type: "raster", source: "pick", layout: { visibility: "none" }, paint: { "raster-resampling": "linear", "raster-fade-duration": 120 } },
   ],
 };
 
@@ -111,7 +108,6 @@ export class MapStage {
   private markers: maplibregl.Marker[] = [];
   private oblique = false;
   private showChanges = true;
-  private hires: { left: Basemap; right: Basemap } = { left: "auto", right: "auto" };
   private extrude = false;
   private changeLabels: { pt: [number, number]; w: number; markers: maplibregl.Marker[] }[] = [];
 
@@ -279,24 +275,6 @@ export class MapStage {
   }
 
   /** Show or hide every change layer, to see the imagery underneath. */
-  /** The two captures the high-res swipe compares (left of the handle, right of it). */
-  setHiRes(left: Basemap, right: Basemap): void {
-    this.hires = { left, right };
-    this.apply();
-  }
-
-  private setBasemap(m: maplibregl.Map, source: Basemap): void {
-    const archived = typeof source === "object";
-    if (archived) {
-      const src = m.getSource("pick") as maplibregl.RasterTileSource;
-      if (src.tiles?.[0] !== source.tiles) src.setTiles([source.tiles]);
-    }
-    m.setLayoutProperty("pick", "visibility", archived ? "visible" : "none");
-    // Esri stays drawn underneath: it fills any gap in Bing's coverage and keeps its credit in the attribution.
-    m.setLayoutProperty("bing", "visibility", archived ? "none" : "visible");
-    m.setLayerZoomRange("bing", source === "auto" ? 18 : 0, 24);
-  }
-
   setChangesVisible(on: boolean): void {
     this.showChanges = on;
     this.apply();
@@ -311,9 +289,6 @@ export class MapStage {
   private apply(): void {
     const def = this.layer;
     const swipe = this.swipeActive;
-    const pair = swipe && def.hires ? this.hires : undefined;
-    this.setBasemap(this.main, pair?.right ?? "auto");
-    this.setBasemap(this.compare, pair?.left ?? "auto");
     for (const [m, side] of [[this.main, def.right], [this.compare, def.left]] as const) {
       for (const id of RASTER_KEYS) {
         if (!m.getLayer(id)) continue;

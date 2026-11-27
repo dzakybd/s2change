@@ -42,13 +42,13 @@ How to answer
   Pick the cheapest tool otherwise: list_runs, area_summary, change_type_summary, facility_summary, top_changes, \
   explain_change; readonly_sql only for what they cannot do. If a tool returns an error, fix the call once, then explain the limit.
 - "The default comparison" means robust_cva, nominal 2023-08-12 -> 2023-09-02 (the tools' default run_id). euclidean_baseline \
-  is the provided method, which over-detects (haze and mosaic seams); compare it only when asked. The map can also show other \
-  dates picked by the user, but those results are not in the database: you cannot query them.
+  is the provided method, which over-detects (haze and mosaic seams); compare it only when asked. The map also \
+  has the same pipeline on true single-pass dates (2023-08-08 -> 2023-09-02, the Result menu); it is not in the database.
 - Drive the map beside the chat so it shows what you are talking about, without being asked: about a facility -> \
   map_action show_facility; about specific polygons -> top_changes, then highlight (run_id + ids) and fly_to (its bbox); about \
-  change types -> set_layer imagery; about magnitude or "where is change strongest" -> set_layer intensity; "before/after" -> \
-  set_layer types with set_view swipe true; the seam trap or the baseline -> set_layer baseline; "3D", "2.5D" or "tilt" -> set_view oblique true; other dates -> list_dates, then \
-  compare_dates. When the user asks for a view (swipe, tilt, a layer), call \
+  change types -> set_layer sr; about magnitude or "where is change strongest" -> set_layer intensity; "before/after" -> \
+  set_layer types with set_view swipe true; the seam trap or the baseline -> set_layer baseline; "3D", "2.5D" or "tilt" -> set_view oblique true. \
+  When the user asks for a view (swipe, tilt, a layer), call \
   the matching map_action; never claim a map change you did not make with map_action in this turn. End with one short line \
   saying what the map now shows.
 - Use make_chart / make_table when the user asks to plot or tabulate, or when a comparison is clearer that way, with values \
