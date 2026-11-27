@@ -9,21 +9,34 @@ const closeBtn = `<button type="button" class="btn ghost icon sm" data-act="clos
 
 const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-export function featureCard(p: ChangeProps, facilityName: string | null): string {
+/** Where each value on the change card comes from (shown as tooltips). None is written by an AI model. */
+const SOURCE = {
+  area: "Area of the polygon: connected 10 m pixels flagged as changed by the calibrated change vector analysis, vectorised (algorithmic).",
+  why: "Written by fixed rules (s2cd/interpret.py), not by AI: thresholds on RGB indices (water, greenness, redness, brightness) before and after, plus overlap with the analyst-drawn facility register. The numbers are this polygon's own.",
+  type: "Assigned by the same fixed rules as Why this label; the category in brackets is a fixed mapping to the brief's change categories.",
+  confidence: "Algorithmic, not a probability: each pixel's change distance d² (per-zone noise model) on a log scale, 0 at the detection threshold and 1 at 100x it, averaged over the polygon.",
+  significance: "Statistical: mean −log10 p of each pixel's change under the noise model fitted on stable pixels (chi-square test). A value of 9 means p = 10⁻⁹.",
+  direction: "Algorithmic: mean brightness of the polygon after versus before.",
+  facility: "Spatial overlay with the facility register, whose outlines were drawn by an analyst on very-high-resolution imagery.",
+};
+const tip = (label: string, key: keyof typeof SOURCE) => `<dt class="src" title="${esc(SOURCE[key])}">${label}</dt>`;
+
+/** `strongerThan`: share of this pair's changes with a lower confidence, to read the score against the others. */
+export function featureCard(p: ChangeProps, facilityName: string | null, strongerThan: number | null = null): string {
   const t = typeInfo(p.change_type);
   const conf = Math.max(0, Math.min(1, p.confidence));
   const why = p.explanation?.trim() || p.evidence?.trim();
   return `<header class="ins-head">${typeIcon(p.change_type, 28)}<div><h3>${esc(changeTitle(p))}</h3><p class="muted">${esc(sentence(changeWhere(p)))}</p></div>${closeBtn}</header>
-  <p class="ins-meta"><b class="num">${fmtArea(p.area_m2)}</b><span>changed</span><span class="chip">${typeIcon(p.change_type, 14)}${esc(t.label)}</span></p>
+  <p class="ins-meta"><b class="num src" title="${esc(SOURCE.area)}">${fmtArea(p.area_m2)}</b><span>changed</span></p>
+  <div class="ins-why"><span class="src" title="${esc(SOURCE.why)}">Why this label <i>(rule-based)</i></span><p>${esc(sentence(why || "No rule recorded."))}</p></div>
   ${p.touches_aoi_edge ? '<p class="note">Touches the edge of the area of interest, so its shape may be clipped.</p>' : ""}
   <details class="tech" open><summary>Technical details</summary>
   <dl class="facts">
-    <div><dt>Change type</dt><dd>${esc(t.label)} <span class="muted">(${esc(p.brief_category || "change")})</span></dd></div>
-    <div><dt>Confidence</dt><dd class="num">${p.confidence.toFixed(2)}<span class="meter" aria-hidden="true"><i style="width:${(conf * 100).toFixed(0)}%"></i></span></dd></div>
-    <div><dt>Significance</dt><dd class="num">−log10 p = ${p.neglog10_p.toFixed(1)}</dd></div>
-    <div><dt>Direction</dt><dd>${esc(p.change_direction)}</dd></div>
-    <div class="wide"><dt>Rule explanation</dt><dd>${esc(sentence(why || "None recorded."))}</dd></div>
-    <div class="wide"><dt>Facility</dt><dd>${p.facility_id ? `${esc(facilityName ?? p.facility_id)} <span class="muted">(${esc(p.facility_id)})</span>` : '<span class="muted">Outside the register</span>'}</dd></div>
+    <div>${tip("Change type", "type")}<dd>${esc(t.label)} <span class="muted">(${esc(p.brief_category || "change")})</span></dd></div>
+    <div>${tip("Confidence", "confidence")}<dd class="num">${p.confidence.toFixed(2)}<span class="meter" aria-hidden="true"><i style="width:${(conf * 100).toFixed(0)}%"></i></span>${strongerThan === null ? "" : `<span class="muted conf-rank">stronger than ${fmtPct(strongerThan)} of the changes</span>`}</dd></div>
+    <div>${tip("Significance", "significance")}<dd class="num">−log10 p = ${p.neglog10_p.toFixed(1)}</dd></div>
+    <div>${tip("Direction", "direction")}<dd>${esc(p.change_direction)}</dd></div>
+    <div class="wide">${tip("Facility", "facility")}<dd>${p.facility_id ? `${esc(facilityName ?? p.facility_id)} <span class="muted">(${esc(p.facility_id)})</span>` : '<span class="muted">Outside the register</span>'}</dd></div>
   </dl></details>`;
 }
 

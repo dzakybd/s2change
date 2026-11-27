@@ -93,6 +93,10 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     const legend = q(el, ".legend");
 
     /* ---------- inspector ---------- */
+    const strongerThan = (c: number): number | null => {
+      const all = ds.changes.features.map((f) => f.properties.confidence).filter((v) => Number.isFinite(v));
+      return all.length && Number.isFinite(c) ? all.filter((v) => v < c).length / all.length : null;
+    };
     const markSelected = (fid: number | null) => {
       selectedFid = fid;
       for (const r of qa(legend, ".ch-row")) {
@@ -128,7 +132,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         const p = f.properties as unknown as ChangeProps;
         stage?.select(p.fid);
         markSelected(p.fid);
-        showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null));
+        showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null, strongerThan(p.confidence)));
       },
       onFacilityClick: (p: FacilityProps) => {
         stage?.select(null);
@@ -364,7 +368,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         legend.querySelector(".lg-head")?.setAttribute("aria-expanded", "false");
       }
       const p = f.properties;
-      showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null));
+      showInspector(featureCard(p, p.facility_id ? (facName.get(p.facility_id) ?? null) : null, strongerThan(p.confidence)));
     };
     const rowFid = (e: Event): number | null => {
       const v = (e.target as HTMLElement).closest<HTMLElement>(".ch-row")?.dataset["fid"];
