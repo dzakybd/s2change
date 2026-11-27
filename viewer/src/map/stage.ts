@@ -8,7 +8,7 @@ import type { AoiCollection, Bounds, ChangeCollection, ChangeProps, Dataset, Fac
 import { featureBounds } from "../overlays";
 import { LABEL_COUNT, labelTargets, labelText } from "./changes";
 import { labelPoint } from "./geo";
-import type { LayerDef } from "./layers";
+import type { Basemap, LayerDef } from "./layers";
 
 // maplibre-gl 6 looks for its worker next to the main module, which a bundler moves; point it at the emitted asset.
 maplibregl.setWorkerUrl(workerUrl);
@@ -16,13 +16,11 @@ maplibregl.setWorkerUrl(workerUrl);
 const ESRI_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const ESRI_ATTRIBUTION = 'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics';
 
-// Two high-res sources, switchable (setImagery). Esri has no imagery over the AOI past z17 (it serves "Map data not yet
-// available" tiles), so in Esri mode z17 is overzoomed and Bing Aerial, which has real z18-19 imagery here, takes over
-// from z18. Bing mode shows Bing at every zoom. Mapbox Satellite was cloudy and soft there.
+// Two high-res sources (see Basemap). Esri has no imagery over the AOI past z17 (it serves "Map data not yet available"
+// tiles), so Esri's z17 is overzoomed and, outside the Esri/Bing swipe, Bing Aerial (real z18-19 imagery here) takes over
+// from z18. Mapbox Satellite was cloudy and soft there.
 const BING_TILES = [0, 1, 2, 3].map((n) => `https://ecn.t${n}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1`);
 const BING_ATTRIBUTION = 'Imagery &copy; <a href="https://www.microsoft.com/maps" target="_blank" rel="noopener">Microsoft</a>';
-
-export type Imagery = "esri" | "bing";
 
 const BASE_STYLE: StyleSpecification = {
   version: 8,
@@ -278,12 +276,10 @@ export class MapStage {
   }
 
   /** Show or hide every change layer, to see the imagery underneath. */
-  /** High-res basemap: "esri" (Bing only for the z18+ close-ups Esri lacks) or "bing" at every zoom. */
-  setImagery(source: Imagery): void {
-    for (const m of this.maps) {
-      m.setLayoutProperty("esri", "visibility", source === "esri" ? "visible" : "none");
-      m.setLayerZoomRange("bing", source === "esri" ? 18 : 0, 24);
-    }
+  private setBasemap(m: maplibregl.Map, source: Basemap): void {
+    // Esri stays drawn under Bing: it fills any gap in Bing's coverage and keeps its credit in the attribution.
+    m.setLayoutProperty("bing", "visibility", source === "esri" ? "none" : "visible");
+    m.setLayerZoomRange("bing", source === "auto" ? 18 : 0, 24);
   }
 
   setChangesVisible(on: boolean): void {
@@ -300,6 +296,9 @@ export class MapStage {
   private apply(): void {
     const def = this.layer;
     const swipe = this.swipeActive;
+    const pair = swipe ? def.basemaps : undefined;
+    this.setBasemap(this.main, pair?.right ?? "auto");
+    this.setBasemap(this.compare, pair?.left ?? "auto");
     for (const [m, side] of [[this.main, def.right], [this.compare, def.left]] as const) {
       for (const id of RASTER_KEYS) {
         if (!m.getLayer(id)) continue;
