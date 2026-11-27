@@ -11,7 +11,7 @@
 > [!NOTE]
 > **RGB only.** The brief provides Sentinel-2 L2A bands B02, B03 and B04, and nothing else is used: no NIR or SWIR, no cloud mask, no elevation. The layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is an inference.
 
-The report follows the brief: **[1. Method](#-1-method)** (which algorithm, and why), **[2. Results](#-2-results)** (where change occurs, and its pattern) and **[3. Interpretation](#-3-interpretation)** (what the changes most likely represent). Limitations follow in section 4.
+The report follows the brief: **[1. Method](#-1-method)** (which algorithm, and why), **[2. Results](#-2-results)** (where change occurs, and its pattern) and **[3. Interpretation](#-3-interpretation)** (what the changes most likely represent). **[4. The system](#-4-the-system-stack-agent-and-database)** (stack, AI agent, database) and **[5. Limitations](#-5-limitations-and-next-steps)** follow.
 
 ## ⚡ The answer on one page
 
@@ -99,7 +99,22 @@ The 1-in-1,000 rate is per pixel on ground screened as unchanged, the design tar
 
 *The seams follow the swath edge of orbit 78, which covers only the east of the site.*
 
-🛠️ **What the pipeline does with it.** Each zone is normalised on its own, so pass-to-pass haze and brightness do not read as change, and the 90 m around each seam is left out (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method flags the western pass almost entirely.
+🛠️ **What the pipeline does with it: three pairs, each handled on its own.** The pairs are *not chosen*, the files fix them: in each zone, **before** is the pass the "12 Aug" file holds there and **after** is the pass the "2 Sep" file holds.
+
+| Zone | Before → after (true dates) | Gap | Share of the site |
+|---|---|---:|---:|
+| 🟦 West | 4 Jul → 2 Sep | 60 days | 38.9 % |
+| ▨ Middle strip | 4 Jul → 25 Aug | 52 days | 5.1 % |
+| 🟧 East | 1 Jul → 25 Aug | 55 days | 56 % |
+
+In each zone, separately:
+
+- ⚖️ **Normalise:** the after image is mapped onto the before image with an orthogonal regression on unchanged pixels (Canty & Nielsen, 2008), so a different pass's haze and sun do not read as change.
+- 📏 **Noise model and threshold:** learned per zone and brightness level, then calibrated on held-out stable pixels to <b class="good">0.1 %</b> false alarms.
+- ✂️ **Seams:** the 90 m on each side is left out (2.4 % of the area); a seam is a jump in pass, not on the ground.
+- 📅 **Dates:** every polygon stores its zone, so its true dates are known. Example: 0.40 of the 0.44 km² dam-wall fill lies in the east zone, so *1 Jul → 25 Aug*.
+
+*Swapping in other passes is a different analysis: Proof 3 below.* [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method flags the western pass almost entirely.
 
 🔁 **Proof 3. True single passes change the answer.** The same pipeline re-run on single passes that cover the whole site (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"; scenes in Downloads):
 
@@ -244,7 +259,115 @@ Over three years, in the same dry season, the mine grows and more of the change 
 
 🔔 **As a service**, the pipeline runs monthly on a new clear scene, against last month and the same month last year; changes outside a facility or above a size limit become alerts for an analyst. Each comparison is one more run in the database, already keyed by run.
 
-## 🚧 4. Limitations and next steps
+## 🏗️ 4. The system: stack, agent and database
+
+One Python package (`s2cd`) does the analysis. Everything else lets a reader check the results without installing anything.
+
+```mermaid
+flowchart LR
+  T["📥 GeoTIFFs, 2 dates<br/>+ 🛰️ STAC for provenance"] --> P["🐍 s2cd pipeline<br/>offline, writes files"]
+  P -->|app.publish| DB[("🗄️ PostGIS<br/>Supabase, read-only")]
+  DB --> A["⚡ FastAPI<br/>VPS: Caddy + PM2"]
+  A --> G["🤖 Agent: deepagents<br/>+ ✨ Gemini 3.5 Flash"]
+  B["🗺️ Viewer: map, report,<br/>database, chat"] <-->|HTTPS| A
+```
+
+| | Layer | Stack | Why |
+|---|---|---|---|
+| 🐍 | Pipeline | Python 3.12, uv, numpy, scipy, rasterio, scikit-image, geopandas, shapely | Windowed GeoTIFF I/O, robust statistics, morphology, valid polygons in metres (EPSG:32735) |
+| 🛰️ | Provenance | pystac-client, Planetary Computer | Finds the true pass behind every pixel (optional extra) |
+| 🗄️ | Database | **PostGIS 16** with GiST indexes on Supabase; **SpatiaLite** file offline | The geospatial DB the brief asks for; the app reads through a `SELECT`-only role |
+| ⚡ | API | FastAPI, uvicorn, slowapi, sqlglot | Typed endpoints, rate limits, SQL parsed and checked before it runs |
+| 🤖 | Agent | LangChain **deepagents** on **Gemini** | Answers questions about the results with typed tools only |
+| 🗺️ | Viewer | Vite, TypeScript, MapLibre GL, marked, Mermaid | Static bundle; this report is rendered from the same markdown |
+| 🚀 | Delivery | Caddy (TLS), PM2, GitHub Actions | One small VPS; CI runs ruff, pytest and the builds |
+
+### 🤖 The analyst agent
+
+*Ask in plain words; it answers with numbers from the database and moves the map.*
+
+- 🧰 **Tools only, no free hand:** 12 typed tools. deepagents' own planning, file, shell and sub-agent tools are switched off: a question needs a few calls, and each extra tool is attack surface.
+- 🔒 **Read-only by construction:** every query runs as `s2cd_reader` (`SELECT` only, 5 s timeout); free SQL passes a sqlglot guard (one `SELECT`, allow-listed tables, `LIMIT` ≤ 200).
+- 🧾 **Shows its work:** each answer returns the tool calls, including the SQL, so a number can be checked.
+- 🎯 **Honest framing:** the prompt states RGB-only evidence, the true pass dates, that confidence is signal strength (not accuracy) and that a change type is a hypothesis.
+- 💸 **Cheap to run:** the starter questions are answered once and kept on disk; the LLM libraries load only when a new question comes in.
+
+| Kind | Tools |
+|---|---|
+| 📊 Numbers | `list_runs`, `area_summary`, `change_type_summary`, `facility_summary`, `top_changes`, `explain_change` |
+| 📚 Background | `read_context` (notes on the site, seasons, method, business use) |
+| 🔎 Ad-hoc | `readonly_sql` (guarded) |
+| 🗺️ Output | `map_action` (fly to, highlight), `make_chart`, `make_table` |
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant V as Viewer
+  participant A as FastAPI
+  participant G as Agent (Gemini)
+  participant D as PostGIS (read-only)
+  U->>V: "Where was waste rock tipped?"
+  V->>A: POST /api/agent/chat (rate-limited)
+  A->>G: messages
+  G->>D: facility_summary, top_changes (SELECT)
+  D-->>G: numbers + polygon ids
+  G-->>A: answer + map_action + chart
+  A-->>V: answer, map actions, charts, tool calls
+  V-->>U: text, map flies there, polygons highlighted
+```
+
+### 🗃️ The database
+
+*Two runs (this method and the provided one) share one table; facilities are the analyst's register.*
+
+```mermaid
+erDiagram
+  change_runs ||--o{ change_features : "run_id"
+  facilities |o--o{ change_features : "facility_id (mostly inside)"
+  facilities ||--o| facility_changes : "facility_id"
+  change_runs {
+    text run_id PK
+    text method
+    date date_before
+    date date_after
+    jsonb params "thresholds, zones"
+    jsonb summary
+  }
+  change_features {
+    bigint id PK
+    text run_id FK
+    geometry geometry "MultiPolygon, EPSG 32735, GiST"
+    float area_m2
+    real confidence
+    smallint zone "true dates"
+    text change_type "likely type"
+    text facility_id
+    text description "one plain sentence"
+  }
+  facilities {
+    text facility_id PK
+    text name
+    text class "pit, dump, tailings ..."
+    geometry geometry "GiST"
+  }
+  facility_changes {
+    text facility_id PK
+    real changed_ha
+    jsonb change_types
+  }
+```
+
+| Table | Holds | Typical question |
+|---|---|---|
+| `change_runs` | One row per method and date pair, with its parameters and totals | *Which runs exist, and with which thresholds?* |
+| `change_features` | One row per change polygon: geometry, size, confidence, zone, likely type, facility, a sentence | *What changed inside the tailings facility?* |
+| `facilities` | The 8 named mine facilities, drawn on very-high-resolution imagery | *Where are the pits and dumps?* |
+| `facility_changes` | Change per facility, by type | *Which facility changed most?* |
+
+`change_features_wgs84` is a view in lon/lat for web maps. Example queries: [PostGIS](sql/queries_postgis.sql) · [SpatiaLite](sql/queries_spatialite.sql) · [explore it live](https://s2change.dzaky.ai.id/#/database).
+
+## 🚧 5. Limitations and next steps
 
 > [!WARNING]
 > **The map misses most subtle change.** Recall is <b class="bad">0.17 ± 0.11</b>: it is built to avoid false alarms, so faint tailings and burn changes fall below the threshold.
@@ -269,7 +392,7 @@ Over three years, in the same dry season, the mine grows and more of the change 
 | 4 ✅ | Visualise | Static figures here; interactive map with swipe, types and facilities | [Map](https://s2change.dzaky.ai.id/#/map) |
 | 5 ✅ | Interpret | Typed polygons with a sentence each, facility register, confounders | [Section 2](#-2-results) · [Section 3](#-3-interpretation) |
 
-The app's system, stack and security are described separately in [docs/system.md](docs/system.md).
+Security controls of the app are in [docs/system.md](docs/system.md).
 
 ### References
 
