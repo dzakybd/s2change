@@ -33,7 +33,7 @@ BLURB = {  # plain-language reading of each type, as in the report's table
     "seasonal_vegetation_or_burn": "Dry-season browning or burn scars outside the mine",
     "pit_excavation": "Bench and pit-floor changes",
     "water_level_change": "Pond and pit-lake edges moving",
-    "other": "Seams, haze, small builds; 0.01 km² of land clearing",
+    "other": "Seams, haze, small builds; 0.02 km² of land clearing",
 }
 ZOOM_HALF_PX = 140  # 2.8 km around the dam wall, as in the flow figure
 
@@ -206,7 +206,7 @@ body {{ width: 1500px; }}
 </div></div>
 <h2 class="zh">Zoom on three types <small>2.8 × 2.8 km each, same colours</small></h2>
 <div class="zooms">{zooms}</div>
-<p class="foot">Facility outlines are the analyst-drawn regions of the register, refined on the imagery and simplified here for display. Area is the area of change, not of new disturbance. The last row sums noise, unexplained, infrastructure and land clearing.</p>
+<p class="foot">Facility outlines are the register's analyst-drawn polygons, traced on very-high-resolution imagery and simplified here for display. Area is the area of change, not of new disturbance. The last row sums noise, unexplained, infrastructure and land clearing.</p>
 <p class="foot" style="margin-top:6px">Image: {km[0]:.1f} × {km[1]:.1f} km, Sentinel-2 L2A true colour (B04, B03, B02), 10 m, after date normalised to the before date.</p>
 </body></html>"""
 

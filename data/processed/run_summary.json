@@ -311,36 +311,35 @@
       "share_of_change": 0.809
     },
     "register_mine_classes": {
-      "share_of_aoi": 0.226,
-      "share_of_change": 0.738
+      "share_of_aoi": 0.242,
+      "share_of_change": 0.817
     },
     "register_all_facilities": {
-      "share_of_aoi": 0.294,
-      "share_of_change": 0.739
+      "share_of_aoi": 0.299,
+      "share_of_change": 0.817
     }
   },
   "change_type_ha": {
-    "tailings_deposition": 185.3,
-    "waste_dumping": 89.7,
-    "tailings_dam_raise": 39.2,
-    "seasonal_vegetation_or_burn": 36.4,
-    "pit_excavation": 25.8,
+    "tailings_deposition": 185.6,
+    "waste_dumping": 74.8,
+    "tailings_dam_raise": 43.8,
+    "pit_excavation": 39.8,
+    "seasonal_vegetation_or_burn": 35.9,
     "water_level_change": 18.3,
     "noise_or_artifact": 8.9,
-    "unexplained": 4.5,
-    "infrastructure_or_settlement": 4.0,
-    "land_clearing": 1.0,
-    "mine_expansion_clearing": 0.2
+    "unexplained": 3.4,
+    "land_clearing": 1.8,
+    "infrastructure_or_settlement": 0.9
   },
   "facility_changed_ha": {
-    "PIT-NW": 33.6,
-    "PIT-S": 37.7,
-    "WD-E": 36.2,
-    "TSF": 193.6,
+    "PLANT": 1.4,
+    "WD-E": 20.7,
+    "PIT-S": 55.0,
+    "PIT-NW": 41.1,
+    "TSF": 219.4,
     "DAM": 0.0,
-    "PLANT": 4.9,
     "CAMP": 0.0,
-    "TOWN": 0.4
+    "TOWN": 0.0
   },
   "land_cover_transitions": [
     {
@@ -400,5 +399,5 @@
       "share": 0.101
     }
   ],
-  "runtime_s": 13.6
+  "runtime_s": 14.4
 }

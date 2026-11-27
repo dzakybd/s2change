@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS facilities (
     facility_id  text PRIMARY KEY,                    -- 'PIT-NW', 'WD-E', 'TSF', ...
     name         text NOT NULL,
     class        text NOT NULL,                       -- pit_dump_complex, waste_dump, tailings, water_reservoir, plant, camp, settlement
-    cover        text NOT NULL,                       -- surface that defines the outline: bare, water or any
+    cover        text NOT NULL,                       -- how the outline was made: drawn (analyst polygon on very-high-resolution imagery)
     area_ha      real,
     geometry     geometry(MultiPolygon, 32735) NOT NULL
 );

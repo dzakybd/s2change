@@ -7,9 +7,7 @@ Two sources, both real:
   * the 2-month pair (the assignment) is the pipeline run in data/processed/run_summary.json and change_features.geojson;
   * the 1-, 2- and 3-year pairs (Aug 2023 to 27 Aug 2024, 7 Aug 2025, 14 Aug 2026) were computed with s2cd.compare, the app's
     date comparison; their fixed results are the table in app/knowledge/07_business.md (their scenes are not on disk).
-Why the waste-dumping bar of the 2-month pair is split: the yearly pairs were typed before the dam-wall class existed, so
-a raised dam wall counted as waste dumping there. The current rules give the assignment pair 0.90 km² of waste dumping and
-0.39 km² of dam raise (report.md section 2); the bar shows both, so it matches the report and stays comparable with the years.
+All four pairs are typed with the same rules and the same facility register, so their bars are comparable.
 """
 
 from __future__ import annotations
@@ -53,7 +51,6 @@ def assignment_pair() -> dict:
         "inside": total * share,
         "outside": total * (1 - share),
         "waste": run["change_type_ha"]["waste_dumping"] / 100,
-        "dam": run["change_type_ha"]["tailings_dam_raise"] / 100,
     }
 
 
@@ -142,7 +139,6 @@ body {{ width: 1500px; }}
 <div class="t"><div class="n">{last["outside"] / first["outside"]:.1f}×</div><p><b>More change outside the facilities</b> ({first["outside"]:.1f} → {last["outside"]:.1f} km²): the footprint spreads past the registered regions.</p></div>
 <div class="t"><div class="n">≈ {last["total"]:.0f}</div><p><b>Total levels off</b> after year two ({yrs[1]["total"]:.1f} → {last["total"]:.1f} km²), while the share inside falls from {yrs[1]["inside"] / yrs[1]["total"] * 100:.0f} % to {last["inside"] / last["total"] * 100:.0f} %.</p></div>
 </div>
-<p class="note"><b>Why the first waste bar is two parts.</b> The yearly pairs were typed before the dam-wall class existed, so a raised dam wall counted as waste dumping there. Today's rules give the 2-month pair {a["waste"]:.2f} km² of waste dumping (the report's type table) plus {a["dam"]:.2f} km² of dam-wall raise; the hatched part shows it, so all four bars count the same thing.</p>
 <p class="foot">Area of change is not new disturbance: re-worked ground counts too. The 2-month pair is the assignment's two images; the yearly pairs are the app's date comparison (Aug 2023 → 27 Aug 2024, 7 Aug 2025, 14 Aug 2026).</p>
 </body></html>"""
 

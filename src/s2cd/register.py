@@ -1,45 +1,27 @@
-"""Facility register: named facilities with data-driven outlines, and the change inside each.
+"""Facility register: named facilities with analyst-drawn outlines, and the change inside each.
 
-1. ``load`` reads configs/facility_register.yaml: analyst-defined regions (human-in-the-loop),
-   each with an id, name, class and the cover type that defines it (bare / water / any).
-2. ``outlines`` turns each region into the facility's actual footprint from the imagery:
-   pixels of that cover type inside the box, cleaned (closing, holes < 5 ha filled, parts < 0.5 ha removed).
-   "bare" means bare on BOTH dates (rgb.bare_mask), so seasonal grass is not mine surface.
-   Both functions take the before reflectance and the *normalized* after reflectance. Water must be water on *both* dates
-   (persistent water): the RGB water rule also fires on dark, hazy or shaded ground, which on a single date (more than twice
-   as much on the normalized T2 as on T1) swells the water outlines into the surrounding woodland. Shore fluctuations
-   between the dates are still labelled water_level_change by ``interpret``, which looks at the per-pixel water flip.
+1. ``load`` reads configs/facility_register.yaml: one polygon per facility, traced on very-high-resolution imagery
+   (human-in-the-loop), with an id, name and class.
+2. ``outlines`` makes them a clean partition: each polygon is clipped to the image grid and loses the area already claimed
+   by the facilities listed before it, so neighbours share one edge and no area is counted twice.
 3. ``change_by_facility`` intersects the change polygons with the outlines and reports per facility:
-   changed ha, share of the facility, area of each cover type before/after, and a one-line summary.
+   changed ha, share of the facility, area of each change type and a one-line summary.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 import geopandas as gpd
-import numpy as np
 import pandas as pd
-import rasterio.features
+import rasterio.transform
 import shapely
 import yaml
-from scipy import ndimage as ndi
-from skimage import morphology
 
-from . import rgb
 from .io import Grid
 
 REGISTER = Path(__file__).resolve().parents[2] / "configs" / "facility_register.yaml"
 MINE_CLASSES = ("pit_dump_complex", "waste_dump", "tailings", "plant")  # the mine footprint; camp, town and dam are context
-
-
-@dataclass(frozen=True)
-class RegisterRules:
-    closing_px: int = 2
-    min_part_ha: float = 0.5
-    max_hole_ha: float = 5.0  # fill gaps inside a facility, but keep real islands (e.g. woodland inside the TSF ring)
-    simplify_m: float = 5.0  # half a pixel: removes staircase vertices, keeps the shape
 
 
 def load(path: Path = REGISTER) -> list[dict]:
@@ -51,49 +33,28 @@ def footprint(facilities: gpd.GeoDataFrame):
     return shapely.union_all(facilities[facilities["class"].isin(MINE_CLASSES)].geometry)
 
 
-def cover_mask(kind: str, before: np.ndarray, after: np.ndarray, valid: np.ndarray) -> np.ndarray:
-    bare = rgb.bare_mask(before) & rgb.bare_mask(after)
-    water = rgb.water_mask(before) & rgb.water_mask(after)
-    return valid & {"bare": bare, "water": water, "any": bare | water}[kind]
-
-
-def _box_mask(box: list[float], grid: Grid) -> np.ndarray:
-    return rasterio.features.geometry_mask([shapely.box(*box)], (grid.height, grid.width), grid.transform, invert=True)
-
-
-def outlines(
-    entries: list[dict], before: np.ndarray, after: np.ndarray, valid: np.ndarray, grid: Grid, r: RegisterRules = RegisterRules()
-) -> gpd.GeoDataFrame:
-    """One (Multi)Polygon per facility: its cover type inside its box, cleaned."""
-    px_ha = grid.pixel_area_m2 / 1e4
-    min_px = int(round(r.min_part_ha / px_ha))
+def outlines(entries: list[dict], grid: Grid) -> gpd.GeoDataFrame:
+    """One MultiPolygon per facility, in register order; earlier entries win where drawn polygons overlap."""
+    west, south, east, north = rasterio.transform.array_bounds(grid.height, grid.width, grid.transform)
+    extent = shapely.box(west, south, east, north)
+    claimed = shapely.Polygon()
     rows = []
     for e in entries:
-        m = cover_mask(e["cover"], before, after, valid) & _box_mask(e["box"], grid)
-        m = ndi.binary_closing(m, morphology.disk(r.closing_px))
-        m = morphology.remove_small_holes(m, max_size=int(round(r.max_hole_ha / px_ha)))
-        m = morphology.remove_small_objects(m, max_size=min_px - 1)
-        parts = [
-            shapely.geometry.shape(g)
-            for g, v in rasterio.features.shapes(m.astype(np.uint8), mask=m, transform=grid.transform)
-            if v
-        ]
-        geom = shapely.union_all(parts).simplify(r.simplify_m) if parts else shapely.MultiPolygon()
+        drawn = shapely.make_valid(shapely.Polygon(e["polygon"]))
+        geom = drawn.intersection(extent).difference(claimed)
+        claimed = claimed.union(geom)
+        parts = [g for g in getattr(geom, "geoms", [geom]) if g.geom_type == "Polygon" and not g.is_empty]
         rows.append(
             {
                 "facility_id": e["id"],
                 "name": e["name"],
                 "class": e["class"],
-                "cover": e["cover"],
-                "area_ha": round(m.sum() * px_ha, 1),
-                "geometry": geom,
+                "cover": "drawn",  # how the outline was made (kept as a column for the database schema)
+                "area_ha": round(sum(p.area for p in parts) / 1e4, 1),
+                "geometry": shapely.MultiPolygon(parts),
             }
         )
-    gdf = gpd.GeoDataFrame(rows, crs=grid.crs)
-    gdf["geometry"] = gdf.geometry.apply(
-        lambda g: g if g.geom_type == "MultiPolygon" else shapely.MultiPolygon([g]) if not g.is_empty else g
-    )
-    return gdf
+    return gpd.GeoDataFrame(rows, crs=grid.crs)
 
 
 def change_by_facility(facilities: gpd.GeoDataFrame, changes: gpd.GeoDataFrame) -> pd.DataFrame:

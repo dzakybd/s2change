@@ -258,7 +258,7 @@
      "path": "data/change_detection.sqlite",
      "title": "change_detection.sqlite",
      "desc": "SpatiaLite: runs, change features, facility register and per-facility changes.",
-     "size": "11.6 MB",
+     "size": "11.2 MB",
      "kind": "sqlite",
      "tables": [
       {
@@ -346,7 +346,7 @@
      "path": "docs/web/change_features.geojson",
      "title": "change_features.geojson",
      "desc": "The change polygons with type, plain-language description, confidence and facility (web export).",
-     "size": "647 KB",
+     "size": "646 KB",
      "kind": "vector",
      "facts": [
       [
@@ -494,7 +494,7 @@
      "path": "docs/web/facilities.geojson",
      "title": "facilities.geojson",
      "desc": "The facility register: outlines, area changed (hectares in the file) and the change mix.",
-     "size": "594 KB",
+     "size": "10 KB",
      "kind": "vector",
      "facts": [
       [
@@ -524,39 +524,39 @@
       ],
       "rows": [
        [
-        "PIT-NW",
-        "North-west pit complex",
-        "pit_dump_complex",
-        "1,116.90",
-        "33.60"
-       ],
-       [
-        "PIT-S",
-        "South pit complex",
-        "pit_dump_complex",
-        "2,009.20",
-        "37.70"
+        "PLANT",
+        "Process plant and central yard",
+        "plant",
+        "95.10",
+        "1.40"
        ],
        [
         "WD-E",
         "Eastern waste dumps",
         "waste_dump",
-        "435.30",
-        "36.20"
+        "329.50",
+        "20.70"
+       ],
+       [
+        "PIT-S",
+        "South pit complex",
+        "pit_dump_complex",
+        "2,483.70",
+        "55.00"
+       ],
+       [
+        "PIT-NW",
+        "North-west pit complex",
+        "pit_dump_complex",
+        "1,316.40",
+        "41.10"
        ],
        [
         "TSF",
         "Tailings storage facility",
         "tailings",
-        "2,244.20",
-        "193.60"
-       ],
-       [
-        "DAM",
-        "Fresh-water dam",
-        "water_reservoir",
-        "509.70",
-        "0.00"
+        "2,184.40",
+        "219.40"
        ]
       ]
      },
@@ -616,7 +616,7 @@
      "path": "report.md",
      "title": "report.md",
      "desc": "The full write-up, as shown in the Report tab.",
-     "size": "25 KB",
+     "size": "27 KB",
      "kind": "report"
     }
    ]

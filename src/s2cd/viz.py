@@ -200,7 +200,7 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
             ha="center",
             bbox={"boxstyle": "round,pad=0.2", "fc": CLASS_COLORS[r["class"]], "ec": "none", "alpha": 0.85},
         )
-    frame(ax, f"Facility register: outlines (cover inside analyst boxes) over true colour, {p.date_labels['before']}")
+    frame(ax, f"Facility register: analyst-drawn outlines over true colour, {p.date_labels['before']}")
     ax.legend(
         handles=[Patch(facecolor="none", edgecolor=c, label=k) for k, c in CLASS_COLORS.items()], loc="lower right", fontsize=8
     )

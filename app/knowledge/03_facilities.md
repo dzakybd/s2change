@@ -1,6 +1,6 @@
 # Facility register (what each class is, how it looks at 10 m)
 
-The register (`configs/facility_register.yaml`, tables `facilities` and `facility_changes`) has 8 facilities in 7 classes. Regions are analyst-defined boxes; outlines come from the imagery (bare in both dates, or water in both dates). Facility numbers refer to the default comparison only.
+The register (`configs/facility_register.yaml`, tables `facilities` and `facility_changes`) has 8 facilities in 7 classes. Each outline is one analyst-drawn polygon traced on very-high-resolution imagery (Esri World Imagery) and checked against the 2023 Sentinel-2 image; facilities do not overlap. Facility numbers refer to the default comparison only.
 
 | Class | Facilities | What it is | RGB signature (B02/B03/B04 only) | Change type it maps to |
 |---|---|---|---|---|

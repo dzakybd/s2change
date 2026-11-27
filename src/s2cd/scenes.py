@@ -55,7 +55,8 @@ def _dedupe(items: list) -> list:
     """One item per datatake and tile: keep the newest processing baseline (pv.search sorts it first)."""
     seen, out = set(), []
     for it in items:
-        key = (it.properties.get("s2:datatake_id"), it.properties.get("s2:mgrs_tile"))
+        # the datatake id ends in the baseline ("..._N05.09"), so strip it or a reprocessed copy counts as another datatake
+        key = (it.properties.get("s2:datatake_id", "").rsplit("_N", 1)[0], it.properties.get("s2:mgrs_tile"))
         if key not in seen:
             seen.add(key)
             out.append(it)

@@ -17,13 +17,13 @@ The report follows the brief: **[1. Method](#-1-method)** (which algorithm, and 
 
 | 🛰️ Changed | 🏭 Inside the mine | 🪤 Versus the provided method | 🎯 Precision |
 |:-:|:-:|:-:|:-:|
-| **4.13 km²**<br>in 215 polygons | **74 %**<br>in the 8 named facilities | **27× less**<br>it maps seams as change | **0.67**<br>on 200 random points |
+| **4.13 km²**<br>in 215 polygons | **82 %**<br>in the 8 named facilities | **27× less**<br>it maps seams as change | **0.67**<br>on 200 random points |
 
 ![at a glance](docs/figures/00_at_a_glance.png)
 
-- ⛏️ **The mine was working, not spreading.** 4.13 km² changed in 215 polygons, 74 % of it inside the eight named mine facilities. Tailings were spread on the tailings storage facility, waste rock was tipped and pits were worked. Outside the mine, only 0.01 km² qualifies as clearing.
-- 🧱 **Fresh fill on the tailings dam's south-east wall, consistent with a wall raise:** 0.39 km² of rust-coloured fill where vegetation was. This is the change a dam-safety team would want first.
-- 📈 **Over three years the footprint grows (exploratory, not validated).** Comparing the same season each year, change typed as waste dumping rises from 5.7 to 20.2 km² and change outside the named facilities from 5.6 to 18.2 km².
+- ⛏️ **The mine was working, not spreading.** 4.13 km² changed in 215 polygons, 82 % of it inside the eight named mine facilities. Tailings were spread on the tailings storage facility, waste rock was tipped and pits were worked. Outside the mine, only 0.02 km² qualifies as clearing.
+- 🧱 **Fresh fill on the tailings dam's south-east wall, consistent with a wall raise:** 0.39 km² of rust-coloured fill where vegetation was. Single-pass scenes date it to between 4 July and 8 August. This is the change a dam-safety team would want first.
+- 📈 **Over three years the footprint grows (exploratory, not validated).** Comparing the same season each year, change typed as waste dumping rises from 2.3 to 11.3 km² and change outside the named facilities from 3.3 to 14.3 km².
 - 🪤 **The data had a trap.** Each supplied "date" is stitched from two satellite passes. The provided method maps the stitching as change (111 km², 27× too much). It was found, proved and corrected.
 - 🎯 **Checked on 200 random points:** when this map says "changed", it is right 2 times in 3; the provided method is right 1 time in 8. It is conservative: it finds roughly a fifth of all real change, missing subtle tailings and burn edges ([how accurate](#how-accurate-is-it)).
 
@@ -84,6 +84,16 @@ The difference image showed straight brightness steps at 12.6°. Matching every 
 
 So the gap between dates is 52–60 days, not 21. The pipeline splits the area into three zones, each a single before→after scene pair, normalises each zone on its own, and excludes 90 m around seams (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method's 111 km² in red, the western pass almost entirely flagged.
 
+**Check with the true dates.** The catalogue also holds single-pass scenes that cover the whole site, so the same pipeline was re-run on them (`scripts/real_dates.py`):
+
+| Pair | Provided method | This method | Dam-wall fill |
+|---|---:|---:|---:|
+| The provided mosaics (nominal 12 Aug → 2 Sep) | 111 km² | 4.13 km² | 0.44 km² |
+| Single pass, 8 Aug → 2 Sep 2023 (the clear dates closest to the nominal ones) | 194 km² | 2.25 km² | 0.10 km² |
+| Single pass, 4 Jul → 8 Aug 2023 | 4.6 km² | 12.1 km² | 0.44 km² |
+
+Two lessons. Without seams the provided method gets *worse* (194 km²): its real weakness is the brightness and haze difference between dates, which the normalisation removes; the seams only add to it. And the dam-wall fill happened **between 4 July and 8 August**, before the nominal before date: the mosaics catch it only because their "12 August" is really early July. Over the true 25 days (8 Aug → 2 Sep) the mine shows about half as much change. The provided pair stays the main result, because it is what the brief supplies.
+
 **Was the data already corrected?** Yes. It is ESA's Level-2A product, bit for bit: calibrated, orthorectified and atmospherically corrected to surface reflectance. The files carry no level tag, so this was established by the match above and by the −1000 offset visible in the darkest pixels. Reflectance is `(DN − 1000) / 10000`.
 
 | Correction | In the supplied data | Added here |
@@ -94,7 +104,7 @@ So the gap between dates is 52–60 days, not 21. The pipeline splits the area i
 
 ### Does it depend on one threshold?
 
-No. Over 16 settings (false-alarm rates from 1 in 100 to 1 in 100,000, minimum areas 1,000–10,000 m²), changed area stays within 2.1–6.8 km² and the share inside the 5 mining facilities of the register within 61–77 %. The share is lowest at the most lenient setting (61–62 %) and 74–77 % at the stricter ones: the strongest changes are the mining ones.
+No. Over 16 settings (false-alarm rates from 1 in 100 to 1 in 100,000, minimum areas 1,000–10,000 m²), changed area stays within 2.1–6.8 km² and the share inside the 5 mining facilities of the register within 68–88 %. The share is lowest at the most lenient setting (68 %) and 82–88 % at the stricter ones: the strongest changes are the mining ones.
 
 ![sensitivity](docs/figures/11_sensitivity.png)
 
@@ -111,7 +121,7 @@ There are no labels, three bands and two dates. The open toolboxes were checked:
 
 ## 📍 2. Results
 
-**Where.** Change concentrates in the mine: 74 % of the 4.13 km² lies inside the eight named facilities, and nearly half of all change is on the tailings storage facility. Outside the mine, change is scattered and small.
+**Where.** Change concentrates in the mine: 82 % of the 4.13 km² lies inside the eight named facilities, and more than half of all change is on the tailings storage facility. Outside the mine, change is scattered and small.
 
 **Pattern.** Change comes as patches moving on the tailings facility, brighter and redder faces at dumps and pit edges, bench changes inside the pits, and a long strip of fresh fill on the tailings dam's south-east wall. There are no straight seam lines left.
 
@@ -121,26 +131,26 @@ There are no labels, three bands and two dates. The open toolboxes were checked:
 
 | | Change type | Brief category | Polygons | Area | What we see |
 |---|---|---|---:|---:|---|
-| <img src="docs/figures/icons/icon_tailings_deposition.svg" width="20" alt=""> | Tailings deposition | mining activity | 61 | 1.85 km² | Wet slurry and drying beaches moving on the tailings facility |
-| <img src="docs/figures/icons/icon_waste_dumping.svg" width="20" alt=""> | Waste dumping | mining activity | 53 | 0.90 km² | Brighter, redder faces at dumps and pit edges: fresh oxidised rock |
-| <img src="docs/figures/icons/icon_tailings_dam_raise.svg" width="20" alt=""> | Tailings dam wall raised | mining activity | 2 | 0.39 km² | Fresh fill on the embankment where vegetation was |
+| <img src="docs/figures/icons/icon_tailings_deposition.svg" width="20" alt=""> | Tailings deposition | mining activity | 63 | 1.86 km² | Wet slurry and drying beaches moving on the tailings facility |
+| <img src="docs/figures/icons/icon_waste_dumping.svg" width="20" alt=""> | Waste dumping | mining activity | 47 | 0.75 km² | Brighter, redder faces at dumps and pit edges: fresh oxidised rock |
+| <img src="docs/figures/icons/icon_tailings_dam_raise.svg" width="20" alt=""> | Tailings dam wall raised | mining activity | 4 | 0.44 km² | Fresh fill on the embankment where vegetation was |
 | <img src="docs/figures/icons/icon_seasonal_vegetation_or_burn.svg" width="20" alt=""> | Seasonal vegetation or burn | seasonal / vegetation | 18 | 0.36 km² | Dry-season browning or burn scars outside the mine |
-| <img src="docs/figures/icons/icon_pit_excavation.svg" width="20" alt=""> | Pit excavation | mining activity | 26 | 0.26 km² | Bench and pit-floor changes |
+| <img src="docs/figures/icons/icon_pit_excavation.svg" width="20" alt=""> | Pit excavation | mining activity | 33 | 0.40 km² | Bench and pit-floor changes |
 | <img src="docs/figures/icons/icon_water_level_change.svg" width="20" alt=""> | Water level change | water change | 8 | 0.18 km² | Pond and pit-lake edges moving |
-| <img src="docs/figures/icons/icon_unexplained.svg" width="20" alt=""> | Noise, unexplained, infrastructure, clearing | other | 47 | 0.19 km² | Seams, haze, small builds; 0.01 km² of clearing |
+| <img src="docs/figures/icons/icon_unexplained.svg" width="20" alt=""> | Noise, unexplained, infrastructure, clearing | other | 42 | 0.15 km² | Seams, haze, small builds; 0.02 km² of clearing |
 
-**Per facility.** The tailings storage facility holds nearly half of all change. The last row combines the three facilities with almost no change: the settlement, the camp and the fresh-water dam.
+**Per facility.** The tailings storage facility holds more than half of all change. The last row combines the three facilities with almost no change: the settlement, the camp and the fresh-water dam.
 
 | Before → after (change in yellow) | Facility | Area | Changed | Mostly |
 |---|---|---:|---:|---|
-| <img src="docs/web/facilities/TSF_before.webp" alt="TSF before" width="64"> <img src="docs/web/facilities/TSF_after.webp" alt="TSF after" width="64"> | <img src="docs/figures/icons/fac_TSF.svg" width="20" alt=""> Tailings storage facility (TSF) | 22.44 km² | **1.94 km² (9 %)** | tailings deposition |
-| <img src="docs/web/facilities/PIT-S_before.webp" alt="PIT-S before" width="64"> <img src="docs/web/facilities/PIT-S_after.webp" alt="PIT-S after" width="64"> | <img src="docs/figures/icons/fac_PIT-S.svg" width="20" alt=""> South pit complex | 20.09 km² | 0.38 km² (2 %) | pit / bench activity |
-| <img src="docs/web/facilities/WD-E_before.webp" alt="WD-E before" width="64"> <img src="docs/web/facilities/WD-E_after.webp" alt="WD-E after" width="64"> | <img src="docs/figures/icons/fac_WD-E.svg" width="20" alt=""> Eastern waste dumps | 4.35 km² | 0.36 km² (8 %) | waste dumping |
-| <img src="docs/web/facilities/PIT-NW_before.webp" alt="PIT-NW before" width="64"> <img src="docs/web/facilities/PIT-NW_after.webp" alt="PIT-NW after" width="64"> | <img src="docs/figures/icons/fac_PIT-NW.svg" width="20" alt=""> North-west pit complex | 11.17 km² | 0.34 km² (3 %) | waste dumping |
-| <img src="docs/web/facilities/PLANT_before.webp" alt="PLANT before" width="64"> <img src="docs/web/facilities/PLANT_after.webp" alt="PLANT after" width="64"> | <img src="docs/figures/icons/fac_PLANT.svg" width="20" alt=""> Process plant | 1.95 km² | 0.05 km² | infrastructure |
-| <img src="docs/web/facilities/TOWN_before.webp" alt="TOWN before" width="64"> <img src="docs/web/facilities/TOWN_after.webp" alt="TOWN after" width="64"> | <img src="docs/figures/icons/fac_TOWN.svg" width="20" alt=""> Settlement, camp, fresh-water dam | 18.15 km² | 0.004 km² | — |
+| <img src="docs/web/facilities/TSF_before.webp" alt="TSF before" width="64"> <img src="docs/web/facilities/TSF_after.webp" alt="TSF after" width="64"> | <img src="docs/figures/icons/fac_TSF.svg" width="20" alt=""> Tailings storage facility (TSF) | 21.84 km² | **2.19 km² (10 %)** | tailings deposition, dam-wall fill |
+| <img src="docs/web/facilities/PIT-S_before.webp" alt="PIT-S before" width="64"> <img src="docs/web/facilities/PIT-S_after.webp" alt="PIT-S after" width="64"> | <img src="docs/figures/icons/fac_PIT-S.svg" width="20" alt=""> South pit complex | 24.84 km² | 0.55 km² (2 %) | pit / bench activity |
+| <img src="docs/web/facilities/PIT-NW_before.webp" alt="PIT-NW before" width="64"> <img src="docs/web/facilities/PIT-NW_after.webp" alt="PIT-NW after" width="64"> | <img src="docs/figures/icons/fac_PIT-NW.svg" width="20" alt=""> North-west pit complex | 13.16 km² | 0.41 km² (3 %) | waste dumping |
+| <img src="docs/web/facilities/WD-E_before.webp" alt="WD-E before" width="64"> <img src="docs/web/facilities/WD-E_after.webp" alt="WD-E after" width="64"> | <img src="docs/figures/icons/fac_WD-E.svg" width="20" alt=""> Eastern waste dumps | 3.30 km² | 0.21 km² (6 %) | waste dumping |
+| <img src="docs/web/facilities/PLANT_before.webp" alt="PLANT before" width="64"> <img src="docs/web/facilities/PLANT_after.webp" alt="PLANT after" width="64"> | <img src="docs/figures/icons/fac_PLANT.svg" width="20" alt=""> Process plant | 0.95 km² | 0.01 km² | infrastructure |
+| <img src="docs/web/facilities/TOWN_before.webp" alt="TOWN before" width="64"> <img src="docs/web/facilities/TOWN_after.webp" alt="TOWN after" width="64"> | <img src="docs/figures/icons/fac_TOWN.svg" width="20" alt=""> Settlement, camp, fresh-water dam | 15.24 km² | 0 km² | — |
 
-The facility outlines come from the imagery inside analyst-drawn regions (`configs/facility_register.yaml`). [Open them on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities).
+Each facility outline is one analyst-drawn polygon traced on very-high-resolution imagery and checked against the 2023 image; facilities do not overlap (`configs/facility_register.yaml`). [Open them on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities).
 
 **Land cover before → after.** A check that needs no facility register: simple RGB rules sort the changed pixels into water, bright surface, bare ground and vegetation. Vegetation → bare ground (0.62 km², 15 %) is the new disturbance; much of it is along the dam wall. Most of the rest is bare ground re-worked (30 %) or turned to bright tailings (18 %).
 
@@ -166,7 +176,7 @@ Compare in the app: [Aug 2023 → Aug 2024](https://s2change.dzaky.ai.id/#/map?b
 
 ## 🧭 3. Interpretation
 
-**What the changes represent.** Over the two dates the mine is operating normally: **mining activity** (tailings deposition, waste dumping, pit work and a likely dam-wall raise) is 3.4 km² of the 4.13 km². **Seasonal vegetation change** (dry-season browning or burns outside the mine) is 0.36 km². **Land clearing** outside the mine is only 0.01 km², and there is no urban expansion. **Noise and artifacts** were mostly removed by the seam correction; the remaining 0.19 km² is labelled as such. Over three years, comparing the same dry season, the mine is growing, and more of the change sits outside the named facilities.
+**What the changes represent.** Over the two dates the mine is operating normally: **mining activity** (tailings deposition, waste dumping, pit work and a likely dam-wall raise) is 3.4 km² of the 4.13 km². **Seasonal vegetation change** (dry-season browning or burns outside the mine) is 0.36 km². **Land clearing** outside the mine is only 0.02 km², and there is no urban expansion. **Noise and artifacts** were mostly removed by the seam correction; the remaining 0.15 km² (with unexplained and small builds) is labelled as such. Over three years, comparing the same dry season, the mine is growing, and more of the change sits outside the named facilities.
 
 **How to read each pattern.** Every type is a hypothesis, with what could fake it in RGB and what would confirm it:
 

@@ -12,8 +12,8 @@ mapped as follows (first matching rule wins, in this order):
 | pit_excavation                 | (mining)              | inside a pit/dump complex, not brighter-and-redder                  |
 | waste_dumping                  | (mining)              | inside a waste dump; or brighter + redder in a pit/dump complex or  |
 |                                |                       | at the footprint edge (fresh oxidized rock)                         |
-| tailings_dam_raise             | (mining)              | brighter + redder, overlapping the tailings facility but mostly at  |
-|                                |                       | its edge (fresh fill on the embankment)                             |
+| tailings_dam_raise             | (mining)              | brighter + redder, touching the tailings facility's rim and mostly  |
+|                                |                       | within 100 m of it (tailings are grey: fresh fill on the embankment)|
 | tailings_deposition            | (mining)              | inside the tailings storage facility                                |
 | infrastructure_or_settlement   | urban expansion       | inside the plant, camp or settlement                                |
 | mine_expansion_clearing        | land clearing         | vegetation -> bare, touching the mine footprint                     |
@@ -83,7 +83,9 @@ class InterpretRules:
     footprint_touch_m: float = 50.0
     greenness_drop: float = 0.015  # gcc drop that counts as vegetation loss
     redder: float = 0.05  # redness (B04/B02) increase that marks fresh oxidized material
-    dam_edge_share: float = 0.1  # least share inside the tailings facility for edge fill to count as its embankment
+    dam_edge_m: float = 50.0  # red fill within this distance of the tailings facility's rim counts as its embankment ...
+    rim_width_m: float = 100.0  # ... unless most of it lies deeper inside the facility than this (then it is a beach)
+    max_interior_share: float = 0.5
 
 
 def _zonal(labels: np.ndarray, n: int, values: np.ndarray) -> np.ndarray:
@@ -159,7 +161,9 @@ def facility_context(polys: gpd.GeoDataFrame, facilities: gpd.GeoDataFrame | Non
     ``footprint`` is a (Multi)Polygon, normally ``register.footprint(facilities)``.
     """
     out = pd.DataFrame(
-        {"facility_id": None, "facility_class": None, "facility_share": 0.0, "near_footprint": False}, index=polys.index
+        {"facility_id": None, "facility_class": None, "facility_share": 0.0, "edge_m": np.inf, "interior_share": 0.0}
+        | {"near_footprint": False},
+        index=polys.index,
     )
     if facilities is not None and len(facilities):
         inter = gpd.overlay(
@@ -175,6 +179,10 @@ def facility_context(polys: gpd.GeoDataFrame, facilities: gpd.GeoDataFrame | Non
             out.loc[best.index, "facility_id"] = best["facility_id"]
             out.loc[best.index, "facility_class"] = best["class"]
             out.loc[best.index, "facility_share"] = share.values
+            fac_geom = facilities.set_index("facility_id").geometry
+            pairs = [(polys.geometry[pid], fac_geom[fid]) for pid, fid in zip(best.index, best["facility_id"], strict=True)]
+            out.loc[best.index, "edge_m"] = [g.distance(f.boundary) for g, f in pairs]
+            out.loc[best.index, "interior_share"] = [g.intersection(f.buffer(-r.rim_width_m)).area / g.area for g, f in pairs]
     if footprint is not None:
         out["near_footprint"] = polys.geometry.distance(footprint) <= r.footprint_touch_m
     return out
@@ -194,14 +202,20 @@ def label(polys: gpd.GeoDataFrame, ev: pd.DataFrame, ctx: pd.DataFrame, r: Inter
             t, why = "noise_or_artifact", "lies mostly on a mosaic seam or is tiny and weak"
         elif e.water_flip >= r.water_flip_share and e.near_water >= r.water_context_share:
             t, why = "water_level_change", f"{e.water_flip:.0%} of it switched between water and land"
+        elif (
+            c.facility_class == "tailings"
+            and c.edge_m <= r.dam_edge_m
+            and c.interior_share < r.max_interior_share
+            and brighter
+            and d_red >= r.redder
+        ):
+            t = "tailings_dam_raise"  # tailings are grey; red, brighter ground on the facility is fresh fill (laterite)
+            why = f"brighter and redder (redness {d_red:+.2f}) at the rim of {c.facility_id}: fresh fill, not grey tailings"
         elif fac in FACILITY_TO_TYPE:
             t = FACILITY_TO_TYPE[fac]
             if fac == "pit_dump_complex" and brighter and d_red >= r.redder:
                 t = "waste_dumping"
             why = f"inside {c.facility_id} ({fac}); {'brighter' if brighter else 'darker'}, redness {d_red:+.2f}"
-        elif c.facility_class == "tailings" and c.facility_share >= r.dam_edge_share and brighter and d_red >= r.redder:
-            t = "tailings_dam_raise"
-            why = f"brighter and redder (redness {d_red:+.2f}), {c.facility_share:.0%} inside {c.facility_id}, rest at its edge"
         elif c.near_footprint and brighter and d_red >= r.redder:
             t, why = "waste_dumping", f"brighter and redder (redness {d_red:+.2f}) at the mine edge: fresh oxidized material"
         elif veg_to_bare:

@@ -290,7 +290,7 @@ def run(cfg: Config) -> Products:
     base_layers = {k: v for k, v in layers.items() if k not in ("d2", "neglog10_p")}
     features["euclidean_baseline"] = vectorize.polygonize(base_bin, grid, base_layers, noise_sigma, high, low)
 
-    outlines = register.outlines(register.load(cfg.facility_register), r1, r2n, valid, grid)
+    outlines = register.outlines(register.load(cfg.facility_register), grid)
     mine = register.footprint(outlines)
     polys = features["robust_cva"]
     irules = interpret.InterpretRules()
