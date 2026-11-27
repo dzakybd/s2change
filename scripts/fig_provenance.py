@@ -28,6 +28,7 @@ OUT = ROOT / "docs/figures/06_provenance.png"
 MAP_PX = 1000
 WEST, EAST = "#6366f1", "#f59e0b"  # the two orbits: R121 (west) and R078 (east), the same on both dates
 NOMINAL = {"2023-08-12": "12 Aug", "2023-09-02": "2 Sep"}
+SEAM_BUFFER_PX = 9  # the 90 m around every seam that the pipeline leaves out
 
 
 def short(d: str) -> str:
@@ -72,6 +73,37 @@ def map_img(base: np.ndarray, src: np.ndarray, west_idx: int) -> tuple[str, list
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode(), centres
 
 
+def zone_img(
+    base: np.ndarray, src: np.ndarray, west: tuple[int, int], buffer_px: int
+) -> tuple[str, dict[str, tuple[float, float]]]:
+    """The three zones (before pass x after pass): west tinted WEST, east EAST, the middle strip striped (west pass before,
+    east pass after); the excluded seam buffer white. Returns the data URI and each zone's label position (x, y in 0-1)."""
+    valid = (src >= 0).all(0)
+    wb, wa = src[0] == west[0], src[1] == west[1]
+    zones = {"West": valid & wb & wa, "Middle": valid & wb & ~wa, "East": valid & ~wb & ~wa}
+    h, w = valid.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    stripes = ((xx + yy) // 14) % 2 == 0
+    tint = np.zeros((h, w, 3))
+    tint[zones["West"]] = hexrgb(WEST)
+    tint[zones["East"]] = hexrgb(EAST)
+    tint[zones["Middle"] & stripes] = hexrgb(WEST)
+    tint[zones["Middle"] & ~stripes] = hexrgb(EAST)
+    rgb = base.mean(-1, keepdims=True) * 0.45 + tint * 0.55
+    seams = np.zeros_like(valid)
+    for b in (0, 1):
+        seams |= valid & (ndimage.grey_dilation(src[b], size=3) != ndimage.grey_erosion(src[b], size=3))
+    rgb[ndimage.binary_dilation(seams, iterations=buffer_px) | ~valid] = 1
+    top = yy < h * 0.18
+    pos = {k: (float(xx[m & top].mean() / w), 0.09) for k, m in zones.items()}
+    img = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).resize(
+        (MAP_PX // 2, round(h * MAP_PX / 2 / w)), Image.Resampling.LANCZOS
+    )
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=90)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode(), pos
+
+
 def timeline(summary: dict, pairs: list[tuple[str, str, float, str]]) -> str:
     """SVG: one row per zone, a bar from its real before date to its real after date; the nominal pair on top, in grey."""
     t0, t1 = date(2023, 6, 24), date(2023, 9, 13)
@@ -91,14 +123,19 @@ def timeline(summary: dict, pairs: list[tuple[str, str, float, str]]) -> str:
             f'<text x="{X(d)}" y="{height - 12}" text-anchor="middle" font-size="17" fill="#64748b">{d.day} {d:%b}</text>'
         )
 
+    swatch = {"West zone": WEST, "East zone": EAST, "Narrow middle strip": "url(#mid)"}
+
     def bar(i: int, a: str, b: str, left: str, sub: str, grey: bool) -> None:
         y = top + i * step
+        lx = 0 if grey else 32
+        if not grey:
+            parts.append(f'<rect x="0" y="{y - 19}" width="22" height="22" rx="5" fill="{swatch[left]}"/>')
         n = (date.fromisoformat(b) - date.fromisoformat(a)).days
         col = lambda d: "#94a3b8" if grey else (WEST if orbit[d] == 121 else EAST)  # noqa: E731
         parts.append(
-            f'<text x="0" y="{y - 2}" font-size="21" font-weight="800" fill="{"#64748b" if grey else "#0f172a"}">{left}</text>'
+            f'<text x="{lx}" y="{y - 2}" font-size="21" font-weight="800" fill="{"#64748b" if grey else "#0f172a"}">{left}</text>'
         )
-        parts.append(f'<text x="0" y="{y + 22}" font-size="16.5" fill="#64748b">{sub}</text>')
+        parts.append(f'<text x="{lx}" y="{y + 22}" font-size="16.5" fill="#64748b">{sub}</text>')
         dash = ' stroke-dasharray="3 9"' if grey else ""
         parts.append(
             f'<line x1="{X(a)}" x2="{X(b)}" y1="{y}" y2="{y}" stroke="{"#94a3b8" if grey else "#0f172a"}" stroke-width="{5 if grey else 6}" stroke-linecap="round"{dash}/>'
@@ -117,7 +154,11 @@ def timeline(summary: dict, pairs: list[tuple[str, str, float, str]]) -> str:
     bar(0, "2023-08-12", "2023-09-02", "What the labels say", "nominal 12 Aug to 2 Sep", True)
     for i, (bef, aft, share, name) in enumerate(pairs, start=1):
         bar(i, bef, aft, name, f"{share:.0f} % of the area", False)
-    return f'<svg viewBox="0 0 {W} {height}" width="100%">{"".join(parts)}</svg>'
+    pattern = (
+        f'<defs><pattern id="mid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">'
+        f'<rect width="4" height="8" fill="{WEST}"/><rect x="4" width="4" height="8" fill="{EAST}"/></pattern></defs>'
+    )
+    return f'<svg viewBox="0 0 {W} {height}" width="100%">{pattern}{"".join(parts)}</svg>'
 
 
 def build() -> str:
@@ -127,13 +168,14 @@ def build() -> str:
         tags = s.tags()
     # order of the source list per date (the raster values index it)
     names = {d: tags["SOURCES_" + d.replace("-", "")].split("; ") for d in NOMINAL}
-    panels, shares = [], {}
+    panels, shares, wests = [], {}, []
     for band, (d, base_name) in enumerate(
         (("2023-08-12", "sentinel2_20230812_stack"), ("2023-09-02", "sentinel2_20230902_stack"))
     ):
         labels = names[d]
         orbit_of = {s["label"]: s["relative_orbit"] for s in summary["stac"][d]["sources"]}
         west_idx = next(i for i, lab in enumerate(labels) if orbit_of[lab] == 121)
+        wests.append(west_idx)
         img, (cw, ce) = map_img(true_colour(base_name), src[band], west_idx)
         valid = src[band] >= 0
         fw = float(((src[band] == west_idx) & valid).sum() / valid.sum() * 100)
@@ -169,20 +211,35 @@ def build() -> str:
     match = summary["provided_vs_planetary_computer_mosaic"]
     exact = min(v["exact_match_fraction"] for d in match.values() for v in d.values())
     svg = timeline(summary, pairs)
+    zimg, zpos = zone_img(true_colour("sentinel2_20230902_stack"), src, (wests[0], wests[1]), SEAM_BUFFER_PX)
+    share = {name.split()[0] if name != "Narrow middle strip" else "Middle": s for _, _, s, name in pairs}
+    zone_pills = "".join(
+        f'<span class="pill sm" style="left:{zpos[k][0] * 100:.1f}%;top:{zpos[k][1] * 100:.0f}%;--c:{c}">{k}</span>'
+        for k, c in (("West", WEST), ("Middle", "#0f172a"), ("East", EAST))
+    )
+    panels.append(
+        f"""<section class="panel"><header><span class="k plus">=</span><div><b>Overlaid: 3 zones</b><small>each one real before → after pair</small></div></header>
+<figure><img src="{zimg}">{zone_pills}</figure>
+<div class="split"><i style="width:{share["West"]:.1f}%;background:{WEST}"></i><i class="mid" style="width:{share["Middle"]:.1f}%"></i><i style="width:{share["East"]:.1f}%;background:{EAST}"></i></div>
+<div class="splitl"><span><b>{share["West"]:.0f} %</b> west</span><span><b>{share["Middle"]:.0f} %</b> middle</span><span><b>{share["East"]:.0f} %</b> east</span></div></section>"""
+    )
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
 * {{ box-sizing: border-box; margin: 0; }}
 body {{ width: 1300px; font: 18px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #0f172a; background: #f6f7f9; padding: 30px 34px 34px; }}
 h1 {{ font-size: 34px; letter-spacing: -.02em; }}
 .sub {{ color: #475569; font-size: 19px; margin: 6px 0 22px; }}
 .card {{ background: #fff; border-radius: 20px; padding: 22px; box-shadow: 0 0 0 1px rgb(15 23 42 / .08), 0 10px 28px rgb(15 23 42 / .10), 0 2px 6px rgb(15 23 42 / .06); }}
-.cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }}
+.cols {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }}
 .panel header {{ display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }}
 .panel .k {{ background: #0f172a; color: #fff; font-weight: 800; border-radius: 12px; padding: 8px 14px; font-size: 20px; }}
-.panel header b {{ font-size: 23px; display: block; line-height: 1.2; }} .panel header small {{ color: #64748b; font-size: 15.5px; }}
+.panel header b {{ font-size: 21px; display: block; line-height: 1.2; }} .panel header small {{ color: #64748b; font-size: 15.5px; }}
 figure {{ position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px rgb(15 23 42 / .12); line-height: 0; }}
 figure img {{ width: 100%; display: block; }}
 .pill {{ position: absolute; transform: translate(-50%, -50%); line-height: 1.15; text-align: center; font-size: 15px; font-weight: 700; color: #334155; background: rgb(255 255 255 / .96); border-radius: 14px; padding: 8px 14px; box-shadow: 0 0 0 3px var(--c), 0 4px 10px rgb(15 23 42 / .3); white-space: nowrap; }}
-.pill b {{ display: block; font-size: 22px; color: #0f172a; }}
+.pill b {{ display: block; font-size: 20px; color: #0f172a; }}
+.pill.sm {{ font-size: 15px; padding: 5px 10px; color: #0f172a; }}
+.panel .k.plus {{ background: #fff; color: #0f172a; box-shadow: 0 0 0 2px #0f172a; }}
+.split i.mid {{ background: repeating-linear-gradient(-45deg, {WEST} 0 4px, {EAST} 4px 8px); }}
 .split {{ display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin-top: 14px; }}
 .splitl {{ display: flex; justify-content: space-between; font-size: 17px; color: #334155; margin-top: 6px; }}
 .splitl b {{ color: #0f172a; }}
@@ -190,6 +247,7 @@ figure img {{ width: 100%; display: block; }}
 .legend i {{ display: inline-block; vertical-align: -3px; }}
 .seam {{ width: 26px; height: 4px; background: #fff; box-shadow: 0 0 0 1.5px #94a3b8; border-radius: 2px; margin-right: 8px; }}
 .sw {{ width: 14px; height: 14px; border-radius: 4px; margin-right: 8px; }}
+.sw.mid {{ background: repeating-linear-gradient(-45deg, {WEST} 0 3px, {EAST} 3px 6px); }}
 .time {{ margin-top: 24px; }}
 .time h2 {{ font-size: 26px; letter-spacing: -.01em; }}
 .time h2 em {{ font-style: normal; color: #b91c1c; }}
@@ -199,8 +257,8 @@ figure img {{ width: 100%; display: block; }}
 </style></head><body>
 <h1>Each "date" is really two satellite passes</h1>
 <p class="sub">Source pass of every pixel on both nominal dates (true-colour mosaic, tinted). White line = the seam between the two passes.</p>
-<div class="card"><div class="cols">{panels[0]}{panels[1]}</div>
-<div class="legend"><span><i class="sw" style="background:{WEST}"></i>West pass (orbit 121)</span><span><i class="sw" style="background:{EAST}"></i>East pass (orbit 78)</span><span><i class="seam"></i>seam (tilted 12.6°)</span></div></div>
+<div class="card"><div class="cols">{panels[0]}{panels[1]}{panels[2]}</div>
+<div class="legend"><span><i class="sw" style="background:{WEST}"></i>West pass (orbit 121)</span><span><i class="sw" style="background:{EAST}"></i>East pass (orbit 78)</span><span><i class="sw mid"></i>middle strip: west pass before, east pass after</span><span><i class="seam"></i>seam (tilted 12.6°); 90 m around it left out</span></div></div>
 <div class="card time"><h2>Before and after are <em>{gap_txt} days apart, not 21</em></h2>
 <p>Each zone of the map compares one real "before" pass with one real "after" pass. Dot colour = which pass (as on the maps).</p>
 {svg}</div>

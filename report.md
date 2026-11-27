@@ -71,28 +71,32 @@ Co-registration was checked per zone by phase correlation in 8 windows: the shif
 
 ### The data trap: each "date" is two passes
 
-**The claim.** Neither supplied "date" is one image. Each file is stitched from two Sentinel-2 passes taken days apart, so the supplied pair holds brightness jumps that are not on the ground. Three independent checks support it.
+> **Claim.** Neither supplied "date" is one image. Each file is stitched from two Sentinel-2 passes taken days apart, so the pair holds brightness jumps that are not on the ground, and before and after are really 52–60 days apart, not 21.
 
-**1. There is no 12 Aug scene, and each file is half one pass, half another.** The Sentinel-2 catalogue has no acquisition of the site on 12 Aug 2023: the satellites passed on 8, 10 and 13 Aug (the 10 Aug pass covers only the east of the site, the 13 Aug one is 40 % cloud). So each supplied file was set beside the single pass that covers the whole site and is found inside it, before with before and after with after (a–d). The west of the "12 Aug" file *is* the 4 Jul pass and the west of the "2 Sep" file *is* the 2 Sep pass: all three bands identical, pixel for pixel. East of a straight 12.6° line the same files match those passes on 0 % of pixels; the east comes from other days (1 Jul and 25 Aug). On natural ground north of the mine the brightness steps by +0.12 and −0.19 in log brightness (about 13 % and 17 %) exactly at that line (e), which cuts through bush, roads, pits and the tailings pond alike: an orbit edge, not the ground.
+<table class="kpi">
+<tr>
+<td align="center"><b>0</b><br>scenes on 12 Aug 2023<br><sub>passes on 8, 10 and 13 Aug only</sub></td>
+<td align="center"><b>2</b><br>passes in each file<br><sub>joined at a straight 12.6° seam</sub></td>
+<td align="center"><b>100 %</b><br>identical to one pass, west of the seam<br><sub>and 0 % east of it</sub></td>
+<td align="center"><b>52–60</b><br>days between the real passes<br><sub>in three zones, not 21</sub></td>
+</tr>
+</table>
+
+**Proof 1. One side is a known pass, the other is not.** With no 12 Aug scene to compare against, each file was set beside the single pass that covers the whole site and is found inside it: before with 4 Jul, after with 2 Sep. West of the seam every pixel is identical in all three bands; east of it, none is. The brightness steps exactly at the seam (e), through bush, roads and the tailings pond alike: an orbit edge, not the ground.
 
 ![Each supplied file beside the full-coverage single pass found inside it, with the brightness profile across its seam](docs/figures/07_trap_proof.png)
 
 *Before with before, after with after: identical on one side of the yellow line, different on the other (`scripts/fig_trap_proof.py`).*
 
-**2. The pixels match four catalogue scenes exactly.** Every Sentinel-2 scene of the site in the 75 days before each nominal date (55–56 candidates) was read onto the same 10 m grid, and each supplied pixel was checked for an *exactly equal* stored value. Two scenes per date explain every pixel, and composing them reproduces all three bands **identical, pixel for pixel** (2.6 million pixels, none left over). The dates come from those scenes' catalogue records (`s2cd provenance`).
+**Proof 2. Every pixel traced to its scene.** All 55–56 catalogue scenes of the site in the 75 days before each date were read onto the same grid and matched on exact stored values (`s2cd provenance`). Two scenes per date reproduce every pixel, bit for bit; their catalogue records give the true dates. The two files switch pass at slightly different lines, so laid over each other they cut the site into **three zones**, each one real before → after pair:
 
-![provenance](docs/figures/06_provenance.png)
+![Source pass of every pixel on both dates, the three zones they form, and the real time gap of each](docs/figures/06_provenance.png)
 
-*Source scene of each pixel on both dates. The seams follow the swath edge of one orbit.*
+*The seams follow the swath edge of orbit 78, which covers only the east of the site.*
 
-| Nominal date | Really made of (tile 35LLG, baseline 05.09) |
-|---|---|
-| 2023-08-12 | 2023-07-04 (west, 44 %) + 2023-07-01 (east, 56 %) |
-| 2023-09-02 | 2023-09-02 (west, 39 %) + 2023-08-25 (east, 61 %) |
+**What the pipeline does with it.** Each zone is normalised on its own, so pass-to-pass haze and brightness do not read as change, and the 90 m around each seam is left out (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method flags the western pass almost entirely.
 
-So the gap between dates is 52–60 days, not 21. The pipeline splits the area into three zones, each a single before→after scene pair, normalises each zone on its own, and excludes 90 m around seams (2.4 % of the area). [See the trap on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0): the provided method's 111 km² in red, the western pass almost entirely flagged.
-
-**3. Re-running on true single passes changes the answer.** The catalogue also holds single-pass scenes that cover the whole site, so the same pipeline was re-run on them (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"; the scenes are in Downloads):
+**Proof 3. True single passes change the answer.** The same pipeline re-run on single passes that cover the whole site (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"; scenes in Downloads):
 
 | Pair | Provided method | This method | Dam-wall fill |
 |---|---:|---:|---:|
@@ -100,15 +104,21 @@ So the gap between dates is 52–60 days, not 21. The pipeline splits the area i
 | Single pass, 8 Aug → 2 Sep 2023 (the clear dates closest to the nominal ones) | 194 km² | 2.25 km² | 0.10 km² |
 | Single pass, 4 Jul → 8 Aug 2023 | 4.6 km² | 12.1 km² | 0.44 km² |
 
-Two lessons. Without seams the provided method gets *worse* (194 km²): its real weakness is the brightness and haze difference between dates, which the normalisation removes; the seams only add to it. And the dam-wall fill happened **between 4 July and 8 August**, before the nominal before date: the mosaics catch it only because their "12 August" is really early July. Over the true 25 days (8 Aug → 2 Sep) the mine shows about half as much change. The provided pair stays the main result, because it is what the brief supplies.
+- Without seams the provided method gets *worse* (194 km²): its real weakness is the haze and brightness difference between dates, which the normalisation removes.
+- The dam-wall fill happened **between 4 Jul and 8 Aug**, before the nominal before date; the mosaics catch it only because their "12 Aug" is really early July. The provided pair stays the main result, because it is what the brief supplies.
 
-**Was the data already corrected?** Yes. It is ESA's Level-2A product, bit for bit: calibrated, orthorectified and atmospherically corrected to surface reflectance. The files carry no level tag, so this was established by the match above and by the −1000 offset visible in the darkest pixels. Reflectance is `(DN − 1000) / 10000`.
+<details>
+<summary>Was the data already corrected? Yes, it is ESA Level-2A</summary>
+
+The pixel match above shows the files are ESA's Level-2A product, bit for bit: calibrated, orthorectified and atmospherically corrected to surface reflectance. The files carry no level tag; the −1000 offset in the darkest pixels agrees. Reflectance is `(DN − 1000) / 10000`.
 
 | Correction | In the supplied data | Added here |
 |---|---|---|
 | Calibration, orthorectification, atmosphere | Done by ESA | Nothing redone; L2A scale and offset applied |
 | Haze and scene-to-scene differences, seams | **Not corrected** | Per-zone normalisation on stable pixels, seam buffer |
 | Sun and view angle (BRDF) | Not corrected | Treated as a confounder on slopes |
+
+</details>
 
 ### Does it depend on one threshold?
 

@@ -94,3 +94,14 @@
 }
 
 .prose details td img[width] { width: 100%; max-width: 200px; height: auto; border-radius: 6px; }
+
+/* Value cards: an HTML <table class="kpi"> in report.md (a plain table on GitHub), shown as a row of cards here. */
+.prose .table-wrap:has(> table.kpi) { overflow: visible; box-shadow: none; background: none; border: 0; border-radius: 0; }
+.prose table.kpi, .prose table.kpi tbody { display: block; width: 100%; }
+.prose table.kpi tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-3); }
+.prose table.kpi td { display: block; min-width: 0; padding: var(--s-4) var(--s-3); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); text-align: center; white-space: normal; font-size: var(--fs-sm); line-height: 1.35; color: var(--text-2); }
+.prose table.kpi td b { display: block; margin-bottom: var(--s-1); font-size: var(--fs-xl); line-height: 1.1; letter-spacing: -0.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+.prose table.kpi td sub { display: block; margin-top: var(--s-1); vertical-align: baseline; font-size: var(--fs-xs); color: var(--text-3); }
+@media (hover: hover) and (pointer: fine) { .prose table.kpi tr:hover td { background: var(--surface); } }
+@media (max-width: 700px) { .prose table.kpi tr { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media print { .prose .table-wrap:has(> table.kpi) { border: 0; } .prose table.kpi td { box-shadow: none; border: 0.5pt solid #e2e8f0; break-inside: avoid; } }
