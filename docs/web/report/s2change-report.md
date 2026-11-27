@@ -116,17 +116,6 @@ No. Over 16 settings (false-alarm rates from 1 in 100 to 1 in 100,000, minimum a
 
 ![sensitivity](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/11_sensitivity.png)
 
-### Why not machine learning?
-
-There are no labels, three bands and two dates. The open toolboxes were checked:
-- **rschange** and most of **torchange** are trained on 0.3–1 m building imagery. At 10 m a building is a pixel or two, so the weights do not transfer.
-- **torchgeo** is the right framework once mining labels exist; its Sentinel-2 foundation weights would be the encoder.
-- **AnyChange**, the one zero-shot model, was tested on this pair (`scripts/anychange_experiment.py`). It finds 10 % of the change found here, flags the whole reservoir, and misses the dam raise, tailings and dumping. It segments whole objects, and at 10 m these changes are parts of objects.
-
-![anychange](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/15_anychange_vs_cva.png)
-
-*This method (left) against AnyChange at its strict and automatic thresholds, on the same images.*
-
 ## 📍 2. Results
 
 **Where.** Change concentrates in the mine: 82 % of the 4.13 km² lies inside the eight named facilities, and more than half of all change is on the tailings storage facility. Outside the mine, change is scattered and small.
