@@ -55,7 +55,7 @@ def main() -> None:
                 "zones": s["zones"]["n_zones"],
                 "provided_method_km2": round(s["changed_area_ha"]["euclidean_baseline"] / 100, 2),
                 "this_method_km2": round(s["changed_area_ha"]["robust_cva"] / 100, 2),
-                "dam_wall_fill_km2": round(s["change_type_ha"].get("tailings_dam_raise", 0) / 100, 2),
+                "dam_wall_fill_km2": round(s["change_type_ha"].get("tailings_dam_works", 0) / 100, 2),
                 "share_in_facilities": s["footprint"]["register_all_facilities"]["share_of_change"],
             }
         )

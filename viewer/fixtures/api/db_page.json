@@ -66,7 +66,7 @@
    0.025,
    {
     "waste_dumping": 0.9,
-    "tailings_dam_raise": 0.4,
+    "tailings_dam_works": 0.4,
     "infrastructure_or_settlement": 3.6
    },
    "Process plant and central yard: 0.05 km\u00b2 changed (2% of 2.0 km\u00b2); mostly infrastructure or settlement"
@@ -87,7 +87,7 @@
    {
     "waste_dumping": 0.1,
     "noise_or_artifact": 2.3,
-    "tailings_dam_raise": 8.4,
+    "tailings_dam_works": 8.4,
     "water_level_change": 6.2,
     "tailings_deposition": 175.7,
     "infrastructure_or_settlement": 1.0

@@ -24,7 +24,7 @@ from .pipeline import Products  # noqa: E402
 
 TYPE_COLORS = {  # the viewer's legend (viewer/src/domain.ts CHANGE_TYPES), so figures, map and icons agree
     "tailings_deposition": "#fbbf24",
-    "tailings_dam_raise": "#dc2626",
+    "tailings_dam_works": "#dc2626",
     "waste_dumping": "#fb7185",
     "pit_excavation": "#a78bfa",
     "water_level_change": "#38bdf8",

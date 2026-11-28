@@ -12,8 +12,8 @@ mapped as follows (first matching rule wins, in this order):
 | pit_excavation                 | (mining)              | inside a pit/dump complex, not brighter-and-redder                  |
 | waste_dumping                  | (mining)              | inside a waste dump; or brighter + redder in a pit/dump complex or  |
 |                                |                       | at the footprint edge (fresh oxidized rock)                         |
-| tailings_dam_raise             | (mining)              | brighter + redder, touching the tailings facility's rim and mostly  |
-|                                |                       | within 100 m of it (tailings are grey: fresh fill on the embankment)|
+| tailings_dam_works             | (mining)              | brighter + redder, touching the tailings facility's rim and mostly  |
+|                                |                       | within 100 m of it (tailings are grey: bare earth on the embankment)|
 | tailings_deposition            | (mining)              | inside the tailings storage facility                                |
 | infrastructure_or_settlement   | urban expansion       | inside the plant, camp or settlement                                |
 | mine_expansion_clearing        | land clearing         | vegetation -> bare, touching the mine footprint                     |
@@ -51,7 +51,7 @@ BRIEF_CATEGORY = {
     "water_level_change": "water change (mining: water management)",
     "pit_excavation": "mining activity",
     "waste_dumping": "mining activity",
-    "tailings_dam_raise": "mining activity",
+    "tailings_dam_works": "mining activity",
     "tailings_deposition": "mining activity",
     "infrastructure_or_settlement": "urban expansion",
     "mine_expansion_clearing": "land clearing",
@@ -208,8 +208,8 @@ def label(polys: gpd.GeoDataFrame, ev: pd.DataFrame, ctx: pd.DataFrame, r: Inter
             and brighter
             and d_red >= r.redder
         ):
-            t = "tailings_dam_raise"  # tailings are grey; red, brighter ground on the facility is fresh fill (laterite)
-            why = f"brighter and redder (redness {d_red:+.2f}) at the rim of {c.facility_id}: fresh fill, not grey tailings"
+            t = "tailings_dam_works"  # tailings are grey; red, brighter ground on the rim is bare laterite
+            why = f"brighter and redder (redness {d_red:+.2f}) at the rim of {c.facility_id}: bare earth, not grey tailings"
         elif fac in FACILITY_TO_TYPE:
             t = FACILITY_TO_TYPE[fac]
             if fac == "pit_dump_complex" and brighter and d_red >= r.redder:
@@ -235,7 +235,10 @@ def label(polys: gpd.GeoDataFrame, ev: pd.DataFrame, ctx: pd.DataFrame, r: Inter
 
 #: change_type -> (headline, what to check). Written for a reader who does not know remote sensing.
 PLAIN = {
-    "tailings_dam_raise": ("Tailings dam wall likely raised", "Check the dam-raise plan and inspect the embankment."),
+    "tailings_dam_works": (
+        "Earthworks on the tailings dam wall",
+        "Check the operator's maintenance and construction log, and inspect the embankment.",
+    ),
     "waste_dumping": ("Waste rock dumped", "Check that the dump is inside the approved mine plan."),
     "pit_excavation": ("Pit worked or deepened", "Check that the digging matches the mine plan."),
     "tailings_deposition": ("Tailings deposited", "Routine operation: watch the pond and beach extent month to month."),

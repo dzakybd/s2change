@@ -17,7 +17,7 @@ interface ChangeTypeInfo {
 /** Order = legend order (largest classes first). Colours are picked to stay apart on satellite imagery. */
 export const CHANGE_TYPES: readonly ChangeTypeInfo[] = [
   { key: "tailings_deposition", label: "Tailings deposition", color: "#fbbf24", blurb: "Fresh tailings on the storage facility", glyph: "M12 3v7M9 7.5l3 3 3-3M3 15c3-2 6 2 9 0s6-2 9 0M3 19.5c3-2 6 2 9 0s6-2 9 0" },
-  { key: "tailings_dam_raise", label: "Tailings dam wall raised", color: "#dc2626", blurb: "Fresh fill on the tailings embankment", glyph: "M2 20.5h20M5.5 20.5 9 13h6l3.5 7.5M12 3.5v6.5M9 6.5l3-3 3 3" },
+  { key: "tailings_dam_works", label: "Earthworks on the tailings dam wall", color: "#dc2626", blurb: "Bare ground on the tailings embankment where vegetation was", glyph: "M2 20.5h20M5.5 20.5 9 13h6l3.5 7.5M12 3.5v6.5M9 6.5l3-3 3 3" },
   { key: "waste_dumping", label: "Waste dumping", color: "#fb7185", blurb: "New waste rock at pit and dump edges", glyph: "M2.5 7.5 11 5l1.5 6.5H3zM12.5 11.5h3.5l3 3v2.5H3v-5.5M7 19.5a1.5 1.5 0 1 0 0-.1M16 19.5a1.5 1.5 0 1 0 0-.1" },
   { key: "pit_excavation", label: "Pit excavation", color: "#a78bfa", blurb: "Benches and pit floors being mined", glyph: "M2 6h3.5l2 3.5h2l1.5 3.5h2l1.5-3.5h2l2-3.5H22M9.5 16.5h5" },
   { key: "water_level_change", label: "Water level change", color: "#38bdf8", blurb: "Ponds, dams and wetlands filling or drying", glyph: "M12 3c3.2 4 6 7.3 6 10.8a6 6 0 0 1-12 0C6 10.3 8.8 7 12 3zM9 14.5a3 3 0 0 0 3 3" },

@@ -21,7 +21,7 @@ OUT = ROOT / "docs/figures/10_change_types.png"
 ORDER = [
     "tailings_deposition",
     "waste_dumping",
-    "tailings_dam_raise",
+    "tailings_dam_works",
     "seasonal_vegetation_or_burn",
     "pit_excavation",
     "water_level_change",
@@ -29,7 +29,7 @@ ORDER = [
 BLURB = {  # plain-language reading of each type, as in the report's table
     "tailings_deposition": "Wet slurry and drying beaches moving on the tailings facility",
     "waste_dumping": "Fresh, redder rock faces at dumps and pit edges",
-    "tailings_dam_raise": "Fresh fill on the embankment where vegetation was",
+    "tailings_dam_works": "Bare ground on the embankment where vegetation was",
     "seasonal_vegetation_or_burn": "Dry-season browning or burn scars outside the mine",
     "pit_excavation": "Bench and pit-floor changes",
     "water_level_change": "Pond and pit-lake edges moving",
@@ -134,7 +134,7 @@ def build() -> str:
         return f"""<section class="card zoom"><div class="frame"><img src="{uri(crop)}">{vec}</div>
 <div><h2>{icon(types[k], 28)}{types[k]["label"]}</h2><p>{text}</p></div></section>"""
 
-    wall = g[g.change_type == "tailings_dam_raise"]
+    wall = g[g.change_type == "tailings_dam_works"]
     wall_x0, wall_y0 = crop_at(xy(wall.geometry.union_all().centroid))
     zooms = (
         zoom(
@@ -143,10 +143,10 @@ def build() -> str:
             f"<b>{area['tailings_deposition']:.2f} km²</b> of slurry and beaches moving on the tailings facility, the largest type.",
         )
         + zoom(
-            "tailings_dam_raise",
+            "tailings_dam_works",
             wall_x0,
             wall_y0,
-            f"<b>{area['tailings_dam_raise']:.2f} km²</b> of fresh fill where vegetation was: the wall was most likely raised. A dam-safety team would want this first.",
+            f"<b>{area['tailings_dam_works']:.2f} km²</b> of bare ground where vegetation was: earthworks or clearing on the wall, not a documented raise. A dam-safety team would still check it first.",
         )
         + zoom(
             "waste_dumping",
@@ -201,7 +201,7 @@ body {{ width: 1500px; }}
 <div class="scale"><i></i>2 km</div></div></section>
 <div class="col">
 <section class="card"><h2>Area per change type</h2>
-<div class="kpis" style="margin: 10px 0 6px"><div class="kpi"><b>{total_km2:.2f} km²</b><span>changed in total</span></div><div class="kpi"><b>{inside * 100:.0f} %</b><span>inside the 8 facilities</span></div><div class="kpi"><b>{(area["tailings_deposition"] + area["waste_dumping"] + area["tailings_dam_raise"] + area["pit_excavation"]) / total_km2 * 100:.0f} %</b><span>is mining activity</span></div></div>
+<div class="kpis" style="margin: 10px 0 6px"><div class="kpi"><b>{total_km2:.2f} km²</b><span>changed in total</span></div><div class="kpi"><b>{inside * 100:.0f} %</b><span>inside the 8 facilities</span></div><div class="kpi"><b>{(area["tailings_deposition"] + area["waste_dumping"] + area["tailings_dam_works"] + area["pit_excavation"]) / total_km2 * 100:.0f} %</b><span>is mining activity</span></div></div>
 {rows}</section>
 </div></div>
 <h2 class="zh">Zoom on three types <small>2.8 × 2.8 km each, same colours</small></h2>

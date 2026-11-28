@@ -503,8 +503,8 @@
       "rows": [
        [
         "TSF",
-        "tailings_dam_raise",
-        "Tailings dam wall likely raised",
+        "tailings_dam_works",
+        "Earthworks on the tailings dam wall",
         "388,100.00",
         "0.34"
        ],
@@ -579,8 +579,8 @@
       "rows": [
        [
         "TSF",
-        "tailings_dam_raise",
-        "Tailings dam wall likely raised",
+        "tailings_dam_works",
+        "Earthworks on the tailings dam wall",
         "388,100.00",
         "0.34"
        ],

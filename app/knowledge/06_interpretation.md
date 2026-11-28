@@ -5,7 +5,7 @@
 | Brightening + redder (Δred ≫ Δblue) on a waste dump | Fresh, oxidized waste rock tipped | A later date: does the dump keep growing? |
 | Bare area appearing at a pit rim | Pit widening (pushback) | A later same-season date; haul roads extending |
 | Bright/dark patches moving on the TSF | Tailings deposition moving between spigot points | Later dates; the TSF outline should stay stable |
-| Bright arc along the TSF wall | Embankment raise or vegetation stripped for works | VHR imagery; the dam-raise schedule |
+| Bright arc along the TSF wall | Earthworks or vegetation stripped for maintenance (no raise is on record for 2013 to 2027) | VHR imagery; the operator's maintenance and construction log |
 | TSF pond area changing sharply | Water management change (or, if unexplained, worth an inspection) | Water rule on both dates; adjacent wetland changes |
 | Darkening outside the footprint, Aug–Sep | Burn scar or wetland dynamics | Active-fire records; recovery after rains |
 | Dam surface darker and bluer | More open water / less floating vegetation, or a turbidity change | Shoreline position on a later date |

@@ -25,7 +25,7 @@ OUT = ROOT / "docs/figures/00_at_a_glance.png"
 TYPE_LABELS = {
     "tailings_deposition": "Tailings deposited",
     "waste_dumping": "Waste rock dumped",
-    "tailings_dam_raise": "Dam wall raised",
+    "tailings_dam_works": "Dam wall earthworks",
     "seasonal_vegetation_or_burn": "Seasonal / burn",
     "pit_excavation": "Pit excavation",
     "water_level_change": "Water level change",
@@ -171,7 +171,7 @@ td small {{ color: #64748b; }}
 </div>
 <div class="col"><section class="tells"><h2>What it tells you</h2><ul>
 <li><span class="dot"></span><div><b>Operating, not spreading</b> (two months): tailings deposited, waste tipped, pits worked; no new clearing outside the mine.</div></li>
-<li><span class="dot"></span><div><b>Dam wall likely raised</b>: {km2(types.get("tailings_dam_raise", 0))} of fresh fill on the tailings dam's south-east edge. First thing for dam-safety teams.</div></li>
+<li><span class="dot"></span><div><b>Earthworks on the dam wall</b>: {km2(types.get("tailings_dam_works", 0))} of bare ground on the tailings dam's south-east edge, not a documented raise. Worth a dam-safety check.</div></li>
 <li><span class="dot"></span><div><b>Every change explained</b>: a type, a place and a plain sentence, queryable in PostGIS.</div></li></ul></section>
 <section class="next"><h2>Next steps</h2><ul>
 <li>Relabel the accuracy sample on very-high-resolution imagery, with more points where the map says no change</li>
