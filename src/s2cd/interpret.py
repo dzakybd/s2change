@@ -231,7 +231,7 @@ def label(polys: gpd.GeoDataFrame, ev: pd.DataFrame, ctx: pd.DataFrame, r: Inter
     return pd.DataFrame(rows, index=polys.index)
 
 
-# ---- Plain language ------------------------------------------------------------------------------------------------
+# Plain language
 
 #: change_type -> (headline, what to check). Written for a reader who does not know remote sensing.
 PLAIN = {

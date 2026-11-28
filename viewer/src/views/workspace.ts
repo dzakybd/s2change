@@ -95,7 +95,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     const inspector = q(el, ".inspector");
     const legend = q(el, ".legend");
 
-    /* ---------- inspector ---------- */
+    /* Inspector */
     const strongerThan = (c: number): number | null => {
       const all = ds.changes.features.map((f) => f.properties.confidence).filter((v) => Number.isFinite(v));
       return all.length && Number.isFinite(c) ? all.filter((v) => v < c).length / all.length : null;
@@ -121,7 +121,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       markSelected(null);
     };
 
-    /* ---------- stage ---------- */
+    /* Stage */
     const initialLayer = layerById(state.layer);
     stage = new MapStage({
       main: q(el, "#map"),
@@ -148,7 +148,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     await stage.init();
     const st = stage;
 
-    /* ---------- layer menu ---------- */
+    /* Layer menu */
     const menu = new Menu("Layer", (id) => setLayer(id));
     q(el, "#hud-layer").prepend(menu.root);
     const resultMenu = new Menu("Result", (id) => void setResult(id as ResultId));
@@ -213,7 +213,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
 
     menu.setItems(menuItems(), state.layer);
 
-    /* ---------- result: original method, ours on the mosaics, ours on true passes ---------- */
+    /* Result: original method, ours on the mosaics, ours on true passes */
     const currentResult = (): ResultId =>
       ds.id === TRUE_PASSES_ID ? "true" : state.layer === "baseline" ? "original" : "mosaic";
     const resultItems = () => {
@@ -274,7 +274,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       syncHash();
     });
 
-    /* ---------- 2.5D view ---------- */
+    /* 2.5D view */
     const bearingIn = q<HTMLInputElement>(el, "#o-bearing");
     const extrudeIn = q<HTMLInputElement>(el, "#o-extrude");
     const showBearing = () => {
@@ -308,7 +308,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       syncHash();
     });
 
-    /* ---------- legend ---------- */
+    /* Legend */
     legend.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
       const tab = t.closest<HTMLElement>("[data-tab]")?.dataset["tab"];
@@ -382,7 +382,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     });
     legend.addEventListener("pointerleave", () => st.setHover(null));
 
-    /* ---------- dataset: the provided mosaics or the true passes ---------- */
+    /* Dataset: the provided mosaics or the true passes */
     function useDataset(next: Dataset): void {
       ds = next;
       st.setDataset(next);
@@ -404,7 +404,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       if (!inspector.hidden) closeInspector();
     });
 
-    /* ---------- query result from the Database tab ---------- */
+    /* Query result from the Database tab */
     const chip = q(el, ".result-chip");
     let shownResult: unknown = null;
     const syncQueryResult = () => {
@@ -424,7 +424,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       syncQueryResult();
     });
 
-    /* ---------- analyst host ---------- */
+    /* Analyst host */
     const runs = new RunOverlay(st.main, ds.changes);
     const fit = (features: Feature[], maxZoom: number) => {
       const b = featureBounds(features);
@@ -482,7 +482,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     const resizer = new ResizeObserver(() => st.resize());
     resizer.observe(q(el, ".ws-stage"));
 
-    /* ---------- agent panel ---------- */
+    /* Agent panel */
     /** Open the agent panel, or collapse it to a slim rail (on phones, out of the way entirely). */
     function setChat(open: boolean, sync = true): void {
       chatOpen = open;
@@ -503,7 +503,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     q(el, ".chat-rail").addEventListener("click", () => setChat(true));
     q(el, ".ws-chat").addEventListener("chat-close", () => setChat(false));
 
-    /* ---------- apply route ---------- */
+    /* Apply route */
     applyRoute = (route: Route) => {
       const agent = route.params.get("agent");
       setChat(agent === null ? agentByDefault() : agent === "1", false);

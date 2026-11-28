@@ -167,7 +167,7 @@ def page(table: str, page: int = 1, size: int = 25, sort: str | None = None, des
     }
 
 
-# ---- SQL dump ------------------------------------------------------------------------------------------------------
+# SQL dump
 
 
 def _literal(v, geometry: bool = False) -> str:
@@ -239,7 +239,7 @@ def export_sql(table: str | None = None) -> str:
     return text
 
 
-# ---- Connection ----------------------------------------------------------------------------------------------------
+# Connection
 
 
 def _url():

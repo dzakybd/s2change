@@ -123,7 +123,7 @@ def brief(run_id: str | None = None):
         raise HTTPException(404, str(e)) from None
 
 
-# ---- Access code ---------------------------------------------------------------------------------------------------
+# Access code
 
 
 class LoginRequest(BaseModel):
@@ -151,7 +151,7 @@ def auth_logout(response: Response):
     return {"enabled": auth.enabled(), "authenticated": not auth.enabled()}
 
 
-# ---- Database explorer ---------------------------------------------------------------------------------------------
+# Database explorer
 
 
 @app.get("/api/db/schema")
@@ -200,7 +200,7 @@ def db_connection_uri():
     return {"uri": explorer.full_uri()}
 
 
-# ---- Analyst -------------------------------------------------------------------------------------------------------
+# Analyst
 
 
 class Message(BaseModel):

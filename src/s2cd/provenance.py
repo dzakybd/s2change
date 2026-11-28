@@ -60,9 +60,7 @@ class ProvenanceRules:
     workers: int = 4  # parallel candidate reads
 
 
-# ---------------------------------------------------------------------------------------------------------
 # Pure functions (unit-testable offline)
-# ---------------------------------------------------------------------------------------------------------
 def compare_bands(provided: np.ndarray, pc: np.ndarray) -> dict:
     """How well a provided DN band reproduces the Planetary Computer band (same grid, both uint16, 0 = nodata)."""
     m = (provided != 0) & (pc != 0)
@@ -140,9 +138,7 @@ def zone_source_agreement(src: np.ndarray, zones: np.ndarray) -> float:
     return round(agree / max(int(ok.sum()), 1), 4)
 
 
-# ---------------------------------------------------------------------------------------------------------
 # STAC access
-# ---------------------------------------------------------------------------------------------------------
 def open_catalog():
     try:
         import planetary_computer
@@ -232,9 +228,7 @@ class Fetcher:
         return arr
 
 
-# ---------------------------------------------------------------------------------------------------------
 # Pipeline steps
-# ---------------------------------------------------------------------------------------------------------
 def source_label(r: dict) -> str:
     return f"{r['datetime'][:10]} S2{r['platform'][-1]} R{r['relative_orbit']:03d} N{r['processing_baseline']}"
 
@@ -266,9 +260,7 @@ def describe_date(d: date, cands: list, picked: list, src: np.ndarray, provided:
     }
 
 
-# ---------------------------------------------------------------------------------------------------------
 # Orchestration
-# ---------------------------------------------------------------------------------------------------------
 def acquisition_dates(summary: dict, nominal: date) -> dict:
     """The real acquisitions behind a nominal date (from provenance_summary.json): nominal, source_dates, source_items."""
     srcs = summary["stac"][str(nominal)]["sources"]

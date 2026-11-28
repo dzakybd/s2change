@@ -77,7 +77,7 @@ def facilities_geojson() -> dict:
     }
 
 
-# ---- Monitoring brief -------------------------------------------------------------------------------------------------
+# Monitoring brief
 
 
 def _table(header: list[str], rows: list[list]) -> list[str]:

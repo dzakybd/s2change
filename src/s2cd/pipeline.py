@@ -95,7 +95,7 @@ def run(cfg: Config) -> Products:
     out = Path(cfg.out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    # ---- Part 1: load, validate, stack -------------------------------------------------------
+    # Part 1: load, validate, stack
     before, after = load_scene(cfg.before, cfg.bands), load_scene(cfg.after, cfg.bands)
     grid = check_consistency({before.name: before.grid, after.name: after.grid})
     if before.acquired >= after.acquired:
@@ -145,7 +145,7 @@ def run(cfg: Config) -> Products:
     r1 = radiometry.to_reflectance(before.dn, valid, offsets[before.name])
     r2 = radiometry.to_reflectance(after.dn, valid, offsets[after.name])
 
-    # ---- Part 2a: radiometric zones + relative normalization ----------------------------------
+    # Part 2a: radiometric zones + relative normalization
     stripes = radiometry.detect_stripe_zones(r1, r2, valid, **cfg.stripe)  # always run: it validates the provenance zones
     if prov:
         zones, source_pairs = radiometry.zones_from_sources(prov[0], valid)
@@ -201,7 +201,7 @@ def run(cfg: Config) -> Products:
         out / "stripe_zones_detected.tif", stripes.zones, grid, -1, ["data-driven stripe zone id"], overview_resampling=nearest
     )
 
-    # ---- Part 2b: change detection ------------------------------------------------------------
+    # Part 2b: change detection
     rule = cfg.rule
     nb = len(cfg.bands)
     base_prob = methods.euclidean_baseline(r1, r2, valid)
@@ -266,7 +266,7 @@ def run(cfg: Config) -> Products:
         overview_resampling=nearest,
     )
 
-    # ---- Part 3: vectorize, interpret, store --------------------------------------------------
+    # Part 3: vectorize, interpret, store
     traces = [np.trace(np.array(c)) / nb for covs in cva.noise_cov.values() for c in covs]
     noise_sigma = float(np.sqrt(np.mean(traces)))
     disturbed = vectorize.disturbed_footprint(r1, valid)

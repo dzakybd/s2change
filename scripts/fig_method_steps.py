@@ -179,7 +179,7 @@ def part(x0, y0, s, fb, ft, side):
     return part_wh(x0, y0, s, s, fb, ft, side)
 
 
-# step 1 ---------------------------------------------------------------------------------------------------------------
+# Step 1
 def panel_passes(ax) -> None:
     height = canvas(ax, 12)
     s = 4.7
@@ -214,7 +214,6 @@ def panel_passes(ax) -> None:
     )
 
 
-# step 1 ---------------------------------------------------------------------------------------------------------------
 def panel_zones(ax, shares: dict, buffer_m: int) -> None:
     height = canvas(ax, 12)
     w, h = 11.0, 3.5
@@ -260,7 +259,7 @@ def panel_zones(ax, shares: dict, buffer_m: int) -> None:
     txt(ax, 0.5, by - 0.6, "days = gap between the two dates;  % = share of the site", size=SMALL_PT, color=MUTED)
 
 
-# step 2 -------------------------------------------------------------------------------------------------------------
+# Step 2
 def style_axes(ax) -> None:
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
@@ -464,7 +463,7 @@ def panel_trim(ax, data: dict, xlim, ylim) -> None:
     )
 
 
-# steps 3-4 ----------------------------------------------------------------------------------------------------------
+# Steps 3-4
 def panel_flicker(ax, c: dict, lim: float, name: str) -> None:
     """Change vectors of held-out stable pixels (blue vs red band) in one brightness class, with the 1-in-1,000 ellipse."""
     style_axes(ax)
@@ -545,7 +544,7 @@ def panel_d2(ax, data: dict) -> None:
     )
 
 
-# step 5 -------------------------------------------------------------------------------------------------------------
+# Step 5
 def panel_seam(ax, data: dict) -> None:
     style_axes(ax)
     mid, rate, plateau = data["seam"]

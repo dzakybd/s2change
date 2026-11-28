@@ -107,7 +107,7 @@ def thumbnails(out: Path = WEB / "facilities") -> dict[str, dict[str, str]]:
     return result
 
 
-# ---- Downloads: the file catalogue and a preview of each file ----------------------------------------------------
+# Downloads: the file catalogue and a preview of each file
 
 PREVIEW_PX = 560  # long side of a preview image
 NO_DATA_RGB = (241, 243, 246)

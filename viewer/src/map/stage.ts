@@ -253,7 +253,7 @@ export class MapStage {
     }
   }
 
-  /* ---------- layer state ---------- */
+  /* Layer state */
 
   setLayer(def: LayerDef): void {
     this.layer = def;
@@ -320,7 +320,7 @@ export class MapStage {
     }
   }
 
-  /* ---------- 2.5D view ---------- */
+  /* 2.5D view */
 
   get isOblique(): boolean {
     return this.oblique;
@@ -344,7 +344,7 @@ export class MapStage {
     this.apply();
   }
 
-  /* ---------- dataset ---------- */
+  /* Dataset */
 
   setDataset(ds: Dataset): void {
     this.dataset = ds;
@@ -363,7 +363,7 @@ export class MapStage {
     this.buildChangeLabels();
   }
 
-  /* ---------- interaction ---------- */
+  /* Interaction */
 
   private bindInteractions(): void {
     const m = this.main;
@@ -415,7 +415,7 @@ export class MapStage {
     }
   }
 
-  /* ---------- query result and fitting ---------- */
+  /* Query result and fitting */
 
   setQueryResult(fc: FeatureCollection | null): void {
     (this.main.getSource("query-result") as maplibregl.GeoJSONSource).setData(fc ?? { type: "FeatureCollection", features: [] });

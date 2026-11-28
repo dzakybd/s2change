@@ -21,7 +21,7 @@ from app import agent as agent_mod  # noqa: E402
 from app import analyst, auth, collector, main, tools  # noqa: E402
 from app.guard import SqlRejected, guard_sql  # noqa: E402
 
-# --- SQL guard ----------------------------------------------------------------------------------------------------
+# SQL guard
 
 
 @pytest.mark.parametrize(
@@ -81,7 +81,7 @@ def test_readonly_sql_tool_reports_rejection_as_json():
     assert "error" in out and "SELECT" in out["error"]
 
 
-# --- collector ----------------------------------------------------------------------------------------------------
+# Collector
 
 
 def test_collector_validates_actions():
@@ -140,7 +140,7 @@ def test_chart_tool_appends_and_reports_errors():
     assert "error" in bad and len(c.charts) == 1
 
 
-# --- API ----------------------------------------------------------------------------------------------------------
+# API
 
 
 class FakeAgent:
@@ -233,7 +233,7 @@ def test_cors_allows_viewer_origins(client):
     assert "access-control-allow-origin" not in client.get("/api/health", headers={"Origin": "https://evil.example"}).headers
 
 
-# --- Access code --------------------------------------------------------------------------------------------------
+# Access code
 
 CODE = "open-sesame-2024"
 

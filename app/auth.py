@@ -36,7 +36,7 @@ SCHEME = "pbkdf2_sha256"
 DENIED = "This feature needs the access code."
 
 
-# ---- Hash of the access code ---------------------------------------------------------------------------------------
+# Hash of the access code
 
 
 def hash_code(code: str, *, salt: bytes | None = None, iterations: int = ITERATIONS) -> str:
@@ -56,7 +56,7 @@ def verify_code(code: str, stored: str) -> bool:
     return scheme == SCHEME and hmac.compare_digest(got, expected)
 
 
-# ---- Session cookie: "<issued-at>.<HMAC-SHA256 of it>" -------------------------------------------------------------
+# Session cookie: "<issued-at>.<HMAC-SHA256 of it>"
 
 
 def _sign(issued: str) -> str:
@@ -76,7 +76,7 @@ def session_valid(value: str | None, now: float | None = None) -> bool:
     return -60 <= age <= MAX_AGE  # a minute of clock skew is tolerated, a future-dated cookie is not
 
 
-# ---- Gate ----------------------------------------------------------------------------------------------------------
+# Gate
 
 
 def enabled() -> bool:
@@ -114,7 +114,7 @@ def cookie_kwargs() -> dict:
     return {"max_age": MAX_AGE, "path": "/api", "httponly": True, "secure": True, "samesite": "strict"}
 
 
-# ---- CLI -----------------------------------------------------------------------------------------------------------
+# CLI
 
 
 def main(argv: list[str]) -> int:

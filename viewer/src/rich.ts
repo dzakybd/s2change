@@ -1,11 +1,8 @@
 import { LIVE_URL, prefersReducedMotion } from "./domain";
 
 /**
- * Markdown to sanitised DOM for the Report tab and the monitoring brief. marked and DOMPurify load on first use,
- * so they stay out of the entry bundle. Post-processing happens on the sanitised DOM: heading ids for the table of
- * contents, figures with numbered captions, scrollable tables and external links that open safely. ```mermaid fences
- * become SVG diagrams; the mermaid package is imported only when a document contains one, and KaTeX only when it has `$` math. GitHub-style alerts
- * (`> [!NOTE]`) become callout boxes, and remote images are limited to the technology logos on cdn.simpleicons.org.
+ * Markdown to sanitised DOM for the Report tab and the monitoring brief. marked, DOMPurify, Mermaid and KaTeX load only
+ * when a document needs them; remote images are limited to the technology logos on cdn.simpleicons.org.
  */
 interface RichOptions {
   /** Resolve relative image URLs against this (the report's own folder). */

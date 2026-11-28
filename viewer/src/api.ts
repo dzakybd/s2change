@@ -75,7 +75,7 @@ async function call<T>(state: ReadyApi, method: "GET" | "POST", path: string, bo
   }
 }
 
-/* ---------- access code ---------- */
+/* Access code */
 
 export interface AuthState {
   enabled: boolean;
@@ -87,7 +87,7 @@ export const authStatus = (s: ReadyApi): Promise<AuthState> => (s.mock ? Promise
 export const login = (s: ReadyApi, code: string) => call<AuthState>(s, "POST", "/api/auth/login", { code });
 export const logout = (s: ReadyApi) => call<AuthState>(s, "POST", "/api/auth/logout", {});
 
-/* ---------- agent ---------- */
+/* Agent */
 
 const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
@@ -127,7 +127,7 @@ export async function fetchRun(state: ReadyApi, runId: string): Promise<PolygonC
 /** Run ids that refer to the result already bundled with the viewer. */
 export const STATIC_RUN_IDS: ReadonlySet<string> = new Set(["assignment", "default", "robust_cva"]);
 
-/* ---------- database explorer ---------- */
+/* Database explorer */
 
 export const dbSchema = (s: ReadyApi) => call<DbTable[]>(s, "GET", "/api/db/schema");
 interface PageQuery {

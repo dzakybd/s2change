@@ -1,7 +1,6 @@
 """Radiometric handling: DN -> reflectance, radiometric zoning, relative normalization, registration check.
 
 Why zones exist
----------------
 Image "dates" are often mosaics. In this AOI each provided date combines two Sentinel-2 scenes
 from adjacent orbits, seamed along a slanted swath edge (verified pixel-exact against Planetary
 Computer STAC by ``s2cd provenance``). Detector-footprint striping under haze produces the same
