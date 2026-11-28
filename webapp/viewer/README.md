@@ -9,7 +9,7 @@ https://s2change.dzaky.ai.id.
 | Map | Opens in 2.5D (tilt, bearing, changes raised by confidence; `?oblique=0` / `?extrude=0` to turn off) on the analysed Sentinel-2 dates super-resolved to 2.5 m (SEN2SR, `pipeline/scripts/super_resolution.py`; view only) with the agent beside it (`?agent=0` collapses it to a rail), a Changes toggle to see the imagery underneath (`?changes=0`), type icons, before/after swipe on the Sentinel-2 layers, Result menu (provided baseline, ours on the mosaic passes, ours on the true passes), layer menu (changes on 2.5 m or 10 m Sentinel-2, change intensity, the provided baseline's mask, facility register with class icons, for either result), polygon inspector with the reason for each label | no |
 | Database | Connection card (live PostgreSQL/PostGIS versions, read-only URI with a copy button), interactive entity-relationship diagram (click a table), paged table explorer with sorting and key links between tables, "show this page on the map", SQL dump per table or for the whole database | yes (live-only; static hosts get an explanation) |
 | Report (landing tab) | `web/report/report.md` rendered with a table of contents, numbered figures, Mermaid diagrams and facility thumbnails; links into the app open in place | no |
-| Agent (panel on the Map) | Chat with charts, tables, map actions and a tool-call trace, plus "Generate monitoring brief" | yes |
+| Agent (panel on the Map) | Live chat with tables, Mermaid charts, map actions and a tool-call trace | yes |
 | Downloads | Rasters, stacks, GeoJSON, docs with a preview of each (`web/downloads.json`, `web/previews/`); files from GitHub raw links | no |
 
 ```bash
@@ -31,7 +31,7 @@ uv run python -m s2cd.site   # webapp/data/downloads.json + previews/, facilitie
 - Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&swipe=0`.
   Layers: `types` (default), `after`, `before`, `intensity`, `facilities`.
 - `?mock` serves every API call from `fixtures/` (`fixtures/agent/*.json` for the chat, `fixtures/api/*.json` for the
-  database and the brief). `?mock=429` / `?mock=error` simulate chat failures.
+  database). `?mock=429` / `?mock=error` simulate chat failures.
 - `?api=<url>` points at another backend, e.g. `?api=http://127.0.0.1:8000`.
 - `?data=<url>` overrides the data location (otherwise `VITE_DATA_BASE`, then `../web/`).
 - When `/api/health` fails, live features show a calm explanation linking to the live site.
@@ -42,7 +42,7 @@ uv run python -m s2cd.site   # webapp/data/downloads.json + previews/, facilitie
 `src/main.ts` is the shell and router; each view loads on demand, so the entry bundle stays small and MapLibre only
 loads with the Map and Analyst tabs. `src/map/` holds the map engine (`stage.ts`), layer definitions, cards, the
 AOI geometry and the swipe. `src/api.ts` is the typed client for the API (report section 7); `src/mock.ts` is the
-fixture backend. `src/rich.ts` renders sanitised Markdown (marked + DOMPurify) for the report and the brief.
+fixture backend. `src/rich.ts` renders sanitised Markdown (marked + DOMPurify) for the report and the agent's answers.
 
 Motion is deliberately small: ease-out on enter, 150-220 ms, a 0.97 press scale, no animation on keyboard actions
 (menus), and `prefers-reduced-motion` collapses everything to opacity.

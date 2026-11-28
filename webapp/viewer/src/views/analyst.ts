@@ -1,6 +1,6 @@
 import "../styles/chat.css";
 import type { ApiState, ChatMessage } from "../api";
-import { brief, chat, friendlyError } from "../api";
+import { chat, friendlyError } from "../api";
 import { chartElement } from "../charts";
 import { CHEVRON, LIVE_URL, esc, q } from "../domain";
 import { renderRich } from "../rich";
@@ -86,18 +86,17 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
   root.innerHTML = `
     <header class="chat-head">
       <div>
-        <h1>Ask about the changes</h1>
+        <h1>Ask the agent <span class="live-pill" id="chat-live" hidden>Live</span></h1>
       </div>
       <div class="chat-tools">
         <button type="button" class="btn ghost sm" id="chat-clear" hidden>New chat</button>
-        <button type="button" class="btn sm" id="chat-brief" disabled>Generate monitoring brief</button>
         <button type="button" class="btn ghost sm icon" id="chat-close" aria-label="Collapse the agent" title="Collapse">${CHEVRON}</button>
       </div>
     </header>
     <div id="chat-banner"></div>
     <div class="chat-scroll" id="chat-scroll" aria-live="polite">
       <div class="welcome" id="chat-welcome">
-        <p>Ask a question about the changes. Answers can come with charts, tables and map moves, and show how each number was found.</p>
+        <p>A live AI agent answers from the database in a few seconds. Pick a question or type your own: it moves the map to what it finds, and shows how each number was found.</p>
         <div class="chips" id="chat-chips">${SUGGESTIONS.map((s) => `<button type="button" class="chip">${esc(s)}</button>`).join("")}</div>
       </div>
       <div id="chat-log"></div>
@@ -116,8 +115,7 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
   q(root, "#chat-close").addEventListener("click", () => root.dispatchEvent(new Event("chat-close", { bubbles: true })));
   const welcome = q(root, "#chat-welcome");
   const chips = [...root.querySelectorAll<HTMLButtonElement>(".chip")];
-  const briefBtn = q<HTMLButtonElement>(root, "#chat-brief");
-  let briefBusy = false;
+  const live = q(root, "#chat-live");
 
   const history: ChatMessage[] = [];
   let api: ApiState | null = null;
@@ -130,7 +128,7 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
     input.disabled = api?.kind !== "ready";
     send.disabled = !on || !input.value.trim();
     for (const c of chips) c.disabled = !on;
-    briefBtn.disabled = api?.kind !== "ready" || briefBusy;
+    live.hidden = api?.kind !== "ready";
   };
 
   void apiPromise.then((state) => {
@@ -265,32 +263,6 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
       syncControls();
     }
   };
-
-  briefBtn.addEventListener("click", async () => {
-    if (api?.kind !== "ready" || briefBusy) return;
-    briefBusy = true;
-    welcome.hidden = true;
-    clear.hidden = false;
-    syncControls();
-    const card = document.createElement("div");
-    card.className = "msg assistant brief loading";
-    card.innerHTML = `<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Building the monitoring brief from the database…</span>`;
-    log.append(card);
-    scrollDown();
-    try {
-      const doc = await renderRich(await brief(api), { figures: false });
-      doc.className = "md brief-doc";
-      card.className = "msg assistant brief";
-      card.replaceChildren(doc);
-      card.scrollIntoView({ block: "start" });
-    } catch (err) {
-      card.className = "msg error";
-      card.innerHTML = `<p>${esc(friendlyError(err, "the brief service"))}</p>`;
-    } finally {
-      briefBusy = false;
-      syncControls();
-    }
-  });
 
   const submit = () => {
     const text = input.value.trim();

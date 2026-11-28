@@ -41,7 +41,6 @@ export async function mockCall<T>(mode: string, method: "GET" | "POST", path: st
   const p = url.pathname;
   let out: unknown;
   if (p === "/api/agent/chat") out = await agent(mode, body);
-  else if (p === "/api/brief") (await delay(500), (out = await fixture("brief")));
   else if (p === "/api/db/schema") out = await fixture("db_schema");
   else if (p === "/api/db/connection") out = await fixture("db_connection");
   else if (p === "/api/db/connection/uri") out = { uri: "postgresql://s2cd_reader:mock@db.example.supabase.co:5432/postgres" };

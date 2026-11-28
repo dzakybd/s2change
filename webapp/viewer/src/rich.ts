@@ -1,7 +1,7 @@
 import { LIVE_URL, prefersReducedMotion } from "./domain";
 
 /**
- * Markdown to sanitised DOM for the Report tab and the monitoring brief. marked, DOMPurify, Mermaid and KaTeX load only
+ * Markdown to sanitised DOM for the Report tab and the agent's answers. marked, DOMPurify, Mermaid and KaTeX load only
  * when a document needs them; remote images are limited to the technology logos on cdn.simpleicons.org.
  */
 interface RichOptions {

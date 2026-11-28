@@ -41,8 +41,6 @@
 .md pre code { background: none; padding: 0; }
 .md table { margin: 0; }
 .md .table-wrap { margin: 0 0 var(--s-3); }
-.brief-doc h1 { font-size: var(--fs-md); margin-bottom: var(--s-2); }
-.brief-doc h2 { font-size: var(--fs-base); margin: var(--s-4) 0 6px; color: var(--text); }
 
 .chart { margin: var(--s-3) 0 0; padding: var(--s-3) var(--s-3) var(--s-2); border-radius: var(--r-md); background: var(--bg); box-shadow: var(--ring); }
 .chart figcaption { margin: 0 0 4px 4px; font-size: var(--fs-xs); font-weight: 650; color: var(--text-3); }
@@ -92,3 +90,5 @@ code.tool { color: var(--accent-ink); }
 .md td { color: var(--text-2); }
 .md .mermaid-diagram { margin: 0 0 var(--s-3); padding: var(--s-2); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); overflow-x: auto; }
 .md .mermaid-diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.live-pill { display: inline-flex; align-items: center; gap: 5px; margin-left: 6px; padding: 2px 8px; border-radius: var(--r-pill); background: rgb(13 148 136 / 0.1); color: var(--teal); font-size: var(--fs-xs); font-weight: 650; letter-spacing: 0; vertical-align: middle; }
+.live-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }

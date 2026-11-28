@@ -110,12 +110,6 @@ export async function chat(state: ReadyApi, messages: ChatMessage[], signal: Abo
   return normalizeResponse(await call<unknown>(state, "POST", "/api/agent/chat", { messages }, signal));
 }
 
-export async function brief(state: ReadyApi): Promise<string> {
-  const r = await call<{ markdown?: unknown }>(state, "GET", "/api/brief");
-  if (typeof r.markdown !== "string") throw new ApiError("The brief came back empty", null);
-  return r.markdown;
-}
-
 /** GET /api/changes?run_id=... as GeoJSON. */
 export async function fetchRun(state: ReadyApi, runId: string): Promise<PolygonCollection> {
   if (state.mock) throw new ApiError("Run data is not available in mock mode", null);
