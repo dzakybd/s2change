@@ -26,9 +26,10 @@ services:
       DATABASE_URL: postgresql+psycopg://s2cd:s2cd@db:5432/s2cd
     volumes:
       - ./inputs:/app/inputs
-      - ./data:/app/data
-      - ./docs:/app/docs
-      - ./configs:/app/configs
+      - ./outputs:/app/outputs
+      - ./figures:/app/figures
+      - ./webapp/data:/app/webapp/data
+      - ./pipeline/config:/app/pipeline/config
     command: ["run"]
 
 volumes:

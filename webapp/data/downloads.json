@@ -1,0 +1,1436 @@
+{
+ "groups": [
+  {
+   "title": "Change maps",
+   "blurb": "GeoTIFFs on the 10 m grid of the scenes (EPSG:32735). Open in QGIS or rasterio.",
+   "items": [
+    {
+     "path": "outputs/change_map.tif",
+     "title": "change_map.tif",
+     "desc": "Robust change magnitude per pixel (log10 d²).",
+     "size": "11.2 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "change intensity: log10 Mahalanobis d2"
+      ],
+      [
+       "Type",
+       "float32"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-9999"
+      ]
+     ],
+     "image": "previews/outputs_change_map_tif.webp"
+    },
+    {
+     "path": "outputs/change_significance.tif",
+     "title": "change_significance.tif",
+     "desc": "−log10 p of the change under the noise model.",
+     "size": "10.5 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "-log10 no-change p-value, chi2.logsf(d2, 3), capped at 50"
+      ],
+      [
+       "Type",
+       "float32"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-9999"
+      ]
+     ],
+     "image": "previews/outputs_change_significance_tif.webp"
+    },
+    {
+     "path": "outputs/change_map_baseline.tif",
+     "title": "change_map_baseline.tif",
+     "desc": "The provided method's change intensity: colour distance between the dates, scaled 0 to 254.",
+     "size": "1.5 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "euclidean distance, min-max scaled 0-254"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/outputs_change_map_baseline_tif.webp"
+    },
+    {
+     "path": "outputs/change_binary.tif",
+     "title": "change_binary.tif",
+     "desc": "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
+     "size": "40 KB",
+     "kind": "binary",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "1 = change (robust CVA, nominal FAR 0.001)"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/outputs_change_binary_tif.webp"
+    },
+    {
+     "path": "outputs/change_binary_baseline.tif",
+     "title": "change_binary_baseline.tif",
+     "desc": "The provided method's result (colour distance, automatic threshold), cleaned the same way.",
+     "size": "210 KB",
+     "kind": "binary",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "1 = change (Otsu)"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/outputs_change_binary_baseline_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "Sentinel-2 stacks",
+   "blurb": "B02, B03, B04 as delivered, plus the later date normalised to the earlier one.",
+   "items": [
+    {
+     "path": "outputs/sentinel2_20230812_stack.tif",
+     "title": "sentinel2_20230812_stack.tif",
+     "desc": "Labelled 2023-08-12; stitched from the passes of 2023-07-01 and 07-04.",
+     "size": "13.8 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/outputs_sentinel2_20230812_stack_tif.webp"
+    },
+    {
+     "path": "outputs/sentinel2_20230902_stack.tif",
+     "title": "sentinel2_20230902_stack.tif",
+     "desc": "Labelled 2023-09-02; stitched from the passes of 2023-08-25 and 09-02, as delivered.",
+     "size": "13.2 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/outputs_sentinel2_20230902_stack_tif.webp"
+    },
+    {
+     "path": "outputs/sentinel2_20230902_stack_normalized.tif",
+     "title": "sentinel2_20230902_stack_normalized.tif",
+     "desc": "The later date after per-zone radiometric normalisation.",
+     "size": "14.1 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/outputs_sentinel2_20230902_stack_normalized_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "How the method sees the scene",
+   "blurb": "The intermediate layers behind steps 1 and 5 of the report: which pass each pixel came from and the zones matched separately.",
+   "items": [
+    {
+     "path": "outputs/provenance/source_scene.tif",
+     "title": "source_scene.tif",
+     "desc": "Which satellite pass each pixel was taken from; band 1 for the earlier image, band 2 for the later.",
+     "size": "36 KB",
+     "kind": "zones",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "source 2023-08-12, source 2023-09-02"
+      ],
+      [
+       "Type",
+       "int8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-1"
+      ]
+     ],
+     "image": "previews/outputs_provenance_source_scene_tif.webp"
+    },
+    {
+     "path": "outputs/radiometric_zones.tif",
+     "title": "radiometric_zones.tif",
+     "desc": "The three zones (pass pairs) whose brightness is matched separately; -1 = no data.",
+     "size": "42 KB",
+     "kind": "zones",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "zone id (provenance)"
+      ],
+      [
+       "Type",
+       "int16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-1"
+      ]
+     ],
+     "image": "previews/outputs_radiometric_zones_tif.webp"
+    },
+    {
+     "path": "outputs/stripe_zones_detected.tif",
+     "title": "stripe_zones_detected.tif",
+     "desc": "The same zones found from the pixels alone, without the scene metadata, as a cross-check.",
+     "size": "50 KB",
+     "kind": "zones",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "data-driven stripe zone id"
+      ],
+      [
+       "Type",
+       "int16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-1"
+      ]
+     ],
+     "image": "previews/outputs_stripe_zones_detected_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "Super-resolved 2.5 m true colour (map backdrop only)",
+   "blurb": "SEN2SR (ESA OpenSR) sharpens the 10 m bands to 2.5 m. The fine detail is a model estimate, so it is used only as the map backdrop, never for change detection. 8-bit display colour (pipeline/scripts/super_resolution.py).",
+   "items": [
+    {
+     "path": "outputs/super_resolution/sentinel2_20230812_sr_2p5m.tif",
+     "title": "sentinel2_20230812_sr_2p5m.tif",
+     "desc": "The image labelled 2023-08-12 at 2.5 m.",
+     "size": "5.9 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/outputs_super_resolution_sentinel2_20230812_sr_2p5m_tif.webp"
+    },
+    {
+     "path": "outputs/super_resolution/sentinel2_20230902_sr_2p5m.tif",
+     "title": "sentinel2_20230902_sr_2p5m.tif",
+     "desc": "The image labelled 2023-09-02 at 2.5 m.",
+     "size": "4.9 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/outputs_super_resolution_sentinel2_20230902_sr_2p5m_tif.webp"
+    },
+    {
+     "path": "outputs/super_resolution/true_passes_20230808_sr_2p5m.tif",
+     "title": "true_passes_20230808_sr_2p5m.tif",
+     "desc": "The true single pass of 2023-08-08 at 2.5 m.",
+     "size": "6.1 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/outputs_super_resolution_true_passes_20230808_sr_2p5m_tif.webp"
+    },
+    {
+     "path": "outputs/super_resolution/true_passes_20230902_sr_2p5m.tif",
+     "title": "true_passes_20230902_sr_2p5m.tif",
+     "desc": "The true single pass of 2023-09-02 at 2.5 m.",
+     "size": "4.5 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/outputs_super_resolution_true_passes_20230902_sr_2p5m_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "True single passes (comparison)",
+   "blurb": "The same site from single-pass scenes on the true acquisition dates, with no seams: the check behind the data trap (pipeline/scripts/real_dates.py; on the map: Result, Ours, true passes).",
+   "items": [
+    {
+     "path": "outputs/true_passes/sentinel2_20230808_stack.tif",
+     "title": "sentinel2_20230808_stack.tif",
+     "desc": "2023-08-08, one pass (B02, B03, B04).",
+     "size": "14.2 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/outputs_true_passes_sentinel2_20230808_stack_tif.webp"
+    },
+    {
+     "path": "outputs/true_passes/sentinel2_20230902_stack.tif",
+     "title": "sentinel2_20230902_stack.tif",
+     "desc": "2023-09-02, one pass (B02, B03, B04).",
+     "size": "13.0 MB",
+     "kind": "rgb",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "B02 (blue), B03 (green), B04 (red)"
+      ],
+      [
+       "Type",
+       "uint16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "0"
+      ]
+     ],
+     "image": "previews/outputs_true_passes_sentinel2_20230902_stack_tif.webp"
+    },
+    {
+     "path": "outputs/true_passes/change_map.tif",
+     "title": "change_map.tif",
+     "desc": "Robust change magnitude per pixel for this pair.",
+     "size": "11.3 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "change intensity: log10 Mahalanobis d2"
+      ],
+      [
+       "Type",
+       "float32"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-9999"
+      ]
+     ],
+     "image": "previews/outputs_true_passes_change_map_tif.webp"
+    },
+    {
+     "path": "outputs/true_passes/change_binary.tif",
+     "title": "change_binary.tif",
+     "desc": "Changed (1) or not (0) for this pair; 255 = no data.",
+     "size": "22 KB",
+     "kind": "binary",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "1 = change (robust CVA, nominal FAR 0.001)"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/outputs_true_passes_change_binary_tif.webp"
+    },
+    {
+     "path": "webapp/data/true_passes/change_features.geojson",
+     "title": "change_features.geojson",
+     "desc": "The change polygons of this pair, typed like the main result.",
+     "size": "372 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "137"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "26: d_blue, d_green, d_red, d_brightness, brightness_before, brightness_after, disturbed_fraction, confidence, neglog10_p, strong_fraction, touches_aoi_edge, zone, area_m2, perimeter_m, compactness, change_direction, in_disturbed_area, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, description"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "change_type",
+       "headline",
+       "area_m2",
+       "confidence"
+      ],
+      "rows": [
+       [
+        "DAM",
+        "water_level_change",
+        "Water level changed",
+        "241,100.00",
+        "0.21"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "235,300.00",
+        "0.13"
+       ],
+       [
+        "PIT-S",
+        "pit_excavation",
+        "Pit worked or deepened",
+        "172,000.00",
+        "0.28"
+       ],
+       [
+        "PIT-NW",
+        "pit_excavation",
+        "Pit worked or deepened",
+        "130,200.00",
+        "0.16"
+       ],
+       [
+        "TSF",
+        "water_level_change",
+        "Water level changed",
+        "96,300.00",
+        "0.22"
+       ]
+      ]
+     },
+     "image": "previews/webapp_data_true_passes_change_features_geojson.webp"
+    }
+   ]
+  },
+  {
+   "title": "Vectors",
+   "blurb": "The change polygons as GeoJSON. The full tables live in the PostGIS database (Database tab, with SQL dumps).",
+   "items": [
+    {
+     "path": "webapp/data/change_features.geojson",
+     "title": "change_features.geojson",
+     "desc": "The change polygons with type, plain-language description, confidence and facility (web export).",
+     "size": "665 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "223"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "26: d_blue, d_green, d_red, d_brightness, brightness_before, brightness_after, disturbed_fraction, confidence, neglog10_p, strong_fraction, touches_aoi_edge, zone, area_m2, perimeter_m, compactness, change_direction, in_disturbed_area, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, description"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "change_type",
+       "headline",
+       "area_m2",
+       "confidence"
+      ],
+      "rows": [
+       [
+        "TSF",
+        "tailings_dam_works",
+        "Earthworks on the tailings dam wall",
+        "388,100.00",
+        "0.34"
+       ],
+       [
+        "PIT-NW",
+        "waste_dumping",
+        "Waste rock dumped",
+        "193,200.00",
+        "0.22"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "167,800.00",
+        "0.34"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "166,900.00",
+        "0.12"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "155,300.00",
+        "0.16"
+       ]
+      ]
+     },
+     "image": "previews/webapp_data_change_features_geojson.webp"
+    },
+    {
+     "path": "outputs/change_features.geojson",
+     "title": "change_features.geojson",
+     "desc": "Full-precision export with every attribute the pipeline computed.",
+     "size": "6.8 MB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "1,784"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Runs",
+       "20230812_20230902_euclidean_baseline, 20230812_20230902_robust_cva"
+      ],
+      [
+       "Attributes",
+       "30: run_id, date_before, date_after, method, area_m2, perimeter_m, compactness, confidence, neglog10_p, strong_fraction, change_direction, in_disturbed_area, touches_aoi_edge, d_blue, d_green, d_red, d_brightness, brightness_before, brightness_after, zone, change_type, brief_category, explanation, facility_id, headline, location, evidence, what_to_check, description, disturbed_fraction"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "change_type",
+       "headline",
+       "area_m2",
+       "confidence"
+      ],
+      "rows": [
+       [
+        "TSF",
+        "tailings_dam_works",
+        "Earthworks on the tailings dam wall",
+        "388,100.00",
+        "0.34"
+       ],
+       [
+        "PIT-NW",
+        "waste_dumping",
+        "Waste rock dumped",
+        "193,200.00",
+        "0.22"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "167,800.00",
+        "0.34"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "166,900.00",
+        "0.12"
+       ],
+       [
+        "TSF",
+        "tailings_deposition",
+        "Tailings deposited",
+        "155,300.00",
+        "0.16"
+       ]
+      ]
+     },
+     "image": "previews/outputs_change_features_geojson.webp"
+    },
+    {
+     "path": "webapp/data/facilities.geojson",
+     "title": "facilities.geojson",
+     "desc": "The facility register: outlines, area changed (hectares in the file) and the change mix.",
+     "size": "10 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "8"
+      ],
+      [
+       "Geometry",
+       "MultiPolygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "9: facility_id, name, class, cover, area_ha, changed_ha, changed_share, change_types, summary"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "facility_id",
+       "name",
+       "class",
+       "area_ha",
+       "changed_ha"
+      ],
+      "rows": [
+       [
+        "PLANT",
+        "Process plant and central yard",
+        "plant",
+        "95.10",
+        "1.40"
+       ],
+       [
+        "WD-E",
+        "Eastern waste dumps",
+        "waste_dump",
+        "329.50",
+        "20.70"
+       ],
+       [
+        "PIT-S",
+        "South pit complex",
+        "pit_dump_complex",
+        "2,483.70",
+        "55.20"
+       ],
+       [
+        "PIT-NW",
+        "North-west pit complex",
+        "pit_dump_complex",
+        "1,316.40",
+        "41.10"
+       ],
+       [
+        "TSF",
+        "Tailings storage facility",
+        "tailings",
+        "2,184.40",
+        "219.50"
+       ]
+      ]
+     },
+     "image": "previews/webapp_data_facilities_geojson.webp"
+    },
+    {
+     "path": "webapp/data/aoi.geojson",
+     "title": "aoi.geojson",
+     "desc": "The area of interest.",
+     "size": "1 KB",
+     "kind": "vector",
+     "facts": [
+      [
+       "Features",
+       "1"
+      ],
+      [
+       "Geometry",
+       "Polygon"
+      ],
+      [
+       "CRS",
+       "EPSG:4326 (lon/lat)"
+      ],
+      [
+       "Attributes",
+       "1: name"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "name"
+      ],
+      "rows": [
+       [
+        "Unknown"
+       ]
+      ]
+     },
+     "image": "previews/webapp_data_aoi_geojson.webp"
+    }
+   ]
+  },
+  {
+   "title": "Numbers and checks",
+   "blurb": "The tables behind the report's figures, and the accuracy check.",
+   "items": [
+    {
+     "path": "outputs/run_summary.json",
+     "title": "run_summary.json",
+     "desc": "Every number the pipeline measured on its last run.",
+     "size": "10 KB",
+     "kind": "text",
+     "document": "previews/outputs_run_summary_json.md"
+    },
+    {
+     "path": "outputs/funnel.csv",
+     "title": "funnel.csv",
+     "desc": "How much flagged area each step of the method removes.",
+     "size": "1 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "6"
+      ],
+      [
+       "Columns",
+       "6: step, what, raw_km2, cleaned_km2, patches, patches_under_mmu"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "step",
+       "what",
+       "raw_km2",
+       "cleaned_km2",
+       "patches",
+       "patches_under_mmu"
+      ],
+      "rows": [
+       [
+        "0",
+        "Provided method: colour distance, Otsu threshold",
+        "126.6",
+        "111.43",
+        "17799",
+        "16294"
+       ],
+       [
+        "2a",
+        "Brightness matched with one line for the whole site",
+        "16.89",
+        "13.11",
+        "6395",
+        "5848"
+       ],
+       [
+        "1+2",
+        "Three zones, brightness matched per zone",
+        "9.7",
+        "7.01",
+        "3927",
+        "3522"
+       ],
+       [
+        "3+4",
+        "Noise test: what flicker passes 1 in 1,000",
+        "6.81",
+        "4.51",
+        "4543",
+        "4251"
+       ],
+       [
+        "5",
+        "Seams skipped (90 m)",
+        "6.0",
+        "4.17",
+        "4322",
+        "4051"
+       ],
+       [
+        "6",
+        "Cleanup: specks under 0.2 ha dropped, holes filled",
+        "4.17",
+        "4.17",
+        "223",
+        "0"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "outputs/sensitivity.csv",
+     "title": "sensitivity.csv",
+     "desc": "Changed area under other threshold and minimum-area settings.",
+     "size": "1 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "16"
+      ],
+      [
+       "Columns",
+       "7: far, mmu_ha, changed_ha, changed_pct_of_aoi, share_in_mine_footprint, share_in_register_mine_classes, is_default"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "far",
+       "mmu_ha",
+       "changed_ha",
+       "changed_pct_of_aoi",
+       "share_in_mine_footprint",
+       "share_in_register_mine_classes",
+       "is_default"
+      ],
+      "rows": [
+       [
+        "0.01",
+        "0.1",
+        "695.4",
+        "2.63",
+        "0.668",
+        "0.667",
+        "False"
+       ],
+       [
+        "0.01",
+        "0.2",
+        "669.2",
+        "2.53",
+        "0.667",
+        "0.67",
+        "False"
+       ],
+       [
+        "0.01",
+        "0.5",
+        "622.6",
+        "2.35",
+        "0.664",
+        "0.672",
+        "False"
+       ],
+       [
+        "0.01",
+        "1.0",
+        "579.9",
+        "2.19",
+        "0.658",
+        "0.674",
+        "False"
+       ],
+       [
+        "0.001",
+        "0.1",
+        "434.3",
+        "1.64",
+        "0.797",
+        "0.804",
+        "False"
+       ],
+       [
+        "0.001",
+        "0.2",
+        "417.2",
+        "1.58",
+        "0.802",
+        "0.81",
+        "True"
+       ],
+       [
+        "0.001",
+        "0.5",
+        "387.2",
+        "1.46",
+        "0.806",
+        "0.82",
+        "False"
+       ],
+       [
+        "0.001",
+        "1.0",
+        "354.8",
+        "1.34",
+        "0.804",
+        "0.832",
+        "False"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "outputs/validation/sample.csv",
+     "title": "sample.csv",
+     "desc": "The 160 check points, drawn at random within strata.",
+     "size": "10 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "200"
+      ],
+      [
+       "Columns",
+       "9: id, stratum, row, col, x, y, ours, base, ours_type"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "id",
+       "stratum",
+       "row",
+       "col",
+       "x",
+       "y",
+       "ours",
+       "base",
+       "ours_type"
+      ],
+      "rows": [
+       [
+        "P001",
+        "3",
+        "1382",
+        "728",
+        "375715.0",
+        "8639945.0",
+        "0",
+        "1",
+        ""
+       ],
+       [
+        "P002",
+        "3",
+        "713",
+        "458",
+        "373015.0",
+        "8646635.0",
+        "0",
+        "1",
+        ""
+       ],
+       [
+        "P003",
+        "1",
+        "669",
+        "1117",
+        "379605.0",
+        "8647075.0",
+        "1",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P004",
+        "3",
+        "1446",
+        "621",
+        "374645.0",
+        "8639305.0",
+        "0",
+        "1",
+        ""
+       ],
+       [
+        "P005",
+        "1",
+        "1160",
+        "1139",
+        "379825.0",
+        "8642165.0",
+        "1",
+        "1",
+        "waste_dumping"
+       ],
+       [
+        "P006",
+        "1",
+        "531",
+        "1147",
+        "379905.0",
+        "8648455.0",
+        "1",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P007",
+        "2",
+        "692",
+        "195",
+        "370385.0",
+        "8646845.0",
+        "1",
+        "0",
+        "waste_dumping"
+       ],
+       [
+        "P008",
+        "2",
+        "812",
+        "786",
+        "376295.0",
+        "8645645.0",
+        "1",
+        "0",
+        "infrastructure_or_settlement"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "outputs/validation/labels_adjudicated.csv",
+     "title": "labels_adjudicated.csv",
+     "desc": "The labels where the two passes disagreed, after review.",
+     "size": "1 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "40"
+      ],
+      [
+       "Columns",
+       "3: id, change, type"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "id",
+       "change",
+       "type"
+      ],
+      "rows": [
+       [
+        "P002",
+        "1",
+        "waste_dumping"
+       ],
+       [
+        "P005",
+        "1",
+        "waste_dumping"
+       ],
+       [
+        "P006",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P008",
+        "1",
+        "water_level_change"
+       ],
+       [
+        "P010",
+        "1",
+        "construction_or_road"
+       ],
+       [
+        "P014",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P015",
+        "1",
+        "vegetation_loss_or_burn"
+       ],
+       [
+        "P031",
+        "1",
+        "construction_or_road"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "outputs/validation/accuracy.json",
+     "title": "accuracy.json",
+     "desc": "Precision, recall and their confidence intervals for both methods.",
+     "size": "1 KB",
+     "kind": "text",
+     "document": "previews/outputs_validation_accuracy_json.md"
+    }
+   ]
+  },
+  {
+   "title": "Database",
+   "blurb": "PostGIS schema and example queries; the live tables are in the Database tab.",
+   "items": [
+    {
+     "path": "pipeline/sql/schema_postgis.sql",
+     "title": "schema_postgis.sql",
+     "desc": "Tables, geometry columns and indexes of the change database.",
+     "size": "3 KB",
+     "kind": "text",
+     "document": "previews/pipeline_sql_schema_postgis_sql.md"
+    },
+    {
+     "path": "pipeline/sql/queries_postgis.sql",
+     "title": "queries_postgis.sql",
+     "desc": "Example spatial queries (area by type, changes per facility, and more).",
+     "size": "5 KB",
+     "kind": "text",
+     "document": "previews/pipeline_sql_queries_postgis_sql.md"
+    }
+   ]
+  },
+  {
+   "title": "Documents",
+   "blurb": "",
+   "items": [
+    {
+     "path": "report.md",
+     "title": "report.md",
+     "desc": "The full write-up, as shown in the Report tab.",
+     "size": "62 KB",
+     "kind": "report"
+    }
+   ]
+  }
+ ]
+}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-REPORT = Path(__file__).resolve().parents[1] / "docs/web/report"
+REPORT = Path(__file__).resolve().parents[1] / "webapp/data/report"
 
 
 def test_report_pdf_was_printed_from_the_current_report():

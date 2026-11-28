@@ -1,10 +1,10 @@
-<img src="viewer/public/favicon.svg" alt="s2change logo" width="56" height="56">
+<img src="webapp/viewer/public/favicon.svg" alt="s2change logo" width="56" height="56">
 
 # What changed at Lumwana, Barrick's open-pit copper mine in Zambia?
 
 **Two free satellite images of the Lumwana mine (North-Western Province, Zambia): what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/8pGhwnsoD38)
 
-<a href="https://youtu.be/8pGhwnsoD38"><img src="docs/figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
+<a href="https://youtu.be/8pGhwnsoD38"><img src="figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
 
 *Prefer watching? A [2:52 explainer](https://youtu.be/8pGhwnsoD38) tells the same story in plain words.*
 
@@ -36,9 +36,9 @@ The brief supplies two Sentinel-2 images of an open-pit copper mine in Zambia, L
 > [!NOTE]
 > **Colour only (RGB).** We use only the three colour bands: no infrared, no cloud mask, no elevation. The brief only says "an open-pit mining site in Zambia"; the area's centre (12.25° S, 25.87° E) and its layout are the Lumwana copper mine, so we name it.
 
-🏭 **What is on the ground.** To say *where* change happens, we outlined the mine's 8 facilities (pits, waste dumps, tailings, plant, town) on sharp aerial imagery and checked them against the 2023 image (`configs/facility_register.yaml`, [on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities)):
+🏭 **What is on the ground.** To say *where* change happens, we outlined the mine's 8 facilities (pits, waste dumps, tailings, plant, town) on sharp aerial imagery and checked them against the 2023 image (`pipeline/config/facility_register.yaml`, [on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities)):
 
-![The 8 named facilities of the mine: pits, waste dumps, the tailings storage facility, the plant, the fresh-water dam, camp and town](docs/figures/09_facility_register.png)
+![The 8 named facilities of the mine: pits, waste dumps, the tailings storage facility, the plant, the fresh-water dam, camp and town](figures/09_facility_register.png)
 
 🧪 **Was the data already corrected?** Mostly yes, but not for everything that matters here:
 
@@ -67,13 +67,13 @@ Looking at the two images side by side, a straight diagonal line runs through bo
 
 🔎 **Proof 1. One side is a known pass, the other is not.** The satellite took no image of the site on 12 Aug. So we compared each file with a real single pass that covers the whole site: before with *4 Jul*, after with *2 Sep*. West of the seam <b class="good">every pixel is identical</b> in all three bands; east of it, <b class="bad">none is</b>. The brightness jumps exactly at the seam (e): the edge of a pass, not something on the ground.
 
-![Each supplied file beside the full-coverage single pass found inside it, with the brightness profile across its seam](docs/figures/07_trap_proof.png)
+![Each supplied file beside the full-coverage single pass found inside it, with the brightness profile across its seam](figures/07_trap_proof.png)
 
-*Before with before, after with after: identical on one side of the yellow line, different on the other (`scripts/fig_trap_proof.py`).*
+*Before with before, after with after: identical on one side of the yellow line, different on the other (`pipeline/scripts/fig_trap_proof.py`).*
 
 🧬 **Proof 2. Every pixel traced to its pass.** We compared all 55–56 archived images of the site from the 75 days before each date with the files, pixel by pixel (`s2cd provenance`). Two images per date match every pixel exactly, and their records give the true dates. The two files switch pass at slightly different lines, so together they split the site into **three zones**:
 
-![Source pass of every pixel on both dates, the three zones they form, and the real time gap of each](docs/figures/06_provenance.png)
+![Source pass of every pixel on both dates, the three zones they form, and the real time gap of each](figures/06_provenance.png)
 
 *The seams are the edge of one satellite track (orbit 78), which covers only the east of the site.*
 
@@ -96,9 +96,9 @@ Two methods run on the same images and are stored in the same database:
 
 ### 🔬 Both methods side by side
 
-![Method overview: each date is two satellite passes; the provided example flags 111.4 km², mostly seams; this work splits the site into three zones, normalises each, scores change against measured noise and keeps 4.17 km² of change](docs/figures/04_method_overview.png)
+![Method overview: each date is two satellite passes; the provided example flags 111.4 km², mostly seams; this work splits the site into three zones, normalises each, scores change against measured noise and keeps 4.17 km² of change](figures/04_method_overview.png)
 
-*Both methods on the same input: source pass per pixel, the three zones, and each method's change mask. Editable source: [`docs/figures/04_method_overview.drawio`](docs/figures/04_method_overview.drawio).*
+*Both methods on the same input: source pass per pixel, the three zones, and each method's change mask. Editable source: [`figures/04_method_overview.drawio`](figures/04_method_overview.drawio).*
 
 ### 🪜 The six steps, with the equations
 
@@ -114,8 +114,8 @@ $$
 
 | | Whole site | Close-up: tailings dam wall |
 |---|---|---|
-| 📥 **Before** ("12 Aug") | <img src="docs/figures/steps/wide_01.jpg" width="300" alt="Before image, whole site"> | <img src="docs/figures/steps/close_01.jpg" width="300" alt="Before image, close-up"> |
-| 📥 **After, as delivered** ("2 Sep") | <img src="docs/figures/steps/wide_02.jpg" width="300" alt="After image as delivered, whole site"> | <img src="docs/figures/steps/close_02.jpg" width="300" alt="After image as delivered, close-up"> |
+| 📥 **Before** ("12 Aug") | <img src="figures/steps/wide_01.jpg" width="300" alt="Before image, whole site"> | <img src="figures/steps/close_01.jpg" width="300" alt="Before image, close-up"> |
+| 📥 **After, as delivered** ("2 Sep") | <img src="figures/steps/wide_02.jpg" width="300" alt="After image as delivered, whole site"> | <img src="figures/steps/close_02.jpg" width="300" alt="After image as delivered, close-up"> |
 
 *The two files in true colour. The after file looks brighter and hazier, partly because it holds other passes.*
 
@@ -135,13 +135,13 @@ $$
 
 Here $s(p)$ is the pass that pixel $p$ came from; each different pair is one zone. This grouping is our own; the passes and their dates come from the Sentinel-2 archive on Microsoft Planetary Computer. Nothing is tuned: the files decide the zones. A second check that uses only the images, by finding the straight brightness jumps, draws the same borders (99 % agreement).
 
-![Step 1 sketch: each file is two satellite passes stitched along a seam; the two seams sit at different places, so overlaying them gives three zones, west, a thin middle strip and east, each with its own pair of pass dates](docs/figures/17_step1_zones.svg)
+![Step 1 sketch: each file is two satellite passes stitched along a seam; the two seams sit at different places, so overlaying them gives three zones, west, a thin middle strip and east, each with its own pair of pass dates](figures/17_step1_zones.svg)
 
-*Step 1 as a sketch (`scripts/fig_method_steps.py`). The dates, day gaps and shares are the real ones.*
+*Step 1 as a sketch (`pipeline/scripts/fig_method_steps.py`). The dates, day gaps and shares are the real ones.*
 
 | Whole site | Close-up: tailings dam wall |
 |---|---|
-| <img src="docs/figures/steps/wide_03.jpg" width="320" alt="Seam zones, whole site"> | <img src="docs/figures/steps/close_03.jpg" width="320" alt="Seam zones, close-up"> |
+| <img src="figures/steps/wide_03.jpg" width="320" alt="Seam zones, whole site"> | <img src="figures/steps/close_03.jpg" width="320" alt="Seam zones, close-up"> |
 
 *The 3 zones on the real data (tinted) and the seam strip between them.*
 
@@ -172,9 +172,9 @@ A pixel with $z_r > 2.5$ in any band is probably real change, so it is left out.
 
 **2.4 Apply the line to every pixel of the zone,** changed or not. Stable ground now sits on the "no difference" line; real change stays off it (D).
 
-![Step 2 on real blue-band pixels: A, the after-minus-before difference is shifted by a different amount in each zone and centred on zero after matching; B, in the west zone the pixels off the line are dropped and the line is fitted on the rest; C, the three fitted lines differ; D, after matching stable ground sits on the one-to-one line and change does not](docs/figures/18_step2_matching.svg)
+![Step 2 on real blue-band pixels: A, the after-minus-before difference is shifted by a different amount in each zone and centred on zero after matching; B, in the west zone the pixels off the line are dropped and the line is fitted on the rest; C, the three fitted lines differ; D, after matching stable ground sits on the one-to-one line and change does not](figures/18_step2_matching.svg)
 
-*Step 2 on real pixels of the blue band (`scripts/fig_method_steps.py`). The lines are the fitted ones in the table below.*
+*Step 2 on real pixels of the blue band (`pipeline/scripts/fig_method_steps.py`). The lines are the fitted ones in the table below.*
 
 The fitted lines differ a lot between zones, which is why one line for the whole site fails:
 
@@ -188,7 +188,7 @@ The fitted lines differ a lot between zones, which is why one line for the whole
 
 | Whole site | Close-up: tailings dam wall |
 |---|---|
-| <img src="docs/figures/steps/wide_04.jpg" width="320" alt="After image normalised, whole site"> | <img src="docs/figures/steps/close_04.jpg" width="320" alt="After image normalised, close-up"> |
+| <img src="figures/steps/wide_04.jpg" width="320" alt="After image normalised, whole site"> | <img src="figures/steps/close_04.jpg" width="320" alt="After image normalised, close-up"> |
 
 *The after image matched to the before, zone by zone: the haze is gone, real change stays.*
 
@@ -205,9 +205,9 @@ $$
 
 On stable ground $\Delta$ is not exactly zero. Sensor noise, tiny shifts and growing plants make it *flicker*, and bright ground flickers more than dark ground (figure below, A and B). So each zone $z$ is split into 6 brightness classes $k$, darkest to brightest, with equal pixel counts (our design). In each class, the flicker of stable pixels is summed up by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (how much each band varies and how the bands vary together, a 3 × 3 covariance). Here stable ground is defined more loosely ($z_r < 4$ instead of 2.5), so the rare large flickers are counted too.
 
-![Steps 3 and 4 on real pixels: A and B, change vectors of held-out stable pixels in the darkest and brightest class of the west zone, with the 1-in-1,000 ellipse, which is bigger for bright ground; C, the score of held-out stable pixels lies below the cut-off of 16.27 while the pixels on the change map lie above it](docs/figures/19_step3_4_noise.svg)
+![Steps 3 and 4 on real pixels: A and B, change vectors of held-out stable pixels in the darkest and brightest class of the west zone, with the 1-in-1,000 ellipse, which is bigger for bright ground; C, the score of held-out stable pixels lies below the cut-off of 16.27 while the pixels on the change map lie above it](figures/19_step3_4_noise.svg)
 
-*Steps 3 and 4 on real pixels (`scripts/fig_method_steps.py`). A and B show 2 of the 3 bands, so a few change pixels fall inside the ellipse there and are outside it in the third band. C: 0.10 % of held-out stable ground passes the cut-off, as intended; 99 % of the mapped pixels do (the rest are holes filled in step 6).*
+*Steps 3 and 4 on real pixels (`pipeline/scripts/fig_method_steps.py`). A and B show 2 of the 3 bands, so a few change pixels fall inside the ellipse there and are outside it in the third band. C: 0.10 % of held-out stable ground passes the cut-off, as intended; 99 % of the mapped pixels do (the rest are holes filled in step 6).*
 
 ❌ **Without it:** one noise level per zone, whatever the brightness. Bright mine ground then looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km².
 
@@ -232,8 +232,8 @@ $$
 
 | | Whole site | Close-up: tailings dam wall |
 |---|---|---|
-| **Score** $d^2$ | <img src="docs/figures/steps/wide_05.jpg" width="300" alt="Change intensity, whole site"> | <img src="docs/figures/steps/close_05.jpg" width="300" alt="Change intensity, close-up"> |
-| **Flagged** | <img src="docs/figures/steps/wide_06.jpg" width="300" alt="Raw threshold, whole site"> | <img src="docs/figures/steps/close_06.jpg" width="300" alt="Raw threshold, close-up"> |
+| **Score** $d^2$ | <img src="figures/steps/wide_05.jpg" width="300" alt="Change intensity, whole site"> | <img src="figures/steps/close_05.jpg" width="300" alt="Change intensity, close-up"> |
+| **Flagged** | <img src="figures/steps/wide_06.jpg" width="300" alt="Raw threshold, whole site"> | <img src="figures/steps/close_06.jpg" width="300" alt="Raw threshold, close-up"> |
 
 *Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.81 km² in 4,543 patches.*
 
@@ -245,9 +245,9 @@ Pixels within 90 m of a seam are not scored (our rule): $\operatorname{dist}(p, 
 
 **Why 90 m.** The noisy strip is 30–40 m wide on each side; 90 m (9 pixels) is about twice that, as a safety margin. It costs 2.4 % of the site, and none of the real changes missed in section 5 lie in it (the nearest is 340 m away).
 
-![Share of pixels past the cut-off by distance to the nearest seam: about 47 % in the first 10 m, falling to the site-wide level of 3.6 % by 40 m; the skipped strip covers 0 to 90 m](docs/figures/20_step5_seam.svg)
+![Share of pixels past the cut-off by distance to the nearest seam: about 47 % in the first 10 m, falling to the site-wide level of 3.6 % by 40 m; the skipped strip covers 0 to 90 m](figures/20_step5_seam.svg)
 
-*Step 5 on real pixels (`scripts/fig_method_steps.py`): all pixels, before the seams are skipped. The level away from seams (3.6 %) is mostly real change in the mine.*
+*Step 5 on real pixels (`pipeline/scripts/fig_method_steps.py`): all pixels, before the seams are skipped. The level away from seams (3.6 %) is mostly real change in the mine.*
 
 ❌ **Without it:** 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b>.
 
@@ -259,16 +259,16 @@ Like most maps, this one has a smallest patch it shows, the *minimum mapping uni
 
 | | Whole site | Close-up: tailings dam wall |
 |---|---|---|
-| **Seams skipped, cleaned** | <img src="docs/figures/steps/wide_07.jpg" width="300" alt="Cleaned change mask, whole site"> | <img src="docs/figures/steps/close_07.jpg" width="300" alt="Cleaned change mask, close-up"> |
-| 📤 **Typed and explained** | <img src="docs/figures/steps/wide_08.jpg" width="300" alt="Typed change polygons, whole site"> | <img src="docs/figures/steps/close_08.jpg" width="300" alt="Typed change polygons, close-up"> |
+| **Seams skipped, cleaned** | <img src="figures/steps/wide_07.jpg" width="300" alt="Cleaned change mask, whole site"> | <img src="figures/steps/close_07.jpg" width="300" alt="Cleaned change mask, close-up"> |
+| 📤 **Typed and explained** | <img src="figures/steps/wide_08.jpg" width="300" alt="Typed change polygons, whole site"> | <img src="figures/steps/close_08.jpg" width="300" alt="Typed change polygons, close-up"> |
 
-*The result, <b class="good">4.17 km² in 223 polygons</b>. Each polygon then gets a likely type from its colour change and facility, and one plain sentence. Here: **Earthworks on the tailings dam wall**, 0.39 km², with the advice to check the operator's maintenance and construction log and inspect the embankment. No wall raise is on public record for 2023 ([section 6](#-what-public-sources-say)).*
+*The result, <b class="good">4.17 km² in 223 polygons</b>. Each polygon then gets a likely type from its colour change and facility, and one plain sentence. Here: **Earthworks on the tailings dam wall**, 0.39 km², with the advice to check the operator's maintenance and construction log and inspect the embankment. No wall raise is on public record for 2023 ([section 6](#-what-public-sources-say)). 31 of the 223 polygons (0.10 km²) are typed as likely seam, haze or shadow; the map hides them by default, so it lists 192 likely-real changes covering 4.07 km².*
 
 The two images line up: checked in 8 windows per zone, they are offset by at most 0.05 pixel (50 cm), so nothing is shifted or resampled. A full run takes about 15 s on a laptop.
 
 ### 📉 How much each step removes
 
-Each row adds one step to the row above, on the same run (`scripts/funnel.py`, `data/processed/funnel.csv`). The first three rows keep the provided method's rule (colour distance with an automatic threshold), so only the input changes; from step 4 on, the noise test decides. *Raw* is the flagged area before any cleanup.
+Each row adds one step to the row above, on the same run (`pipeline/scripts/funnel.py`, `outputs/funnel.csv`). The first three rows keep the provided method's rule (colour distance with an automatic threshold), so only the input changes; from step 4 on, the noise test decides. *Raw* is the flagged area before any cleanup.
 
 | Step added | Flagged, raw | After cleanup | Patches |
 |---|---:|---:|---:|
@@ -335,42 +335,42 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 </tr>
 </table>
 
-![at a glance](docs/figures/00_at_a_glance.png)
+![at a glance](figures/00_at_a_glance.png)
 
 📍 **Where.** Change concentrates in the mine: 81 % lies inside the eight named facilities, more than half on the tailings storage facility. Outside, change is scattered and small.
 
 🔍 **Pattern.** Patches moving on the tailings facility, brighter and redder faces at dumps and pit edges, changes on the steps cut into pit walls (benches), and a long strip of fresh fill on the dam's south-east wall. No straight seam lines are left.
 
-![change types](docs/figures/10_change_types.png)
+![change types](figures/10_change_types.png)
 
 *Change polygons by type, and the area of each type.*
 
 | | Change type | Brief category | Polygons | Area | What we see |
 |---|---|---|---:|---:|---|
-| <img src="docs/figures/icons/icon_tailings_deposition.svg" width="20" alt=""> | Tailings deposition | mining activity | 63 | 1.86 km² | Wet slurry and drying beaches moving on the tailings facility |
-| <img src="docs/figures/icons/icon_waste_dumping.svg" width="20" alt=""> | Waste dumping | mining activity | 47 | 0.75 km² | Brighter, redder faces at dumps and pit edges: fresh oxidised rock |
-| <img src="docs/figures/icons/icon_tailings_dam_works.svg" width="20" alt=""> | Earthworks on the tailings dam wall | mining activity | 4 | 0.44 km² | Bare ground on the embankment where vegetation was; not a documented raise (section 6) |
-| <img src="docs/figures/icons/icon_seasonal_vegetation_or_burn.svg" width="20" alt=""> | Seasonal vegetation or burn | seasonal / vegetation | 22 | 0.39 km² | Dry-season browning or burn scars outside the mine |
-| <img src="docs/figures/icons/icon_pit_excavation.svg" width="20" alt=""> | Pit excavation | mining activity | 33 | 0.40 km² | Changes on pit steps (benches) and floors |
-| <img src="docs/figures/icons/icon_water_level_change.svg" width="20" alt=""> | Water level change | water change | 8 | 0.18 km² | Pond and pit-lake edges moving |
-| <img src="docs/figures/icons/icon_unexplained.svg" width="20" alt=""> | Noise, unexplained, infrastructure, clearing | other | 46 | 0.16 km² | Seams, haze, small builds; 0.02 km² of clearing |
+| <img src="figures/icons/icon_tailings_deposition.svg" width="20" alt=""> | Tailings deposition | mining activity | 63 | 1.86 km² | Wet slurry and drying beaches moving on the tailings facility |
+| <img src="figures/icons/icon_waste_dumping.svg" width="20" alt=""> | Waste dumping | mining activity | 47 | 0.75 km² | Brighter, redder faces at dumps and pit edges: fresh oxidised rock |
+| <img src="figures/icons/icon_tailings_dam_works.svg" width="20" alt=""> | Earthworks on the tailings dam wall | mining activity | 4 | 0.44 km² | Bare ground on the embankment where vegetation was; not a documented raise (section 6) |
+| <img src="figures/icons/icon_seasonal_vegetation_or_burn.svg" width="20" alt=""> | Seasonal vegetation or burn | seasonal / vegetation | 22 | 0.39 km² | Dry-season browning or burn scars outside the mine |
+| <img src="figures/icons/icon_pit_excavation.svg" width="20" alt=""> | Pit excavation | mining activity | 33 | 0.40 km² | Changes on pit steps (benches) and floors |
+| <img src="figures/icons/icon_water_level_change.svg" width="20" alt=""> | Water level change | water change | 8 | 0.18 km² | Pond and pit-lake edges moving |
+| <img src="figures/icons/icon_unexplained.svg" width="20" alt=""> | Noise, unexplained, infrastructure, clearing | other | 46 | 0.16 km² | Seams, haze, small builds; 0.02 km² of clearing |
 
 🏭 **Per facility.** The last row combines the three facilities with almost no change.
 
 | Before → after (change in yellow) | Facility | Area | Changed | Mostly |
 |---|---|---:|---:|---|
-| <img src="docs/web/facilities/TSF_before.webp" alt="TSF before" width="64"> <img src="docs/web/facilities/TSF_after.webp" alt="TSF after" width="64"> | <img src="docs/figures/icons/fac_TSF.svg" width="20" alt=""> Tailings storage facility (TSF) | 21.84 km² | <b class="hl">2.19 km² (10 %)</b> | tailings deposition, dam-wall fill |
-| <img src="docs/web/facilities/PIT-S_before.webp" alt="PIT-S before" width="64"> <img src="docs/web/facilities/PIT-S_after.webp" alt="PIT-S after" width="64"> | <img src="docs/figures/icons/fac_PIT-S.svg" width="20" alt=""> South pit complex | 24.84 km² | 0.55 km² (2 %) | pit / bench activity |
-| <img src="docs/web/facilities/PIT-NW_before.webp" alt="PIT-NW before" width="64"> <img src="docs/web/facilities/PIT-NW_after.webp" alt="PIT-NW after" width="64"> | <img src="docs/figures/icons/fac_PIT-NW.svg" width="20" alt=""> North-west pit complex | 13.16 km² | 0.41 km² (3 %) | waste dumping |
-| <img src="docs/web/facilities/WD-E_before.webp" alt="WD-E before" width="64"> <img src="docs/web/facilities/WD-E_after.webp" alt="WD-E after" width="64"> | <img src="docs/figures/icons/fac_WD-E.svg" width="20" alt=""> Eastern waste dumps | 3.30 km² | 0.21 km² (6 %) | waste dumping |
-| <img src="docs/web/facilities/PLANT_before.webp" alt="PLANT before" width="64"> <img src="docs/web/facilities/PLANT_after.webp" alt="PLANT after" width="64"> | <img src="docs/figures/icons/fac_PLANT.svg" width="20" alt=""> Process plant | 0.95 km² | 0.01 km² | infrastructure |
-| <img src="docs/web/facilities/TOWN_before.webp" alt="TOWN before" width="64"> <img src="docs/web/facilities/TOWN_after.webp" alt="TOWN after" width="64"> | <img src="docs/figures/icons/fac_TOWN.svg" width="20" alt=""> Settlement, camp, fresh-water dam | 15.24 km² | 0 km² | — |
+| <img src="webapp/data/facilities/TSF_before.webp" alt="TSF before" width="64"> <img src="webapp/data/facilities/TSF_after.webp" alt="TSF after" width="64"> | <img src="figures/icons/fac_TSF.svg" width="20" alt=""> Tailings storage facility (TSF) | 21.84 km² | <b class="hl">2.20 km² (10 %)</b> | tailings deposition, dam-wall fill |
+| <img src="webapp/data/facilities/PIT-S_before.webp" alt="PIT-S before" width="64"> <img src="webapp/data/facilities/PIT-S_after.webp" alt="PIT-S after" width="64"> | <img src="figures/icons/fac_PIT-S.svg" width="20" alt=""> South pit complex | 24.84 km² | 0.55 km² (2 %) | pit / bench activity |
+| <img src="webapp/data/facilities/PIT-NW_before.webp" alt="PIT-NW before" width="64"> <img src="webapp/data/facilities/PIT-NW_after.webp" alt="PIT-NW after" width="64"> | <img src="figures/icons/fac_PIT-NW.svg" width="20" alt=""> North-west pit complex | 13.16 km² | 0.41 km² (3 %) | waste dumping |
+| <img src="webapp/data/facilities/WD-E_before.webp" alt="WD-E before" width="64"> <img src="webapp/data/facilities/WD-E_after.webp" alt="WD-E after" width="64"> | <img src="figures/icons/fac_WD-E.svg" width="20" alt=""> Eastern waste dumps | 3.30 km² | 0.21 km² (6 %) | waste dumping |
+| <img src="webapp/data/facilities/PLANT_before.webp" alt="PLANT before" width="64"> <img src="webapp/data/facilities/PLANT_after.webp" alt="PLANT after" width="64"> | <img src="figures/icons/fac_PLANT.svg" width="20" alt=""> Process plant | 0.95 km² | 0.01 km² | infrastructure |
+| <img src="webapp/data/facilities/TOWN_before.webp" alt="TOWN before" width="64"> <img src="webapp/data/facilities/TOWN_after.webp" alt="TOWN after" width="64"> | <img src="figures/icons/fac_TOWN.svg" width="20" alt=""> Settlement, camp, fresh-water dam | 15.24 km² | 0 km² | — |
 
 🌿 **Land cover before → after**, a check without the register: simple RGB rules sort changed pixels into water, bright surface, bare ground and vegetation. Vegetation → bare ground (0.62 km², 15 %) is the new disturbance, much of it along the dam wall; most of the rest is bare ground re-worked (29 %) or turned to bright tailings (18 %).
 
 🧱 **The dam wall, dated.** Every polygon stores its zone, so its true dates are known: 0.40 of the 0.44 km² dam-wall fill lies in the east zone, *1 Jul → 25 Aug*.
 
-🔁 **What if we use true single passes instead?** The same pipeline on single passes that cover the whole site (`scripts/real_dates.py`; on the map: Result → "Ours, true passes"):
+🔁 **What if we use true single passes instead?** The same pipeline on single passes that cover the whole site (`pipeline/scripts/real_dates.py`; on the map: Result → "Ours, true passes"):
 
 | Pair | Provided method | This method | Dam-wall fill |
 |---|---:|---:|---:|
@@ -398,7 +398,7 @@ We drew 200 random points, 50 in each of four groups: both maps say change, only
 
 - **Two independent AI vision labellers**, from before/after image chips, blind to both maps.
 - Agreement 80 % (Cohen's κ 0.46, moderate; [Cohen 1960](#ref-cohen-1960)); the 40 disagreements settled by a third look with a wider view.
-- Visual labels from the same 10 m imagery, not field truth (`scripts/validation.py`, `data/validation/`).
+- Visual labels from the same 10 m imagery, not field truth (`pipeline/scripts/validation.py`, `outputs/validation/`).
 
 | 95 % intervals | This method | Provided method |
 |---|---:|---:|
@@ -456,6 +456,7 @@ The real fix starts with **more and better labels**, so a few uncertain points n
 |---|---:|---|
 | ⛏️ Mining activity | <b class="hl">3.4 km²</b> | Tailings deposition, waste dumping, pit work, earthworks on the dam wall |
 | 🌾 Seasonal vegetation | 0.39 km² | Dry-season browning or burns outside the mine |
+| 💧 Water change | 0.18 km² | Pond and pit-lake edges moving, part of the mine's water management |
 | 🪓 Land clearing | 0.02 km² | Outside the mine; no urban expansion |
 | 〰️ Noise and artifacts | 0.14 km² | Mostly removed by the seam handling; the rest labelled, with unexplained and small builds |
 
@@ -511,7 +512,7 @@ flowchart LR
 |---|---|---|---|
 | 🐍 | Pipeline | Python 3.12, uv, numpy, scipy, rasterio, scikit-image, geopandas, shapely | Windowed GeoTIFF I/O, robust statistics, morphology, valid polygons in metres (EPSG:32735) |
 | 🛰️ | Provenance | pystac-client, Planetary Computer | Finds the true pass behind every pixel (optional extra) |
-| 🗄️ | Database | **PostGIS 16** with GiST indexes on Supabase; the pipeline writes to it directly | The geospatial DB the brief asks for; the app reads through a `SELECT`-only role |
+| 🗄️ | Database | **PostgreSQL 17 + PostGIS 3.3** with GiST indexes on Supabase; the pipeline writes to it directly | The geospatial DB the brief asks for; the app reads through a `SELECT`-only role |
 | ⚡ | API | FastAPI, uvicorn, slowapi, sqlglot | Typed endpoints, rate limits, SQL parsed and checked before it runs |
 | 🤖 | Agent | LangChain **deepagents** on **Gemini** | Answers questions about the results with typed tools only |
 | 🗺️ | Viewer | Vite, TypeScript, MapLibre GL, marked, Mermaid | Static bundle; this report is rendered from the same markdown |
@@ -600,7 +601,7 @@ erDiagram
 | `facilities` | The 8 named mine facilities, drawn on very-high-resolution imagery | *Where are the pits and dumps?* |
 | `facility_changes` | Change per facility, by type | *Which facility changed most?* |
 
-`change_features_wgs84` is a view in lon/lat for web maps. Example queries: [PostGIS](sql/queries_postgis.sql) · [explore it live](https://s2change.dzaky.ai.id/#/database).
+`change_features_wgs84` is a view in lon/lat for web maps. Example queries: [PostGIS](pipeline/sql/queries_postgis.sql) · [explore it live](https://s2change.dzaky.ai.id/#/database).
 
 ### 🔌 The API
 
@@ -654,7 +655,7 @@ erDiagram
 
 | # | Task | Done | See it |
 |---|---|---|---|
-| 1 ✅ | Data preparation | B02–B04 loaded, CRS, transform and shape checked, stacked | [Section 1](#-1-the-data) · `src/s2cd/io.py` → `data/processed/sentinel2_*_stack.tif` |
+| 1 ✅ | Data preparation | B02–B04 loaded, CRS, transform and shape checked, stacked | [Section 1](#-1-the-data) · `pipeline/s2cd/io.py` → `outputs/sentinel2_*_stack.tif` |
 | 2 ✅ | Change detection | The provided example, unchanged, and a calibrated change vector analysis | [Section 3](#-3-method-built-around-the-trap) · [Change intensity map](https://s2change.dzaky.ai.id/#/map?layer=intensity) |
 | 3 ✅ | Store in a geospatial DB | PostGIS with spatial indexes, written by the pipeline; explorer, SQL dump, API | [Section 7](#-7-the-system-stack-agent-and-database) · [Database](https://s2change.dzaky.ai.id/#/database) |
 | 4 ✅ | Visualise | Static figures here; interactive map with swipe, types and facilities | [Map](https://s2change.dzaky.ai.id/#/map) |

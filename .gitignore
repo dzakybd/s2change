@@ -5,10 +5,7 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 *.aux.xml
-viewer/node_modules/
-viewer/dist/
-data/cache/
+webapp/viewer/node_modules/
+webapp/viewer/dist/
+.cache/
 .env
-
-data/scenes/
-data/experiments/

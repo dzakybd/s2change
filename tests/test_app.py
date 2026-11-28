@@ -12,14 +12,14 @@ import pytest
 
 pytest.importorskip("fastapi")
 pytest.importorskip("deepagents")
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "webapp"))
 
 from fastapi.testclient import TestClient  # noqa: E402
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 
-from app import agent as agent_mod  # noqa: E402
-from app import analyst, auth, collector, main, tools  # noqa: E402
-from app.guard import SqlRejected, guard_sql  # noqa: E402
+from api import agent as agent_mod  # noqa: E402
+from api import analyst, auth, collector, main, tools  # noqa: E402
+from api.guard import SqlRejected, guard_sql  # noqa: E402
 
 # SQL guard
 

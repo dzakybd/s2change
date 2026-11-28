@@ -1,0 +1,28 @@
+# Paths are relative to the repository root.
+before: inputs/data/sentinel2_20230812
+after: inputs/data/sentinel2_20230902
+aoi: inputs/aoi.geojson
+out_dir: outputs
+provenance_dir: outputs/provenance   # `s2cd provenance` output; if it matches the dates, its seams define the zones
+facility_register: pipeline/config/facility_register.yaml
+figures_dir: figures
+bands: [B02, B03, B04]
+
+# Binary change rule (robust CVA). FAR = nominal per-pixel false-alarm rate under the chi2(3) noise model; the realised
+# rate on held-out no-change pixels is reported in run_summary.json under noise_calibration. Sizes are in ha and metres.
+rule:
+  far: 1.0e-3            # threshold: noise passes 1 pixel in 1,000 (nominal)
+  seam_buffer_m: 90      # ignore pixels within 90 m (9 px) of a source-scene / stripe boundary; also used by interpret
+  opening_radius_m: 10   # morphological opening, removes 1-2 px lines and speckle
+  mmu_ha: 0.2            # minimum mapping unit (20 px at 10 m)
+  fill_holes_ha: 0.2
+
+# Brightness-aware noise model of the robust CVA (see methods.NoiseRules).
+noise:
+  n_bins: 6              # brightness strata of the before image per zone
+  holdout_fraction: 0.3  # no-change pixels held out (in blocks) to measure the realised false-alarm rate
+  holdout_block_px: 32
+  tolerance: 1.5         # realised/nominal beyond this factor -> thresholds from empirical held-out quantiles
+
+# Overrides for radiometry.detect_stripe_zones (defaults are fine for this scene).
+stripe: {}

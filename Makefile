@@ -40,30 +40,30 @@ run-local: db-up ## Run the pipeline into the local compose PostGIS instead of p
 compose-run: ## Build the image and run the pipeline fully inside docker compose
 	$(COMPOSE) run --rm --build pipeline
 
-query: ## Run sql/queries_postgis.sql in the local compose db
-	$(COMPOSE) exec -T db psql -U s2cd -d s2cd -f - < sql/queries_postgis.sql
+query: ## Run pipeline/sql/queries_postgis.sql in the local compose db
+	$(COMPOSE) exec -T db psql -U s2cd -d s2cd -f - < pipeline/sql/queries_postgis.sql
 
-viewer: ## Build the web viewer into viewer/dist
-	cd viewer && npm ci && npm run build
+viewer: ## Build the web viewer into webapp/viewer/dist
+	cd webapp/viewer && npm ci && npm run build
 
-report-pdf: ## Print the Report tab to docs/web/report/s2change-report.pdf (starts its own dev server)
+report-pdf: ## Print the Report tab to webapp/data/report/s2change-report.pdf (starts its own dev server)
 	uv run python -m s2cd.site
-	uv run --with playwright --with pymupdf python scripts/report_pdf.py
+	uv run --with playwright --with pymupdf python pipeline/scripts/report_pdf.py
 
 FIG_PY = uv run --with playwright python
-FIG_SCRIPTS = $(filter-out scripts/fig_common.py,$(wildcard scripts/fig_*.py))
+FIG_SCRIPTS = $(filter-out pipeline/scripts/fig_common.py,$(wildcard pipeline/scripts/fig_*.py))
 
-figures: ## Render every report figure (icons, step frames, at-a-glance, scripts/fig_*.py) from the real outputs
-	$(FIG_PY) scripts/fig_common.py
-	$(FIG_PY) scripts/step_frames.py
-	$(FIG_PY) scripts/at_a_glance.py
+figures: ## Render every report figure (icons, step frames, at-a-glance, pipeline/scripts/fig_*.py) from the real outputs
+	$(FIG_PY) pipeline/scripts/fig_common.py
+	$(FIG_PY) pipeline/scripts/step_frames.py
+	$(FIG_PY) pipeline/scripts/at_a_glance.py
 	@for f in $(FIG_SCRIPTS); do echo "$$f"; $(FIG_PY) $$f || exit 1; done
 
 publish: ## Regenerate every static output (web export, figures, report PDF), then lint, test and build the viewer
 	uv run python -m s2cd.site
 	$(MAKE) figures
 	uv run python -m s2cd.site
-	uv run --with playwright --with pymupdf python scripts/report_pdf.py
+	uv run --with playwright --with pymupdf python pipeline/scripts/report_pdf.py
 	$(MAKE) lint
 	uv run pytest -q
 	cd viewer && npm run build

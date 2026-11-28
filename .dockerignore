@@ -8,9 +8,11 @@ __pycache__
 .env
 .github
 tests
-viewer/node_modules
-viewer/dist
-data
-docs
+webapp/viewer/node_modules
+webapp/viewer/dist
+outputs
+figures
+webapp
+.cache
 inputs/data
 inputs/__pycache__

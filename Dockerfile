@@ -21,9 +21,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-project
 
 # Project code, SQL schema and the example baseline (methods.py imports inputs/example_change_detection.py).
-COPY src ./src
-COPY sql ./sql
-COPY configs ./configs
+COPY pipeline/s2cd ./pipeline/s2cd
+COPY pipeline/sql ./pipeline/sql
+COPY pipeline/config ./pipeline/config
 COPY inputs/example_change_detection.py inputs/aoi.geojson ./inputs/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev

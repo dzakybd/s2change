@@ -13,7 +13,7 @@ from s2cd import pipeline
 
 
 def test_config_from_default_yaml():
-    cfg = pipeline.Config.from_yaml(ROOT / "configs" / "default.yaml")
+    cfg = pipeline.Config.from_yaml(ROOT / "pipeline" / "config" / "default.yaml")
     assert cfg.bands == ("B02", "B03", "B04")
     assert cfg.before.name == "sentinel2_20230812" and cfg.after.name == "sentinel2_20230902"
     assert cfg.rule.mmu_ha == 0.2 and cfg.rule.seam_buffer_m == 90
@@ -41,7 +41,7 @@ def test_pipeline_rejects_reversed_dates(tmp_path):
 
 @pytest.mark.slow
 def test_full_pipeline_on_real_inputs(tmp_path):
-    cfg = pipeline.Config.from_yaml(ROOT / "configs" / "default.yaml")
+    cfg = pipeline.Config.from_yaml(ROOT / "pipeline" / "config" / "default.yaml")
     for field in ("before", "after", "aoi"):
         setattr(cfg, field, ROOT / getattr(cfg, field))
     if not (cfg.before / "B02.tif").exists():

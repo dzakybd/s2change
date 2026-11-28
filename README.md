@@ -1,4 +1,4 @@
-<p align="center"><img src="viewer/public/favicon.svg" alt="s2change logo" width="72" height="72"></p>
+<p align="center"><img src="webapp/viewer/public/favicon.svg" alt="s2change logo" width="72" height="72"></p>
 
 <h1 align="center">s2change</h1>
 
@@ -16,15 +16,15 @@ uv run s2cd run                  # stacks, change maps, polygons, figures (the d
 uv run pytest -q -m "not slow"   # optional: tests
 ```
 
-The input is the provided data in `inputs/`, byte for byte. The outputs are already committed, so they can be inspected without running anything; a run rewrites them in place (`data/processed/`, `docs/web/`).
+The input is the provided data in `inputs/`, byte for byte. The outputs are already committed, so they can be inspected without running anything; a run rewrites them in place (`outputs/`, `webapp/data/`).
 
 ## Database (PostGIS)
 
-The pipeline writes the change polygons to PostGIS and creates the tables itself (`sql/schema_postgis.sql`, `sql/schema_app.sql`). To get your own copy, with Docker (Compose v2) and port 5432 free:
+The pipeline writes the change polygons to PostGIS and creates the tables itself (`pipeline/sql/schema_postgis.sql`, `pipeline/sql/schema_app.sql`). To get your own copy, with Docker (Compose v2) and port 5432 free:
 
 ```bash
 make run-local     # start PostGIS in Docker, then run the pipeline into it
-make query         # run the example queries in sql/queries_postgis.sql
+make query         # run the example queries in pipeline/sql/queries_postgis.sql
 docker compose exec db psql -U s2cd -d s2cd   # or open a psql shell
 ```
 
@@ -42,8 +42,8 @@ The results are also in a hosted PostGIS, which you can query or run the app aga
 
 ```bash
 uv sync --all-extras
-READER_DATABASE_URL='<uri>' uv run uvicorn app.main:app --port 8000   # the API, from the repository root
-cd viewer && npm ci && npm run dev                                      # http://localhost:5173 (proxies /api to :8000)
+READER_DATABASE_URL='<uri>' uv run uvicorn api.main:app --app-dir webapp --port 8000
+cd webapp/viewer && npm ci && npm run dev                               # http://localhost:5173 (proxies /api to :8000)
 ```
 
 Locally there is no access code, so everything is open. The agent chat also needs `GEMINI_API_KEY`; everything else works without it. Without the code, the Database tab still browses every table and downloads each one as a SQL dump (`psql -f table.sql` into any PostGIS).
@@ -52,40 +52,50 @@ Locally there is no access code, so everything is open. The agent chat also need
 
 | Brief | Output |
 |---|---|
-| 1 · Data preparation (B02–B04, CRS, transform and shape checked) | `data/processed/sentinel2_20230812_stack.tif`, `sentinel2_20230902_stack.tif` |
-| 2 · Change detection: the provided example | `data/processed/change_map_baseline.tif`, `change_binary_baseline.tif` |
-| 2 · Change detection: this work | `data/processed/change_map.tif`, `change_binary.tif` (+ `change_significance.tif`) |
-| 3 · Change polygons in a geospatial database | PostGIS table `change_features` ([setup above](#database-postgis), or [explore it live](https://s2change.dzaky.ai.id/#/database)); also `data/processed/change_features.geojson` |
-| 4 · Visualisation | `docs/figures/`, plus the interactive map in the app |
+| 1 · Data preparation (B02–B04, CRS, transform and shape checked) | `outputs/sentinel2_20230812_stack.tif`, `sentinel2_20230902_stack.tif` |
+| 2 · Change detection: the provided example | `outputs/change_map_baseline.tif`, `change_binary_baseline.tif` |
+| 2 · Change detection: this work | `outputs/change_map.tif`, `change_binary.tif` (+ `change_significance.tif`) |
+| 3 · Change polygons in a geospatial database | PostGIS table `change_features` ([setup above](#database-postgis), or [explore it live](https://s2change.dzaky.ai.id/#/database)); also `outputs/change_features.geojson` |
+| 4 · Visualisation | `figures/`, plus the interactive map in the app |
 | 5 · Report | [report.md](report.md): Method (section 3), Results (4), Interpretation (6); also a PDF in the app's Report tab |
-| Run settings and numbers | `data/processed/run_summary.json`, `funnel.csv`, `sensitivity.csv`; accuracy check in `data/validation/` |
+| Run settings and numbers | `outputs/run_summary.json`, `funnel.csv`, `sensitivity.csv`; accuracy check in `outputs/validation/` |
 
 ## Project structure
 
-The brief is covered by `inputs/`, `src/s2cd/`, `configs/`, `sql/`, `data/` and `report.md`. The rest is optional.
+Five folders, read top to bottom: what we were given, what came out, the code that made it, the figures in the report, and the optional app.
 
 ```
-inputs/                  provided data, byte for byte
-src/s2cd/                the pipeline (Python package, CLI `s2cd`)
-  io.py                    load, check and stack the bands; write GeoTIFFs
-  provenance.py            which satellite pass each pixel came from (the "data trap")
-  radiometry.py            reflectance, zones, per-zone brightness matching
-  methods.py               the provided example method and this work's change score
-  vectorize.py             threshold, seam buffer, cleanup, polygons
-  rgb.py, interpret.py     colour rules, change type and a plain sentence per polygon
-  register.py              the 8 named mine facilities and the change in each
-  scenes.py                download single Sentinel-2 passes (true-pass check)
-  sensitivity.py           re-runs with stricter and looser settings
-  pipeline.py, cli.py, db.py, viz.py, site.py   orchestration, database, figures, web export
-configs/                 settings (default.yaml) and the facility register
-sql/                     PostGIS schema and example queries
-data/                    outputs (processed/), validation sample, caches
+report.md                the write-up (Method, Results, Interpretation)
+inputs/                  provided by the brief, byte for byte: aoi.geojson, example_change_detection.py, data/
+outputs/                 everything the pipeline writes (brief Parts 1-3)
+  sentinel2_*_stack.tif    stacked B02-B04 per date
+  change_map*.tif          change intensity: this work, and *_baseline for the provided example
+  change_binary*.tif       changed / not changed, both methods
+  change_features.geojson  the change polygons (also in PostGIS)
+  run_summary.json         every number of the last run; funnel.csv, sensitivity.csv
+  provenance/, true_passes/, super_resolution/, validation/   the checks behind the report
+pipeline/                the code
+  s2cd/                    the Python package and CLI `s2cd`
+    io.py                    load, check and stack the bands; write GeoTIFFs
+    provenance.py            which satellite pass each pixel came from (the "data trap")
+    radiometry.py            reflectance, zones, per-zone brightness matching
+    methods.py               the provided example method and this work's change score
+    vectorize.py             threshold, seam buffer, cleanup, polygons
+    rgb.py, interpret.py     colour rules, change type and a plain sentence per polygon
+    register.py              the 8 named mine facilities and the change in each
+    scenes.py, sensitivity.py  single-pass downloads; stricter and looser settings
+    pipeline.py, cli.py, db.py, viz.py, site.py   orchestration, database, figures, web export
+  config/                  settings (default.yaml) and the facility register
+  sql/                     PostGIS schema and example queries
+  scripts/                 report figures, accuracy check, extra experiments
+figures/                 the report's figures
 tests/                   pytest suite
-scripts/                 report figures, accuracy sample, extra experiments
-app/                     optional: FastAPI service, database explorer, analyst agent
-viewer/                  optional: TypeScript + MapLibre web app
-deploy/, Dockerfile      optional: hosting
-docs/                    report figures (figures/) and the app's data (web/)
+webapp/                  optional: the live app
+  api/                     FastAPI service, database explorer, analyst agent (Python package `api`)
+  viewer/                  TypeScript + MapLibre front end
+  data/                    the app's static data, generated by `python -m s2cd.site` (incl. a copy of report.md)
+  deploy/                  server deploy script and Caddy config
+Makefile, Dockerfile, docker-compose.yml, pyproject.toml   tasks, container, local PostGIS, dependencies
 ```
 
 ## Other commands
@@ -95,11 +105,11 @@ make help                          # list every task
 uv run s2cd provenance             # optional, online: trace each pixel to its satellite pass
 uv run python -m s2cd.sensitivity  # stricter / looser settings sweep
 make figures                       # re-render the report figures
-uv run --extra stac --with sen2sr --with mlstac python scripts/super_resolution.py  # optional, online: 2.5 m map backdrop
-cd viewer && npm ci && npm run dev # the web app, locally
+uv run --extra stac --with sen2sr --with mlstac python pipeline/scripts/super_resolution.py  # optional, online: 2.5 m map backdrop
+cd webapp/viewer && npm ci && npm run dev   # the web app, locally
 ```
 
-Settings (thresholds, minimum patch size, seam buffer) are in `configs/default.yaml`.
+Settings (thresholds, minimum patch size, seam buffer) are in `pipeline/config/default.yaml`.
 
 ## Assumptions
 
@@ -112,4 +122,4 @@ Settings (thresholds, minimum patch size, seam buffer) are in `configs/default.y
 
 Everything above runs offline. The app at [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) shows the same results without installing anything: the report, a map with before/after swipe, the facilities, a database explorer and downloads. The analyst agent and the full database URI need the access code from the submission email.
 
-Running the app yourself needs a PostGIS database and an LLM key: see [app/README.md](app/README.md). Architecture, agent, database, API and security are in [report section 7](report.md#-7-the-system-stack-agent-and-database).
+Running the app yourself needs a PostGIS database and an LLM key: see [webapp/api/README.md](webapp/api/README.md). Architecture, agent, database, API and security are in [report section 7](report.md#-7-the-system-stack-agent-and-database).

@@ -1,0 +1,402 @@
+{
+  "grid": {
+    "crs": "EPSG:32735",
+    "width": 1673,
+    "height": 1597,
+    "pixel_m": 10.0
+  },
+  "valid_fraction": 0.9902,
+  "acquisition": {
+    "2023-08-12": {
+      "nominal": "2023-08-12",
+      "source_dates": [
+        "2023-07-01",
+        "2023-07-04"
+      ],
+      "source_items": [
+        "S2B_MSIL2A_20230701T080609_R078_T35LLG_20230701T134619",
+        "S2B_MSIL2A_20230704T081609_R121_T35LLG_20230704T142502"
+      ]
+    },
+    "2023-09-02": {
+      "nominal": "2023-09-02",
+      "source_dates": [
+        "2023-08-25",
+        "2023-09-02"
+      ],
+      "source_items": [
+        "S2A_MSIL2A_20230825T080611_R078_T35LLG_20230825T175054",
+        "S2B_MSIL2A_20230902T081609_R121_T35LLG_20230902T164949"
+      ]
+    }
+  },
+  "boa_offset": {
+    "sentinel2_20230812": 1000.0,
+    "sentinel2_20230902": 1000.0
+  },
+  "zones": {
+    "source": "provenance",
+    "n_zones": 3,
+    "zone_source_pairs": [
+      {
+        "zone": 0,
+        "before_source_index": 1,
+        "after_source_index": 1
+      },
+      {
+        "zone": 1,
+        "before_source_index": 1,
+        "after_source_index": 0
+      },
+      {
+        "zone": 2,
+        "before_source_index": 0,
+        "after_source_index": 0
+      }
+    ],
+    "agreement_with_data_driven_zones": {
+      "data_driven_zone_inside_one_source_zone": 0.9934,
+      "source_zone_inside_one_data_driven_zone": 0.9105
+    }
+  },
+  "stripes": {
+    "angle_deg": 12.6,
+    "explained_variance": 0.557,
+    "breakpoints_px": [
+      310.5,
+      814.5,
+      886.5
+    ],
+    "zone_blue_offset": [
+      0.0442,
+      0.0413,
+      0.0254,
+      0.0187
+    ]
+  },
+  "registration_shift_px": {
+    "0": {
+      "shift_px": [
+        0.0,
+        0.0
+      ],
+      "magnitude_px": 0.0,
+      "max_window_deviation_px": 0.0,
+      "n_windows": 8
+    },
+    "1": {
+      "shift_px": [
+        0.05,
+        0.0
+      ],
+      "magnitude_px": 0.05,
+      "max_window_deviation_px": 0.25,
+      "n_windows": 8
+    },
+    "2": {
+      "shift_px": [
+        0.0,
+        0.0
+      ],
+      "magnitude_px": 0.0,
+      "max_window_deviation_px": 0.1,
+      "n_windows": 8
+    }
+  },
+  "calibration": [
+    {
+      "zone": 0,
+      "band": "B02",
+      "slope": 1.8383420057569646,
+      "intercept": -0.1137789785861969,
+      "n_pixels": 1029672,
+      "invariant_fraction": 0.886339533365965
+    },
+    {
+      "zone": 0,
+      "band": "B03",
+      "slope": 1.6293745622467097,
+      "intercept": -0.09230593591928482,
+      "n_pixels": 1029672,
+      "invariant_fraction": 0.886339533365965
+    },
+    {
+      "zone": 0,
+      "band": "B04",
+      "slope": 1.4983744782619481,
+      "intercept": -0.08576266467571259,
+      "n_pixels": 1029672,
+      "invariant_fraction": 0.886339533365965
+    },
+    {
+      "zone": 1,
+      "band": "B02",
+      "slope": 1.2571911018206918,
+      "intercept": -0.04359988495707512,
+      "n_pixels": 134658,
+      "invariant_fraction": 0.8477327748815517
+    },
+    {
+      "zone": 1,
+      "band": "B03",
+      "slope": 1.1945318090116737,
+      "intercept": -0.04340938478708267,
+      "n_pixels": 134658,
+      "invariant_fraction": 0.8477327748815517
+    },
+    {
+      "zone": 1,
+      "band": "B04",
+      "slope": 1.0776683626509858,
+      "intercept": -0.03698120266199112,
+      "n_pixels": 134658,
+      "invariant_fraction": 0.8477327748815517
+    },
+    {
+      "zone": 2,
+      "band": "B02",
+      "slope": 1.3240173757058467,
+      "intercept": -0.040179017931222916,
+      "n_pixels": 1481382,
+      "invariant_fraction": 0.8366937089825581
+    },
+    {
+      "zone": 2,
+      "band": "B03",
+      "slope": 1.2458341377184046,
+      "intercept": -0.04076825827360153,
+      "n_pixels": 1481382,
+      "invariant_fraction": 0.8366937089825581
+    },
+    {
+      "zone": 2,
+      "band": "B04",
+      "slope": 1.1913588646884616,
+      "intercept": -0.04295102506875992,
+      "n_pixels": 1481382,
+      "invariant_fraction": 0.8366937089825581
+    }
+  ],
+  "pif_fraction": 0.857,
+  "noise_pif_fraction": 0.942,
+  "noise_sigma_reflectance": 0.0094,
+  "noise_calibration": {
+    "far": 0.001,
+    "holdout": {
+      "fraction": 0.3,
+      "block_px": 32,
+      "n_pixels": 744127
+    },
+    "strata": [
+      {
+        "stratum": 0,
+        "n_holdout": 121095,
+        "nominal_far": 0.001,
+        "d2_threshold_nominal": 16.27,
+        "brightness_before_mean": 0.038,
+        "realised_far_previous_design": 0.00251,
+        "realised_far_model": 0.00358,
+        "d2_threshold_empirical": 19.87,
+        "off_nominal": true,
+        "realised_far_final": 0.00104,
+        "d2_threshold_used": 19.87
+      },
+      {
+        "stratum": 1,
+        "n_holdout": 132362,
+        "nominal_far": 0.001,
+        "d2_threshold_nominal": 16.27,
+        "brightness_before_mean": 0.0424,
+        "realised_far_previous_design": 0.00479,
+        "realised_far_model": 0.0036,
+        "d2_threshold_empirical": 20.74,
+        "off_nominal": true,
+        "realised_far_final": 0.00107,
+        "d2_threshold_used": 20.74
+      },
+      {
+        "stratum": 2,
+        "n_holdout": 128017,
+        "nominal_far": 0.001,
+        "d2_threshold_nominal": 16.27,
+        "brightness_before_mean": 0.046,
+        "realised_far_previous_design": 0.00727,
+        "realised_far_model": 0.0042,
+        "d2_threshold_empirical": 21.46,
+        "off_nominal": true,
+        "realised_far_final": 0.00102,
+        "d2_threshold_used": 21.46
+      },
+      {
+        "stratum": 3,
+        "n_holdout": 127672,
+        "nominal_far": 0.001,
+        "d2_threshold_nominal": 16.27,
+        "brightness_before_mean": 0.0518,
+        "realised_far_previous_design": 0.01703,
+        "realised_far_model": 0.00623,
+        "d2_threshold_empirical": 22.88,
+        "off_nominal": true,
+        "realised_far_final": 0.00092,
+        "d2_threshold_used": 22.88
+      },
+      {
+        "stratum": 4,
+        "n_holdout": 113450,
+        "nominal_far": 0.001,
+        "d2_threshold_nominal": 16.27,
+        "brightness_before_mean": 0.0718,
+        "realised_far_previous_design": 0.03926,
+        "realised_far_model": 0.00452,
+        "d2_threshold_empirical": 21.89,
+        "off_nominal": true,
+        "realised_far_final": 0.001,
+        "d2_threshold_used": 21.89
+      },
+      {
+        "stratum": 5,
+        "n_holdout": 121531,
+        "nominal_far": 0.001,
+        "d2_threshold_nominal": 16.27,
+        "brightness_before_mean": 0.1524,
+        "realised_far_previous_design": 0.06583,
+        "realised_far_model": 0.01159,
+        "d2_threshold_empirical": 32.95,
+        "off_nominal": true,
+        "realised_far_final": 0.001,
+        "d2_threshold_used": 32.95
+      }
+    ],
+    "realised_far_previous_design": 0.02217,
+    "realised_far_model": 0.0056,
+    "thresholds_source": "empirical held-out quantiles",
+    "realised_far_final": 0.00103
+  },
+  "cva_changed_area_ha_by_noise_model": {
+    "previous_design_nominal_thresholds": 1320.91,
+    "brightness_aware_nominal_thresholds": 740.45,
+    "final": 417.16
+  },
+  "thresholds": {
+    "baseline_otsu": 0.041,
+    "cva_d2": 16.27
+  },
+  "seam_buffer_m": 90,
+  "valid_share_within_seam_buffer": 0.0241,
+  "changed_area_ha": {
+    "euclidean_baseline": 11143.36,
+    "robust_cva": 417.16
+  },
+  "changed_fraction_by_zone": {
+    "euclidean_baseline": [
+      0.7902,
+      0.4279,
+      0.1641
+    ],
+    "robust_cva": [
+      0.0108,
+      0.01,
+      0.0197
+    ]
+  },
+  "n_features": {
+    "robust_cva": 223,
+    "euclidean_baseline": 1561
+  },
+  "agreement_cva_vs_baseline_iou": 0.031,
+  "footprint": {
+    "brightness_heuristic": {
+      "share_of_aoi": 0.311,
+      "share_of_change": 0.802
+    },
+    "register_mine_classes": {
+      "share_of_aoi": 0.242,
+      "share_of_change": 0.81
+    },
+    "register_all_facilities": {
+      "share_of_aoi": 0.299,
+      "share_of_change": 0.81
+    }
+  },
+  "change_type_ha": {
+    "tailings_deposition": 185.7,
+    "waste_dumping": 74.8,
+    "tailings_dam_works": 43.8,
+    "pit_excavation": 39.8,
+    "seasonal_vegetation_or_burn": 38.6,
+    "water_level_change": 18.3,
+    "noise_or_artifact": 10.1,
+    "unexplained": 3.4,
+    "land_clearing": 1.8,
+    "infrastructure_or_settlement": 0.9
+  },
+  "facility_changed_ha": {
+    "PLANT": 1.4,
+    "WD-E": 20.7,
+    "PIT-S": 55.2,
+    "PIT-NW": 41.1,
+    "TSF": 219.5,
+    "DAM": 0.0,
+    "CAMP": 0.0,
+    "TOWN": 0.0
+  },
+  "land_cover_transitions": [
+    {
+      "from": "bare ground",
+      "to": "bare ground",
+      "same_class": true,
+      "pixels": 12227,
+      "area_km2": 1.223,
+      "share": 0.293
+    },
+    {
+      "from": "bare ground",
+      "to": "bright surface (tailings, roofs, roads)",
+      "same_class": false,
+      "pixels": 7523,
+      "area_km2": 0.752,
+      "share": 0.18
+    },
+    {
+      "from": "vegetation or dark ground",
+      "to": "bare ground",
+      "same_class": false,
+      "pixels": 6235,
+      "area_km2": 0.624,
+      "share": 0.149
+    },
+    {
+      "from": "bright surface (tailings, roofs, roads)",
+      "to": "bare ground",
+      "same_class": false,
+      "pixels": 5379,
+      "area_km2": 0.538,
+      "share": 0.129
+    },
+    {
+      "from": "water",
+      "to": "water",
+      "same_class": true,
+      "pixels": 4043,
+      "area_km2": 0.404,
+      "share": 0.097
+    },
+    {
+      "from": "bare ground",
+      "to": "water",
+      "same_class": false,
+      "pixels": 2027,
+      "area_km2": 0.203,
+      "share": 0.049
+    },
+    {
+      "from": "other",
+      "to": "other",
+      "same_class": false,
+      "pixels": 4282,
+      "area_km2": 0.428,
+      "share": 0.103
+    }
+  ],
+  "runtime_s": 11.3
+}
