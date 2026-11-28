@@ -4,9 +4,9 @@
 
 **Two free satellite images of one copper mine: what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/MBTmg62P2ew)
 
-<a href="https://youtu.be/MBTmg62P2ew"><img src="figures/video_thumb.jpg" width="720" alt="Video: 4.5-minute technical walkthrough on YouTube"></a>
+<a href="https://s2change.dzaky.ai.id/web/video/s2change-explainer.mp4"><img src="figures/video_thumb.jpg" width="720" alt="Video: 2:48 plain-language explainer"></a>
 
-*Prefer watching? A 4.5-minute [technical walkthrough](https://youtu.be/MBTmg62P2ew). We recorded it before simplifying one cleanup step, so it shows 4.13 km² in 215 polygons where this report has 4.17 km² in 223.*
+*Prefer watching? A [2:48 explainer](https://s2change.dzaky.ai.id/web/video/s2change-explainer.mp4) tells the same story in plain words.*
 
 🧭 **The story, in order:** 📦 [the data](#-1-the-data) → 🪤 [a trap hidden in it](#-2-the-data-trap-each-date-is-two-passes) → ⚙️ [a method built around the trap](#-3-the-method) → 📍 [what changed](#-4-what-changed) → 🎯 [how accurate it is](#-5-how-accurate-is-it) → 🧭 [what it means](#-6-what-it-means) → 🏗️ [the system](#-7-the-system-stack-agent-and-database) → 🚧 [limits](#-8-limitations-and-next-steps).
 

@@ -4,7 +4,7 @@
 
 <p align="center"><b>Change detection on two Sentinel-2 images of an open-pit copper mine in Zambia.</b></p>
 
-This repository is the code and outputs. The findings, method and interpretation are in **[report.md](report.md)**. There is also an optional [live app](https://s2change.dzaky.ai.id) and a [4.5-minute video](https://youtu.be/MBTmg62P2ew).
+This repository is the code and outputs. The findings, method and interpretation are in **[report.md](report.md)**. There is also an optional [live app](https://s2change.dzaky.ai.id) and a [2:48 explainer video](https://s2change.dzaky.ai.id/web/video/s2change-explainer.mp4).
 
 ## Quick start (offline, about 30 seconds)
 
