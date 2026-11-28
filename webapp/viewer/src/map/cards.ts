@@ -14,8 +14,7 @@ const SOURCE = {
   area: "Area of the polygon: connected 10 m pixels flagged as changed by the calibrated change vector analysis, vectorised (algorithmic).",
   why: "Written by fixed rules (s2cd/interpret.py), not by AI: thresholds on RGB indices (water, greenness, redness, brightness) before and after, plus overlap with the analyst-drawn facility register. The numbers are this polygon's own.",
   type: "Assigned by the same fixed rules as Why this label; the category in brackets is a fixed mapping to the brief's change categories.",
-  confidence: "Algorithmic, not a probability: each pixel's change distance d² (per-zone noise model) on a log scale, 0 at the detection threshold and 1 at 100x it, averaged over the polygon.",
-  significance: "Statistical: mean −log10 p of each pixel's change under the noise model fitted on stable pixels (chi-square test). A value of 9 means p = 10⁻⁹.",
+  confidence: "How far this change stands above the normal flicker between the two images, ranked against the other changes. Stored as the confidence score (0 at the detection threshold, 1 at 100 times it). Not a probability of being right: accuracy is measured separately (report, section 5).",
   direction: "Algorithmic: mean brightness of the polygon after versus before.",
   facility: "Spatial overlay with the facility register, whose outlines were drawn by an analyst on very-high-resolution imagery.",
 };
@@ -33,8 +32,7 @@ export function featureCard(p: ChangeProps, facilityName: string | null, stronge
   <details class="tech" open><summary>Technical details</summary>
   <dl class="facts">
     <div>${tip("Change type", "type")}<dd>${esc(t.label)} <span class="muted">(${esc(p.brief_category || "change")})</span></dd></div>
-    <div>${tip("Confidence", "confidence")}<dd class="num">${p.confidence.toFixed(2)}<span class="meter" aria-hidden="true"><i style="width:${(conf * 100).toFixed(0)}%"></i></span>${strongerThan === null ? "" : `<span class="muted conf-rank">stronger than ${fmtPct(strongerThan)} of the changes</span>`}</dd></div>
-    <div>${tip("Significance", "significance")}<dd class="num">−log10 p = ${p.neglog10_p.toFixed(1)}</dd></div>
+    <div>${tip("Change strength", "confidence")}<dd>${strongerThan === null ? `<span class="num">${p.confidence.toFixed(2)}</span>` : `Stronger than ${fmtPct(strongerThan)} of the changes`}<span class="meter" aria-hidden="true"><i style="width:${((strongerThan ?? conf) * 100).toFixed(0)}%"></i></span>${strongerThan === null ? "" : `<span class="muted conf-rank">score ${p.confidence.toFixed(2)} of 1</span>`}</dd></div>
     <div>${tip("Direction", "direction")}<dd>${esc(p.change_direction)}</dd></div>
     <div class="wide">${tip("Facility", "facility")}<dd>${p.facility_id ? `${esc(facilityName ?? p.facility_id)} <span class="muted">(${esc(p.facility_id)})</span>` : '<span class="muted">Outside the register</span>'}</dd></div>
   </dl></details>`;
