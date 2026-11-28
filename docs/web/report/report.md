@@ -90,11 +90,9 @@ Two methods run on the same images and are stored in the same database:
 
 ### 🪜 The six steps, with the equations
 
-![Illustration of the six steps with made-up data: split into zones, match brightness per zone, measure normal noise, flag what noise rarely does, skip the seams, clean up](figures/16_method_explained.png)
+Each step below gives how it works, its equation and source, what it does on the real data (the whole site and a close-up of the tailings dam wall), and what changed when it was switched off and the run repeated.
 
-*The six steps in one picture, with made-up data. Below, each step on the real data: how it works, its equation, and what happened when it was switched off and the run repeated.*
-
-**0. Pixel values to reflectance.** The files store Level-2A numbers with an offset of 1,000. Each band $b$ becomes surface reflectance, the share of sunlight the ground reflects (0 to 1):
+**0. Pixel values to reflectance.** The files store Level-2A numbers with an offset of 1,000. Each band $b$ becomes surface reflectance, the share of sunlight the ground reflects (0 to 1), as ESA specifies for products since processing baseline 04.00 (ESA 2021):
 
 $$
 \rho_b = \frac{DN_b - 1000}{10\,000}
@@ -121,7 +119,7 @@ $$
 z(p) = \big(\,s_{\text{before}}(p),\; s_{\text{after}}(p)\,\big)
 $$
 
-Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone. Nothing is tuned in this step: the files decide the zones. A check without the catalogue, which finds the straight brightness steps in the data alone, finds the same boundaries: 99 % of the pixels of each zone it finds fall inside one pass-pair zone.
+Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone. This grouping is this work's own; the passes and their dates come from the Sentinel-2 catalogue of Microsoft Planetary Computer. Nothing is tuned in this step: the files decide the zones. A check without the catalogue, which finds the straight brightness steps in the data alone, finds the same boundaries: 99 % of the pixels of each zone it finds fall inside one pass-pair zone.
 
 | Whole site | Close-up: tailings dam wall |
 |---|---|
@@ -139,7 +137,7 @@ $$
 $$
 
 1. **Start with all pixels of the zone** and fit $a$ and $c$ by orthogonal regression (total least squares). Both images are noisy, so the fit measures distance across the line, not only up and down; ordinary least squares would make the line too flat.
-2. **Drop pixels that do not follow the line.** For each pixel, take its distance from the line, $r$, in each band and turn it into a robust score:
+2. **Drop pixels that do not follow the line.** For each pixel, take its distance from the line, $r$, in each band and turn it into a robust score, where 1.4826 × MAD estimates the standard deviation without being pulled by outliers (Rousseeuw & Croux 1993):
 
    $$
    z_r = \frac{|\,r - \operatorname{median}(r)\,|}{1.4826\,\operatorname{MAD}(r)}
@@ -167,31 +165,31 @@ The fitted lines differ a lot between zones, which is why one line for the whole
 
 ❌ **Without it:** haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>).
 
-**3. Measure normal noise.** After matching, the colour change of a pixel is a vector of three numbers, one per band:
+**3. Measure normal noise.** After matching, the colour change of a pixel is a vector of three numbers, one per band, the change vector (Malila 1980):
 
 $$
 \Delta(p) = \hat\rho^{\,\text{after}}(p) - \rho^{\,\text{before}}(p)
 \in \mathbb{R}^{3}
 $$
 
-On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and plant growth make it flicker, and bright ground flickers more than dark ground. So each zone $z$ is split into 6 brightness classes $k$ (equal-count classes of the before image's brightness), and in each class the flicker of stable pixels is summarised by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (the 3 × 3 covariance between bands). For this, the stable set is looser, dropping only pixels with $z_r > 4$, so the real tails of the flicker are kept.
+On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and plant growth make it flicker, and bright ground flickers more than dark ground. So each zone $z$ is split into 6 brightness classes $k$ (equal-count classes of the before image's brightness), and in each class (this work's design) the flicker of stable pixels is summarised by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (the 3 × 3 covariance between bands). For this, the stable set is looser, dropping only pixels with $z_r > 4$, so the real tails of the flicker are kept.
 
 ❌ **Without it:** one noise level per zone, whatever the brightness. Bright mine ground then looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km².
 
-**4. Flag what noise rarely does.** The score of a pixel is how far its change lies from normal flicker, measured in units of that flicker (the squared Mahalanobis distance):
+**4. Flag what noise rarely does.** The score of a pixel is how far its change lies from normal flicker, measured in units of that flicker: the squared Mahalanobis distance (Mahalanobis 1936):
 
 $$
 d^{2}(p) = \big(\Delta(p) - \mu_{z,k}\big)^{\top}\,\Sigma_{z,k}^{-1}\,\big(\Delta(p) - \mu_{z,k}\big)
 $$
 
-For pure noise in 3 bands, $d^2$ follows a chi-square distribution with 3 degrees of freedom, so the cut-off for a false-alarm rate $\alpha$ is known in advance:
+For pure noise in 3 bands, $d^2$ follows a chi-square distribution with 3 degrees of freedom, so the cut-off for a false-alarm rate $\alpha$ is known in advance. Change detection has long used this no-change test (Nielsen et al. 1998; Canty & Nielsen 2008):
 
 $$
 \text{change}(p) \iff d^{2}(p) > \chi^{2}_{3}(1-\alpha) = 16.27
 \qquad \text{with } \alpha = 10^{-3}
 $$
 
-This textbook cut-off assumes the flicker is a perfect bell curve. Real flicker has more extreme values, so the rate is checked on stable pixels held out from fitting (30 % of them, in 32-pixel blocks). With the textbook cut-off, 0.36–1.2 % of them passed instead of 0.1 %, so each brightness class uses its own measured 99.9th percentile of held-out $d^2$ instead (19.9 to 33.0). The scores are rescaled so that 16.27 still marks the cut-off on the map. The result is 0.09–0.11 %, on target.
+This textbook cut-off assumes the flicker is a perfect bell curve. Real flicker has more extreme values, so, as this work's own safeguard, the rate is checked on stable pixels held out from fitting (30 % of them, in 32-pixel blocks). With the textbook cut-off, 0.36–1.2 % of them passed instead of 0.1 %, so each brightness class uses its own measured 99.9th percentile of held-out $d^2$ instead (19.9 to 33.0). The scores are rescaled so that 16.27 still marks the cut-off on the map. The result is 0.09–0.11 %, on target.
 
 💡 **What "1 in 1,000" means.** On ground that did not change, colour still flickers a little between dates. Step 3 measures how much; step 4 sets the cut-off so that pure flicker passes it only **1 pixel in 1,000**. The site has 2.6 million pixels, so about *2,600 pixels* (0.26 km²) pass by chance, scattered as **lone specks**, while real change passes as **solid patches**.
 
@@ -202,11 +200,11 @@ This textbook cut-off assumes the flicker is a perfect bell curve. Real flicker 
 
 *Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.74 km² in 4,479 patches.*
 
-**5. Skip the seams.** Pixels within 90 m of a seam mix two passes and are not scored: $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
+**5. Skip the seams.** Pixels within 90 m of a seam mix two passes and are not scored (this work's rule; 90 m is a choice): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
 
 ❌ **Without it:** 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b>.
 
-**6. Clean up.** One-pixel lines and specks are removed, patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
+**6. Clean up.** A minimum mapping unit, as maps usually have (this work's choice of 0.2 ha, tested in the next subsection). One-pixel lines and specks are removed, patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
 
 ❌ **Without it:** thousands of lone specks:
 
@@ -544,10 +542,14 @@ Security controls of the app are in [docs/system.md](https://github.com/dzakybd/
 
 ### References
 
-- Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385. *Change vector analysis, section 3.*
+- Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385. *Change vector analysis: the method of section 3 and the change vector of step 3.*
+- Mahalanobis (1936). [On the generalised distance in statistics](https://doi.org/10.1007/s13171-019-00164-5). *Proc. Natl. Inst. Sci. India* 2(1):49–55; reprinted in *Sankhyā A* 80:1–7 (2018). *The noise-scaled distance $d^2$, step 4.*
 - Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold, section 3.*
+- ESA (2021). [Copernicus Sentinel-2: major products upgrade upcoming](https://sentinels.copernicus.eu/web/sentinel/-/copernicus-sentinel-2-major-products-upgrade-upcoming). Sentinel Online, 29 September 2021. *The L2A offset (BOA_ADD_OFFSET = −1000) in the reflectance formula, step 0.*
 - Schott, Salvaggio & Volchok (1988). [Radiometric scene normalization using pseudoinvariant features](https://doi.org/10.1016/0034-4257(88)90116-2). *Remote Sens. Environ.* 26(1):1–16. *Step 2, the stable-ground (pseudo-invariant) idea behind matching brightness.*
-- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, the iterative orthogonal-regression fit.*
+- Rousseeuw & Croux (1993). [Alternatives to the median absolute deviation](https://doi.org/10.1080/01621459.1993.10476408). *J. Am. Stat. Assoc.* 88(424):1273–1283. *The robust score with 1.4826 × MAD, step 2.*
+- Nielsen, Conradsen & Simpson (1998). [Multivariate alteration detection (MAD) and MAF postprocessing in multispectral, bitemporal image data: new approaches to change detection studies](https://doi.org/10.1016/S0034-4257(97)00162-4). *Remote Sens. Environ.* 64(1):1–19. *The chi-square no-change test, step 4.*
+- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, the iterative orthogonal-regression fit; step 4, the chi-square test.*
 - Olofsson et al. (2014). [Good practices for estimating area and assessing accuracy of land change](https://doi.org/10.1016/j.rse.2014.02.015). *Remote Sens. Environ.* 148:42–57. *Section 5.*
 - Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample, section 5.*
 - Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ), section 5.*
