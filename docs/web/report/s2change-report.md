@@ -105,19 +105,19 @@ $$
 
 *The two files in true colour. The after file looks brighter and hazier, partly because it holds other passes.*
 
-![Zones and brightness matching in four panels: each file is two passes; overlaying the two seams gives three zones; one brightness line is fitted per zone on stable ground; after matching, stable ground sits on the no-difference line and change stands out](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/17_zones_normalization.svg)
-
-*Steps 1 and 2. Panels 1–2 are a sketch; panels 3–4 are real pixels of the blue band (`scripts/fig_zones_normalization.py`).*
-
 **1. Split into zones.** A zone is a group of pixels that share the same *pair* of satellite passes.
 
 1. For every pixel, find the pass it was copied from, in the before file and in the after file. `s2cd provenance` reads every catalogue scene of those weeks onto the same grid and keeps the scene whose stored values match the pixel exactly (section 2, proof 2).
 2. Each file switches pass at one straight seam, so each file has two parts.
-3. Lay the two files over each other. Their seams are at slightly different places, so the site falls into **three** pass pairs: west, a thin middle strip and east (panels 1–2).
+3. Lay the two files over each other. Their seams are at slightly different places, so the site falls into **three** pass pairs: west, a thin middle strip and east.
 
 $$
 z(p) = \big(\,s_{\text{before}}(p),\; s_{\text{after}}(p)\,\big)
 $$
+
+![Step 1 sketch: each file is two satellite passes stitched along a seam; the two seams sit at different places, so overlaying them gives three zones, west, a thin middle strip and east, each with its own pair of pass dates](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/17_step1_zones.svg)
+
+*Step 1 as a sketch (`scripts/fig_method_steps.py`). The dates, day gaps and shares are the real ones.*
 
 Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone. This grouping is this work's own; the passes and their dates come from the Sentinel-2 catalogue of Microsoft Planetary Computer. Nothing is tuned in this step: the files decide the zones. A check without the catalogue, which finds the straight brightness steps in the data alone, finds the same boundaries: 99 % of the pixels of each zone it finds fall inside one pass-pair zone.
 
@@ -129,7 +129,7 @@ Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone
 
 ❌ **Without it:** one ruler for three different pass pairs. It finds <b class="bad">a third</b> as much real change (1.57 km², recall 0.17 → 0.06).
 
-**2. Match brightness, one line per zone and band.** Inside one zone, both images come from one pass each, so the haze and sun difference between them is about the same everywhere in the zone. On ground that did not change, before and after then fall on a straight line (panel 3). The method fits that line and uses it to put the after image on the before image's scale. This is relative normalisation with pseudo-invariant (stable) pixels (Schott et al. 1988), fitted as in Canty & Nielsen (2008):
+**2. Match brightness, one line per zone and band.** Inside one zone, both images come from one pass each, so the haze and sun difference between them is about the same everywhere in the zone. Each zone is shifted by its own amount (figure below, A). On ground that did not change, before and after then fall on a straight line. The method fits that line and uses it to put the after image on the before image's scale. This is relative normalisation with pseudo-invariant (stable) pixels (Schott et al. 1988), fitted as in Canty & Nielsen (2008):
 
 $$
 \hat\rho^{\,\text{after}}_{b}(p) = a_{z,b} + c_{z,b}\,\rho^{\,\text{after}}_{b}(p)
@@ -144,8 +144,12 @@ $$
    $$
 
    A pixel with $z_r > 2.5$ in any band is probably real change, so it is left out.
-3. **Refit on the pixels that are left, and repeat** (5 rounds). What survives is the *stable ground*, 84–89 % of each zone. Real change never shapes the line.
-4. **Apply the line to every pixel of the zone,** changed or not. Stable ground now sits on the "no difference" line; real change stays off it (panel 4).
+3. **Refit on the pixels that are left, and repeat** (5 rounds). What survives is the *stable ground*, 84–89 % of each zone. Real change never shapes the line (B).
+4. **Apply the line to every pixel of the zone,** changed or not. Stable ground now sits on the "no difference" line; real change stays off it (D).
+
+![Step 2 on real blue-band pixels: A, the after-minus-before difference is shifted by a different amount in each zone and centred on zero after matching; B, in the west zone the pixels off the line are dropped and the line is fitted on the rest; C, the three fitted lines differ; D, after matching stable ground sits on the one-to-one line and change does not](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/18_step2_matching.svg)
+
+*Step 2 on real pixels of the blue band (`scripts/fig_method_steps.py`). The lines are the fitted ones in the table below.*
 
 The fitted lines differ a lot between zones, which is why one line for the whole site fails:
 
@@ -172,7 +176,11 @@ $$
 \in \mathbb{R}^{3}
 $$
 
-On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and plant growth make it flicker, and bright ground flickers more than dark ground. So each zone $z$ is split into 6 brightness classes $k$ (equal-count classes of the before image's brightness), and in each class (this work's design) the flicker of stable pixels is summarised by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (the 3 × 3 covariance between bands). For this, the stable set is looser, dropping only pixels with $z_r > 4$, so the real tails of the flicker are kept.
+On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and plant growth make it flicker, and bright ground flickers more than dark ground (figure below, A and B). So each zone $z$ is split into 6 brightness classes $k$ (equal-count classes of the before image's brightness), and in each class (this work's design) the flicker of stable pixels is summarised by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (the 3 × 3 covariance between bands). For this, the stable set is looser, dropping only pixels with $z_r > 4$, so the real tails of the flicker are kept.
+
+![Steps 3 and 4 on real pixels: A and B, change vectors of held-out stable pixels in the darkest and brightest class of the west zone, with the 1-in-1,000 ellipse, which is bigger for bright ground; C, the score of held-out stable pixels lies below the cut-off of 16.27 while the pixels on the change map lie above it](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/19_step3_4_noise.svg)
+
+*Steps 3 and 4 on real pixels (`scripts/fig_method_steps.py`). A and B show 2 of the 3 bands, so a few change pixels fall inside the ellipse there and are outside it in the third band. C: 0.10 % of held-out stable ground passes the cut-off, as intended; 99 % of the mapped pixels do (the rest are holes filled in step 6).*
 
 ❌ **Without it:** one noise level per zone, whatever the brightness. Bright mine ground then looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km².
 
