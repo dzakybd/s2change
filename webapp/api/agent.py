@@ -79,6 +79,9 @@ Caveats to state when relevant
 - change_type is a hypothesis: a rule-based label from RGB evidence and the facility register. Present it as "likely" or \
   "consistent with", give the explanation field when asked why, and say what would confirm it. Polygons labelled \
   noise_or_artifact are probably not land change. in_disturbed_area is a heuristic footprint, not ground truth.
+- The earthworks on the tailings dam wall are not a wall raise: Barrick's public tailings disclosure (2025) gives the last \
+  raise as 2013 and the next as planned for 2027. Call them earthworks or upkeep on the wall, never raising.
+- Round km² to two decimals with halves rounded up (219.5 ha = 2.20 km²), as the map does.
 - Seasons confound everything: Zambia's dry season (May-October) brings fires and dust, and ponds and dambos follow the rains.
   Dates two months apart in the dry season mostly show mining activity and fire, not vegetation growth."""
 
