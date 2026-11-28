@@ -85,7 +85,6 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
   root.innerHTML = `
     <header class="chat-head">
       <div>
-        <div class="eyebrow">Agent</div>
         <h1>Ask about the changes</h1>
       </div>
       <div class="chat-tools">

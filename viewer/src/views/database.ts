@@ -62,7 +62,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
   const el = document.createElement("div");
   el.className = "view";
   el.innerHTML = `<div class="page db">
-    <div class="page-head"><div class="eyebrow">Database</div><h1>Explore the PostGIS database</h1><p>The change polygons and the facility register live in PostGIS on Supabase. Browse every table a page at a time, follow the keys between them, and take the data with you as SQL.</p></div>
+    <div class="page-head"><h1>Explore the PostGIS database</h1><p>The change polygons and the facility register live in PostGIS on Supabase. Browse every table a page at a time, follow the keys between them, and take the data with you as SQL.</p></div>
     <div id="db-body"><div class="db-skel" role="status"><span class="sr-only">Connecting to the database…</span><i class="skel s-card"></i><i class="skel s-tall"></i></div></div></div>`;
   const body = q(el, "#db-body");
   let started = false;
@@ -211,7 +211,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
         .join("");
       const from = p.total ? (p.page - 1) * p.size + 1 : 0;
       const to = Math.min(p.total, p.page * p.size);
-      grid.innerHTML = `${p.rows.length ? `<div class="table-wrap ex-table"><table><thead><tr>${head}${incoming.length ? '<th scope="col">Related</th>' : ""}</tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="muted empty">No rows match.</p>'}
+      grid.innerHTML = `${p.rows.length ? `<div class="table-wrap ex-table"><table><thead><tr>${head}${incoming.length ? '<th scope="col">Related</th>' : ""}</tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="muted empty">${state.filter ? `No rows have ${esc(state.filter.column)} = ${esc(state.filter.value)}. Clear the filter above to see every row.` : "This table has no rows yet. The pipeline fills it on its next run."}</p>`}
         <div class="pager"><span class="muted num">Rows ${fmtInt(from)}–${fmtInt(to)} of ${fmtInt(p.total)} · ${p.elapsed_ms} ms</span>
           <label class="muted">Rows per page <select id="ex-size">${SIZES.map((s) => `<option${s === p.size ? " selected" : ""}>${s}</option>`).join("")}</select></label>
           <span class="pager-nav"><button type="button" class="btn sm" data-page="${p.page - 1}" ${p.page <= 1 ? "disabled" : ""} aria-label="Previous page">‹ Prev</button><span class="num">Page ${p.page} of ${p.pages}</span><button type="button" class="btn sm" data-page="${p.page + 1}" ${p.page >= p.pages ? "disabled" : ""} aria-label="Next page">Next ›</button></span></div>`;

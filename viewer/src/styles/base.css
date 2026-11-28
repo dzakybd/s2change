@@ -25,7 +25,7 @@
   --shadow-2: var(--ring), 0 10px 32px rgb(15 23 42 / 0.14), 0 2px 6px rgb(15 23 42 / 0.08);
   --glass: rgb(255 255 255 / 0.9);
   --glass-solid: rgb(255 255 255 / 0.96);
-  --glass-blur: blur(18px) saturate(1.5);
+  --glass-blur: none; /* overlays sit on a WebGL map: blur costs GPU on phones and the 90 % white already reads */
 
   --r-sm: 8px;
   --r-md: 12px;
@@ -127,7 +127,6 @@ main#main { position: relative; flex: 1 1 auto; min-height: 0; }
 
 .page { width: min(1120px, 100%); margin: 0 auto; padding: var(--s-6) var(--s-5) var(--s-8); padding-left: max(var(--s-5), env(safe-area-inset-left)); padding-right: max(var(--s-5), env(safe-area-inset-right)); }
 .page-head { margin-bottom: var(--s-6); }
-.eyebrow { font-size: var(--fs-xs); letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent-ink); font-weight: 650; margin-bottom: var(--s-2); }
 .page-head h1 { font-size: var(--fs-xl); letter-spacing: -0.025em; }
 .page-head p { max-width: 62ch; margin-top: var(--s-2); }
 
