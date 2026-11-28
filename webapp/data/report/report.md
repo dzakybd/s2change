@@ -4,7 +4,7 @@
 
 **Two free satellite images of the Lumwana mine (North-Western Province, Zambia): what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/8pGhwnsoD38)
 
-<a href="https://youtu.be/8pGhwnsoD38"><img src="figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
+<a href="https://youtu.be/8pGhwnsoD38"><img src="figures/video_thumbnail.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
 
 *Prefer watching? A [2:52 explainer](https://youtu.be/8pGhwnsoD38) tells the same story in plain words.*
 
