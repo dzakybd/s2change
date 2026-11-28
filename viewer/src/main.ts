@@ -7,7 +7,7 @@ import { onRoute } from "./router";
 import { initAuth, mountAuthChip } from "./unlock";
 
 const TITLES: Record<RouteName, string> = {
-  report: "s2change · Sentinel-2 change detection at a Zambian copper mine",
+  report: "s2change · Sentinel-2 change detection at the Lumwana copper mine, Zambia",
   map: "Map · s2change",
   database: "Database · s2change",
   downloads: "Downloads · s2change",

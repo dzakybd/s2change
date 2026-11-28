@@ -2,7 +2,7 @@
 
 <h1 align="center">s2change</h1>
 
-<p align="center"><b>Change detection on two Sentinel-2 images of an open-pit copper mine in Zambia.</b></p>
+<p align="center"><b>Change detection on two Sentinel-2 images of Lumwana, Barrick's open-pit copper mine in North-Western Province, Zambia.</b></p>
 
 This repository is the code and outputs. The findings, method and interpretation are in **[report.md](report.md)**. There is also an optional [live app](https://s2change.dzaky.ai.id) and a [2:52 explainer video](https://youtu.be/8pGhwnsoD38).
 

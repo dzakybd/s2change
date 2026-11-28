@@ -209,7 +209,7 @@ def export_sql(table: str | None = None) -> str:
         tables=tables,
     )
     out = [
-        "-- s2change: change detection at an open-pit copper mine in NW Zambia (https://s2change.dzaky.ai.id)",
+        "-- s2change: change detection at the Lumwana copper mine, Zambia (https://s2change.dzaky.ai.id)",
         f"-- PostGIS dump of {', '.join(tables)}, exported {datetime.now().astimezone():%Y-%m-%d %H:%M %Z}.",
         '-- Load with: psql "$DATABASE_URL" -f this_file.sql',
         "",

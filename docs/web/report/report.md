@@ -1,8 +1,8 @@
 <img src="figures/favicon.svg" alt="s2change logo" width="56" height="56">
 
-# What changed at an open-pit copper mine in NW Zambia?
+# What changed at Lumwana, Barrick's open-pit copper mine in Zambia?
 
-**Two free satellite images of one copper mine: what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/8pGhwnsoD38)
+**Two free satellite images of the Lumwana mine (North-Western Province, Zambia): what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/8pGhwnsoD38)
 
 <a href="https://youtu.be/8pGhwnsoD38"><img src="figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
 
@@ -24,7 +24,7 @@
 
 ## 📦 1. The data
 
-The brief supplies two Sentinel-2 images of an open-pit copper mine in Zambia and asks what changed between them.
+The brief supplies two Sentinel-2 images of an open-pit copper mine in Zambia, Lumwana, and asks what changed between them.
 
 | | What we got |
 |---|---|
@@ -34,7 +34,7 @@ The brief supplies two Sentinel-2 images of an open-pit copper mine in Zambia an
 | 🧪 Processing | Already corrected for the atmosphere by ESA (Level-2A, proved in section 2); stored numbers become reflectance with `(DN − 1000) / 10000` |
 
 > [!NOTE]
-> **Colour only (RGB).** We use only the three colour bands: no infrared, no cloud mask, no elevation. The layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is our inference.
+> **Colour only (RGB).** We use only the three colour bands: no infrared, no cloud mask, no elevation. The brief only says "an open-pit mining site in Zambia"; the area's centre (12.25° S, 25.87° E) and its layout are the Lumwana copper mine, so we name it.
 
 🏭 **What is on the ground.** To say *where* change happens, we outlined the mine's 8 facilities (pits, waste dumps, tailings, plant, town) on sharp aerial imagery and checked them against the 2023 image (`configs/facility_register.yaml`, [on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities)):
 
