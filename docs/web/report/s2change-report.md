@@ -79,8 +79,8 @@ Looking at the two images side by side, a straight diagonal line runs through bo
 
 Two methods run on the same images and are stored in the same database:
 
-- **The provided example, unchanged:** the colour distance between the dates, cut with one automatic threshold (Otsu 1979) (`change_map_baseline.tif`, `change_binary_baseline.tif`).
-- **This work: a calibrated change vector analysis** (Malila 1980). The question per pixel: *how far did its colour move, compared with how far colour moves on ground that did not change?* (`change_map.tif`, `change_binary.tif`)
+- **The provided example, unchanged:** the colour distance between the dates, cut with one automatic threshold ([Otsu 1979](#ref-otsu-1979)) (`change_map_baseline.tif`, `change_binary_baseline.tif`).
+- **This work: a calibrated change vector analysis** ([Malila 1980](#ref-malila-1980)). The question per pixel: *how far did its colour move, compared with how far colour moves on ground that did not change?* (`change_map.tif`, `change_binary.tif`)
 
 ### 🔬 Both methods side by side
 
@@ -92,7 +92,9 @@ Two methods run on the same images and are stored in the same database:
 
 Each step below gives how it works, its equation and source, what it does on the real data (the whole site and a close-up of the tailings dam wall), and what changed when it was switched off and the run repeated.
 
-**0. Pixel values to reflectance.** The files store Level-2A numbers with an offset of 1,000. Each band $b$ becomes surface reflectance, the share of sunlight the ground reflects (0 to 1), as ESA specifies for products since processing baseline 04.00 (ESA 2021):
+#### 0. Pixel values to reflectance
+
+The files store Level-2A numbers with an offset of 1,000. Each band $b$ becomes surface reflectance, the share of sunlight the ground reflects (0 to 1), as ESA specifies for products since processing baseline 04.00 ([ESA 2021](#ref-esa-2021)):
 
 $$
 \rho_b = \frac{DN_b - 1000}{10\,000}
@@ -105,11 +107,15 @@ $$
 
 *The two files in true colour. The after file looks brighter and hazier, partly because it holds other passes.*
 
-**1. Split into zones.** A zone is a group of pixels that share the same *pair* of satellite passes.
+#### 1. Split into zones
 
-1. For every pixel, find the pass it was copied from, in the before file and in the after file. `s2cd provenance` reads every catalogue scene of those weeks onto the same grid and keeps the scene whose stored values match the pixel exactly (section 2, proof 2).
-2. Each file switches pass at one straight seam, so each file has two parts.
-3. Lay the two files over each other. Their seams are at slightly different places, so the site falls into **three** pass pairs: west, a thin middle strip and east.
+A zone is a group of pixels that share the same *pair* of satellite passes.
+
+**1.1** For every pixel, find the pass it was copied from, in the before file and in the after file. `s2cd provenance` reads every catalogue scene of those weeks onto the same grid and keeps the scene whose stored values match the pixel exactly (section 2, proof 2).
+
+**1.2** Each file switches pass at one straight seam, so each file has two parts.
+
+**1.3** Lay the two files over each other. Their seams are at slightly different places, so the site falls into **three** pass pairs: west, a thin middle strip and east.
 
 $$
 z(p) = \big(\,s_{\text{before}}(p),\; s_{\text{after}}(p)\,\big)
@@ -129,23 +135,28 @@ Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone
 
 ❌ **Without it:** one ruler for three different pass pairs. It finds <b class="bad">a third</b> as much real change (1.57 km², recall 0.17 → 0.06).
 
-**2. Match brightness, one line per zone and band.** Inside one zone, both images come from one pass each, so the haze and sun difference between them is about the same everywhere in the zone. Each zone is shifted by its own amount (figure below, A). On ground that did not change, before and after then fall on a straight line. The method fits that line and uses it to put the after image on the before image's scale. This is relative normalisation with pseudo-invariant (stable) pixels (Schott et al. 1988), fitted as in Canty & Nielsen (2008):
+#### 2. Match brightness, one line per zone and band
+
+Inside one zone, both images come from one pass each, so the haze and sun difference between them is about the same everywhere in the zone. Each zone is shifted by its own amount (figure below, A). On ground that did not change, before and after then fall on a straight line. The method fits that line and uses it to put the after image on the before image's scale. This is relative normalisation with pseudo-invariant (stable) pixels ([Schott et al. 1988](#ref-schott-1988)), fitted as in [Canty & Nielsen (2008)](#ref-canty-2008):
 
 $$
 \hat\rho^{\,\text{after}}_{b}(p) = a_{z,b} + c_{z,b}\,\rho^{\,\text{after}}_{b}(p)
 \qquad \text{for every pixel } p \text{ in zone } z
 $$
 
-1. **Start with all pixels of the zone** and fit $a$ and $c$ by orthogonal regression (total least squares). Both images are noisy, so the fit measures distance across the line, not only up and down; ordinary least squares would make the line too flat.
-2. **Drop pixels that do not follow the line.** For each pixel, take its distance from the line, $r$, in each band and turn it into a robust score, where 1.4826 × MAD estimates the standard deviation without being pulled by outliers (Rousseeuw & Croux 1993):
+**2.1 Start with all pixels of the zone** and fit $a$ and $c$ by orthogonal regression (total least squares). Both images are noisy, so the fit measures distance across the line, not only up and down; ordinary least squares would make the line too flat.
 
-   $$
-   z_r = \frac{|\,r - \operatorname{median}(r)\,|}{1.4826\,\operatorname{MAD}(r)}
-   $$
+**2.2 Drop pixels that do not follow the line.** For each pixel, take its distance from the line, $r$, in each band and turn it into a robust score, where 1.4826 × MAD estimates the standard deviation without being pulled by outliers ([Rousseeuw & Croux 1993](#ref-rousseeuw-1993)):
 
-   A pixel with $z_r > 2.5$ in any band is probably real change, so it is left out.
-3. **Refit on the pixels that are left, and repeat** (5 rounds). What survives is the *stable ground*, 84–89 % of each zone. Real change never shapes the line (B).
-4. **Apply the line to every pixel of the zone,** changed or not. Stable ground now sits on the "no difference" line; real change stays off it (D).
+$$
+z_r = \frac{|\,r - \operatorname{median}(r)\,|}{1.4826\,\operatorname{MAD}(r)}
+$$
+
+A pixel with $z_r > 2.5$ in any band is probably real change, so it is left out.
+
+**2.3 Refit on the pixels that are left, and repeat** (5 rounds). What survives is the *stable ground*, 84–89 % of each zone. Real change never shapes the line (B).
+
+**2.4 Apply the line to every pixel of the zone,** changed or not. Stable ground now sits on the "no difference" line; real change stays off it (D).
 
 ![Step 2 on real blue-band pixels: A, the after-minus-before difference is shifted by a different amount in each zone and centred on zero after matching; B, in the west zone the pixels off the line are dropped and the line is fitted on the rest; C, the three fitted lines differ; D, after matching stable ground sits on the one-to-one line and change does not](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/18_step2_matching.svg)
 
@@ -169,7 +180,9 @@ The fitted lines differ a lot between zones, which is why one line for the whole
 
 ❌ **Without it:** haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>).
 
-**3. Measure normal noise.** After matching, the colour change of a pixel is a vector of three numbers, one per band, the change vector (Malila 1980):
+#### 3. Measure normal noise
+
+After matching, the colour change of a pixel is a vector of three numbers, one per band, the change vector ([Malila 1980](#ref-malila-1980)):
 
 $$
 \Delta(p) = \hat\rho^{\,\text{after}}(p) - \rho^{\,\text{before}}(p)
@@ -184,13 +197,15 @@ On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and pla
 
 ❌ **Without it:** one noise level per zone, whatever the brightness. Bright mine ground then looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km².
 
-**4. Flag what noise rarely does.** The score of a pixel is how far its change lies from normal flicker, measured in units of that flicker: the squared Mahalanobis distance (Mahalanobis 1936):
+#### 4. Flag what noise rarely does
+
+The score of a pixel is how far its change lies from normal flicker, measured in units of that flicker: the squared Mahalanobis distance ([Mahalanobis 1936](#ref-mahalanobis-1936)):
 
 $$
 d^{2}(p) = \big(\Delta(p) - \mu_{z,k}\big)^{\top}\,\Sigma_{z,k}^{-1}\,\big(\Delta(p) - \mu_{z,k}\big)
 $$
 
-For pure noise in 3 bands, $d^2$ follows a chi-square distribution with 3 degrees of freedom, so the cut-off for a false-alarm rate $\alpha$ is known in advance. Change detection has long used this no-change test (Nielsen et al. 1998; Canty & Nielsen 2008):
+For pure noise in 3 bands, $d^2$ follows a chi-square distribution with 3 degrees of freedom, so the cut-off for a false-alarm rate $\alpha$ is known in advance. Change detection has long used this no-change test ([Nielsen et al. 1998](#ref-nielsen-1998); [Canty & Nielsen 2008](#ref-canty-2008)):
 
 $$
 \text{change}(p) \iff d^{2}(p) > \chi^{2}_{3}(1-\alpha) = 16.27
@@ -208,11 +223,15 @@ This textbook cut-off assumes the flicker is a perfect bell curve. Real flicker 
 
 *Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.74 km² in 4,479 patches.*
 
-**5. Skip the seams.** Pixels within 90 m of a seam mix two passes and are not scored (this work's rule; 90 m is a choice): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
+#### 5. Skip the seams
+
+Pixels within 90 m of a seam mix two passes and are not scored (this work's rule; 90 m is a choice): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
 
 ❌ **Without it:** 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b>.
 
-**6. Clean up.** A minimum mapping unit, as maps usually have (this work's choice of 0.2 ha, tested in the next subsection). One-pixel lines and specks are removed, patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
+#### 6. Clean up
+
+A minimum mapping unit, as maps usually have (this work's choice of 0.2 ha, tested in the next subsection). One-pixel lines and specks are removed, patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
 
 ❌ **Without it:** thousands of lone specks:
 
@@ -252,7 +271,7 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 | Tool | Used for | Changes the detection? |
 |---|---|---|
 | 🛰️ [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a) Sentinel-2 catalogue (STAC) | Tracing every pixel to its satellite pass (section 2); the true single passes (section 4) | ✅ Yes: it gives the three zones |
-| 🔍 SEN2SR super-resolution (Aybar et al. 2026) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
+| 🔍 SEN2SR super-resolution ([Aybar et al. 2026](#ref-aybar-2026)) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
 | 🤖 AI vision labellers | Labelling the accuracy points (section 5) | ❌ No, accuracy only |
 
 ## 📍 4. What changed
@@ -323,12 +342,12 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 </tr>
 </table>
 
-200 random points, 50 in each of four groups (both maps say change, only this map, only the provided method, neither), so one sample scores both maps without bias (Olofsson et al. 2014; Stehman 2014).
+200 random points, 50 in each of four groups (both maps say change, only this map, only the provided method, neither), so one sample scores both maps without bias ([Olofsson et al. 2014](#ref-olofsson-2014); [Stehman 2014](#ref-stehman-2014)).
 
 🏷️ **How the points were labelled:**
 
 - **Two independent AI vision labellers**, from before/after image chips, blind to both maps.
-- Agreement 80 % (Cohen's κ 0.46, moderate; Cohen 1960); the 40 disagreements settled by a third look with a wider view.
+- Agreement 80 % (Cohen's κ 0.46, moderate; [Cohen 1960](#ref-cohen-1960)); the 40 disagreements settled by a third look with a wider view.
 - Visual labels from the same 10 m imagery, not field truth (`scripts/validation.py`, `data/validation/`).
 
 | 95 % intervals | This method | Provided method |
@@ -550,18 +569,18 @@ Security controls of the app are in [docs/system.md](https://github.com/dzakybd/
 
 ### References
 
-- Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385. *Change vector analysis: the method of section 3 and the change vector of step 3.*
-- Mahalanobis (1936). [On the generalised distance in statistics](https://doi.org/10.1007/s13171-019-00164-5). *Proc. Natl. Inst. Sci. India* 2(1):49–55; reprinted in *Sankhyā A* 80:1–7 (2018). *The noise-scaled distance $d^2$, step 4.*
-- Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold, section 3.*
-- ESA (2021). [Copernicus Sentinel-2: major products upgrade upcoming](https://sentinels.copernicus.eu/web/sentinel/-/copernicus-sentinel-2-major-products-upgrade-upcoming). Sentinel Online, 29 September 2021. *The L2A offset (BOA_ADD_OFFSET = −1000) in the reflectance formula, step 0.*
-- Schott, Salvaggio & Volchok (1988). [Radiometric scene normalization using pseudoinvariant features](https://doi.org/10.1016/0034-4257(88)90116-2). *Remote Sens. Environ.* 26(1):1–16. *Step 2, the stable-ground (pseudo-invariant) idea behind matching brightness.*
-- Rousseeuw & Croux (1993). [Alternatives to the median absolute deviation](https://doi.org/10.1080/01621459.1993.10476408). *J. Am. Stat. Assoc.* 88(424):1273–1283. *The robust score with 1.4826 × MAD, step 2.*
-- Nielsen, Conradsen & Simpson (1998). [Multivariate alteration detection (MAD) and MAF postprocessing in multispectral, bitemporal image data: new approaches to change detection studies](https://doi.org/10.1016/S0034-4257(97)00162-4). *Remote Sens. Environ.* 64(1):1–19. *The chi-square no-change test, step 4.*
-- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, the iterative orthogonal-regression fit; step 4, the chi-square test.*
-- Olofsson et al. (2014). [Good practices for estimating area and assessing accuracy of land change](https://doi.org/10.1016/j.rse.2014.02.015). *Remote Sens. Environ.* 148:42–57. *Section 5.*
-- Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample, section 5.*
-- Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ), section 5.*
-- Aybar et al. (2026). [A radiometrically and spatially consistent super-resolution framework for Sentinel-2](https://doi.org/10.1016/j.rse.2025.115222). *Remote Sens. Environ.* 334:115222. *SEN2SR, the map's 2.5 m display layer.*
+- <a id="ref-malila-1980"></a>Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385. *Change vector analysis: the method of section 3 and the change vector of step 3.*
+- <a id="ref-mahalanobis-1936"></a>Mahalanobis (1936). [On the generalised distance in statistics](https://doi.org/10.1007/s13171-019-00164-5). *Proc. Natl. Inst. Sci. India* 2(1):49–55; reprinted in *Sankhyā A* 80:1–7 (2018). *The noise-scaled distance $d^2$, step 4.*
+- <a id="ref-otsu-1979"></a>Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold, section 3.*
+- <a id="ref-esa-2021"></a>ESA (2021). [Copernicus Sentinel-2: major products upgrade upcoming](https://sentinels.copernicus.eu/web/sentinel/-/copernicus-sentinel-2-major-products-upgrade-upcoming). Sentinel Online, 29 September 2021. *The L2A offset (BOA_ADD_OFFSET = −1000) in the reflectance formula, step 0.*
+- <a id="ref-schott-1988"></a>Schott, Salvaggio & Volchok (1988). [Radiometric scene normalization using pseudoinvariant features](https://doi.org/10.1016/0034-4257(88)90116-2). *Remote Sens. Environ.* 26(1):1–16. *Step 2, the stable-ground (pseudo-invariant) idea behind matching brightness.*
+- <a id="ref-rousseeuw-1993"></a>Rousseeuw & Croux (1993). [Alternatives to the median absolute deviation](https://doi.org/10.1080/01621459.1993.10476408). *J. Am. Stat. Assoc.* 88(424):1273–1283. *The robust score with 1.4826 × MAD, step 2.*
+- <a id="ref-nielsen-1998"></a>Nielsen, Conradsen & Simpson (1998). [Multivariate alteration detection (MAD) and MAF postprocessing in multispectral, bitemporal image data: new approaches to change detection studies](https://doi.org/10.1016/S0034-4257(97)00162-4). *Remote Sens. Environ.* 64(1):1–19. *The chi-square no-change test, step 4.*
+- <a id="ref-canty-2008"></a>Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, the iterative orthogonal-regression fit; step 4, the chi-square test.*
+- <a id="ref-olofsson-2014"></a>Olofsson et al. (2014). [Good practices for estimating area and assessing accuracy of land change](https://doi.org/10.1016/j.rse.2014.02.015). *Remote Sens. Environ.* 148:42–57. *Section 5.*
+- <a id="ref-stehman-2014"></a>Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample, section 5.*
+- <a id="ref-cohen-1960"></a>Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ), section 5.*
+- <a id="ref-aybar-2026"></a>Aybar et al. (2026). [A radiometrically and spatially consistent super-resolution framework for Sentinel-2](https://doi.org/10.1016/j.rse.2025.115222). *Remote Sens. Environ.* 334:115222. *SEN2SR, the map's 2.5 m display layer.*
 
 ---
 
