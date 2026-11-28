@@ -81,6 +81,6 @@ Settings (thresholds, minimum patch size, seam buffer) are in `configs/default.y
 
 ## The app (optional)
 
-Everything above runs offline. The app at [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) shows the same results without installing anything: the report, a map with before/after swipe, the facilities, a database explorer and downloads. The analyst agent and new date comparisons need an access code, shared with reviewers on request.
+Everything above runs offline. The app at [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) shows the same results without installing anything: the report, a map with before/after swipe, the facilities, a database explorer and downloads. The analyst agent needs an access code, shared with reviewers on request.
 
 Running the app yourself needs a PostGIS database and an LLM key: see [app/README.md](app/README.md). Architecture, agent and database design are in [report section 7](report.md#-7-the-system-stack-agent-and-database) and [docs/system.md](docs/system.md).

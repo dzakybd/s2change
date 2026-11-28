@@ -1,4 +1,4 @@
-"""Access code for the costly features (analyst chat, SQL console, new comparisons).
+"""Access code for the costly features (analyst chat, full database URI).
 
 Everything else stays public. The code is checked against a salted PBKDF2 hash from the environment, and a correct code earns a
 signed session cookie, so there are no accounts, no database and no new dependency (standard library only).

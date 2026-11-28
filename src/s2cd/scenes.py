@@ -1,8 +1,8 @@
-"""Fetch Sentinel-2 B02/B03/B04 for any date onto the assignment grid (for the date picker).
+"""Fetch Sentinel-2 B02/B03/B04 for any date onto the assignment grid (true-pass check, scripts/real_dates.py).
 
 The default comparison is the provided pair. Note how the provided rasters differ from what this module builds: each provided
 "date" is a *multi-day* mosaic (the 2023-08-12 raster is made of scenes from 2023-07-01 and 2023-07-04; see
-``s2cd provenance``), whereas a scene fetched here is a *single-day* mosaic of that day's items only. To compare other dates:
+``s2cd provenance``), whereas a scene fetched here is a *single-day* mosaic of that day's items only. To fetch a date:
 1. list dates with clear imagery over the AOI (STAC metadata: tile cloud cover + AOI coverage),
 2. read B02/B03/B04 for every item of that one day onto the assignment's 10 m grid and mosaic them
    (lowest-cloud item first),
