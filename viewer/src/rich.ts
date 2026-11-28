@@ -4,7 +4,7 @@ import { LIVE_URL, prefersReducedMotion } from "./domain";
  * Markdown to sanitised DOM for the Report tab and the monitoring brief. marked and DOMPurify load on first use,
  * so they stay out of the entry bundle. Post-processing happens on the sanitised DOM: heading ids for the table of
  * contents, figures with numbered captions, scrollable tables and external links that open safely. ```mermaid fences
- * become SVG diagrams; the mermaid package is imported only when a document contains one. GitHub-style alerts
+ * become SVG diagrams; the mermaid package is imported only when a document contains one, and KaTeX only when it has `$` math. GitHub-style alerts
  * (`> [!NOTE]`) become callout boxes, and remote images are limited to the technology logos on cdn.simpleicons.org.
  */
 interface RichOptions {
@@ -58,8 +58,13 @@ function renderAlerts(root: HTMLElement): void {
 }
 
 export async function renderRich(markdown: string, opts: RichOptions = {}): Promise<HTMLElement> {
-  const [{ marked }, { default: DOMPurify }] = await Promise.all([import("marked"), import("dompurify")]);
-  const html = await marked.parse(markdown, { gfm: true });
+  const [{ Marked }, { default: DOMPurify }] = await Promise.all([import("marked"), import("dompurify")]);
+  const md = new Marked({ gfm: true });
+  if (markdown.includes("$")) {
+    const [{ default: markedKatex }] = await Promise.all([import("marked-katex-extension"), import("katex/dist/katex.min.css")]);
+    md.use(markedKatex({ throwOnError: false, output: "html" }));
+  }
+  const html = await md.parse(markdown);
   const root = document.createElement("div");
   root.innerHTML = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
 

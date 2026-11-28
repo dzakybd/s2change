@@ -93,7 +93,7 @@ Each step was **switched off once** and the run repeated; "without it" is what c
 | Step | What it does | Without it | Verdict |
 |---|---|---|---|
 | 1️⃣ **Split into zones** | Uses the three pass pairs from section 2 and treats each on its own | One ruler for three different pairs: it finds <b class="bad">a third</b> as much real change (1.57 km², recall 0.17 → 0.06) | ✅ Needed |
-| 2️⃣ **Match brightness, per zone** | Fits the after image to the before image on ground that did not change, one line per zone and band (Canty & Nielsen 2008) | Haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>) | ✅ Needed |
+| 2️⃣ **Match brightness, per zone** | Fits the after image to the before image on ground that did not change, one line per zone and band (Schott et al. 1988; Canty & Nielsen 2008) | Haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>) | ✅ Needed |
 | 3️⃣ **Measure normal noise** | Learns how much colour flickers on unchanged ground, per zone and per brightness level | Bright mine ground looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km² | ✅ Needed |
 | 4️⃣ **Flag what noise rarely does** | Keeps a pixel only if noise would move it that far **1 time in 1,000** or less | — (this is the decision itself) | ✅ The core |
 | 5️⃣ **Skip the seams** | Ignores 90 m on each side of a seam (2.4 % of the site), where pixels mix two passes | 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b> | ✅ Needed |
@@ -112,6 +112,86 @@ Each step was **switched off once** and the run repeated; "without it" is what c
 *Most patches are specks: chance hits and the edges of real change. Real change is what is left: 223 polygons.*
 
 Co-registration was checked per zone (8 windows): shifts are at most 0.05 px, so nothing is resampled. A full run takes about 14 s on a laptop.
+
+### 📐 Step by step, with the equations
+
+![Zones and brightness matching in four panels: each file is two passes; overlaying the two seams gives three zones; one brightness line is fitted per zone on stable ground; after matching, stable ground sits on the no-difference line and change stands out](figures/17_zones_normalization.svg)
+
+*Panels 1–2 are a sketch; panels 3–4 are real pixels of the blue band (`scripts/fig_zones_normalization.py`).*
+
+**0. Pixel values to reflectance.** The files store Level-2A numbers with an offset of 1,000. Each band $b$ becomes surface reflectance, the share of sunlight the ground reflects (0 to 1):
+
+$$
+\rho_b = \frac{DN_b - 1000}{10\,000}
+$$
+
+**1. Split into zones.** A zone is a group of pixels that share the same *pair* of satellite passes.
+
+1. For every pixel, find the pass it was copied from, in the before file and in the after file. `s2cd provenance` reads every catalogue scene of those weeks onto the same grid and keeps the scene whose stored values match the pixel exactly (section 2, proof 2).
+2. Each file switches pass at one straight seam, so each file has two parts.
+3. Lay the two files over each other. Their seams are at slightly different places, so the site falls into **three** pass pairs: west, a thin middle strip and east (panels 1–2).
+
+$$
+z(p) = \big(\,s_{\text{before}}(p),\; s_{\text{after}}(p)\,\big)
+$$
+
+Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone. Nothing is tuned in this step: the files decide the zones. A check without the catalogue, which finds the straight brightness steps in the data alone, finds the same boundaries: 99 % of the pixels of each zone it finds fall inside one pass-pair zone.
+
+**2. Match brightness, one line per zone and band.** Inside one zone, both images come from one pass each, so the haze and sun difference between them is about the same everywhere in the zone. On ground that did not change, before and after then fall on a straight line (panel 3). The method fits that line and uses it to put the after image on the before image's scale. This is relative normalisation with pseudo-invariant (stable) pixels (Schott et al. 1988), fitted as in Canty & Nielsen (2008):
+
+$$
+\hat\rho^{\,\text{after}}_{b}(p) = a_{z,b} + c_{z,b}\,\rho^{\,\text{after}}_{b}(p)
+\qquad \text{for every pixel } p \text{ in zone } z
+$$
+
+1. **Start with all pixels of the zone** and fit $a$ and $c$ by orthogonal regression (total least squares). Both images are noisy, so the fit measures distance across the line, not only up and down; ordinary least squares would make the line too flat.
+2. **Drop pixels that do not follow the line.** For each pixel, take its distance from the line, $r$, in each band and turn it into a robust score:
+
+   $$
+   z_r = \frac{|\,r - \operatorname{median}(r)\,|}{1.4826\,\operatorname{MAD}(r)}
+   $$
+
+   A pixel with $z_r > 2.5$ in any band is probably real change, so it is left out.
+3. **Refit on the pixels that are left, and repeat** (5 rounds). What survives is the *stable ground*, 84–89 % of each zone. Real change never shapes the line.
+4. **Apply the line to every pixel of the zone,** changed or not. Stable ground now sits on the "no difference" line; real change stays off it (panel 4).
+
+The fitted lines differ a lot between zones, which is why one line for the whole site fails:
+
+| Zone | Slope $c$ (blue / green / red) | Offset $a$ (blue / green / red) | Stable ground |
+|---|---|---|---:|
+| 🟦 West | 1.84 / 1.63 / 1.50 | −0.114 / −0.092 / −0.086 | 88.6 % |
+| ▨ Middle strip | 1.26 / 1.19 / 1.08 | −0.044 / −0.043 / −0.037 | 84.8 % |
+| 🟧 East | 1.32 / 1.25 / 1.19 | −0.040 / −0.041 / −0.043 | 83.7 % |
+
+*A slope above 1 with a negative offset means the after file is hazier: haze adds light and flattens contrast, and the line stretches it back. The west zone, whose after pass is 2 Sep, needs the most.*
+
+**3. Measure normal noise.** After matching, the colour change of a pixel is a vector of three numbers, one per band:
+
+$$
+\Delta(p) = \hat\rho^{\,\text{after}}(p) - \rho^{\,\text{before}}(p)
+\in \mathbb{R}^{3}
+$$
+
+On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and plant growth make it flicker, and bright ground flickers more than dark ground. So each zone $z$ is split into 6 brightness classes $k$ (equal-count classes of the before image's brightness), and in each class the flicker of stable pixels is summarised by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (the 3 × 3 covariance between bands). For this, the stable set is looser, dropping only pixels with $z_r > 4$, so the real tails of the flicker are kept.
+
+**4. Flag what noise rarely does.** The score of a pixel is how far its change lies from normal flicker, measured in units of that flicker (the squared Mahalanobis distance):
+
+$$
+d^{2}(p) = \big(\Delta(p) - \mu_{z,k}\big)^{\top}\,\Sigma_{z,k}^{-1}\,\big(\Delta(p) - \mu_{z,k}\big)
+$$
+
+For pure noise in 3 bands, $d^2$ follows a chi-square distribution with 3 degrees of freedom, so the cut-off for a false-alarm rate $\alpha$ is known in advance:
+
+$$
+\text{change}(p) \iff d^{2}(p) > \chi^{2}_{3}(1-\alpha) = 16.27
+\qquad \text{with } \alpha = 10^{-3}
+$$
+
+The rate is then checked on stable pixels held out from fitting. Where a class is off target, its cut-off is set to the measured 99.9th percentile of its held-out $d^2$ instead. The result is 0.09–0.11 %, on target.
+
+**5. Skip the seams.** Pixels within 90 m of a seam mix two passes and are not scored: $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
+
+**6. Clean up.** Patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
 
 ### 🔬 On the real data
 
@@ -451,7 +531,8 @@ Security controls of the app are in [docs/system.md](https://github.com/dzakybd/
 
 - Malila (1980). [Change vector analysis: an approach for detecting forest changes with Landsat](https://docs.lib.purdue.edu/lars_symp/385/). LARS Symposia, paper 385. *Change vector analysis, section 3.*
 - Otsu (1979). [A threshold selection method from gray-level histograms](https://doi.org/10.1109/TSMC.1979.4310076). *IEEE Trans. SMC* 9(1):62–66. *The provided example's threshold, section 3.*
-- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, matching brightness per zone.*
+- Schott, Salvaggio & Volchok (1988). [Radiometric scene normalization using pseudoinvariant features](https://doi.org/10.1016/0034-4257(88)90116-2). *Remote Sens. Environ.* 26(1):1–16. *Step 2, the stable-ground (pseudo-invariant) idea behind matching brightness.*
+- Canty & Nielsen (2008). [Automatic radiometric normalization of multitemporal satellite imagery with the iteratively re-weighted MAD transformation](https://doi.org/10.1016/j.rse.2007.07.013). *Remote Sens. Environ.* 112:1025–1036. *Step 2, the iterative orthogonal-regression fit.*
 - Olofsson et al. (2014). [Good practices for estimating area and assessing accuracy of land change](https://doi.org/10.1016/j.rse.2014.02.015). *Remote Sens. Environ.* 148:42–57. *Section 5.*
 - Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample, section 5.*
 - Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ), section 5.*
