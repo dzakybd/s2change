@@ -6,7 +6,7 @@
 
 <a href="https://youtu.be/MBTmg62P2ew"><img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/video_thumb.jpg" width="720" alt="Video: 4.5-minute technical walkthrough on YouTube"></a>
 
-*Prefer watching? A 4.5-minute [technical walkthrough](https://youtu.be/MBTmg62P2ew). It was recorded before one cleanup step was simplified, so it shows 4.13 km² in 215 polygons where this report has 4.17 km² in 223.*
+*Prefer watching? A 4.5-minute [technical walkthrough](https://youtu.be/MBTmg62P2ew). We recorded it before simplifying one cleanup step, so it shows 4.13 km² in 215 polygons where this report has 4.17 km² in 223.*
 
 🧭 **The story, in order:** 📦 [the data](#-1-the-data) → 🪤 [a trap hidden in it](#-2-the-data-trap-each-date-is-two-passes) → ⚙️ [a method built around the trap](#-3-the-method) → 📍 [what changed](#-4-what-changed) → 🎯 [how accurate it is](#-5-how-accurate-is-it) → 🧭 [what it means](#-6-what-it-means) → 🏗️ [the system](#-7-the-system-stack-agent-and-database) → 🚧 [limits](#-8-limitations-and-next-steps).
 
@@ -34,9 +34,9 @@ The brief supplies two Sentinel-2 images of an open-pit copper mine in Zambia an
 | 🧪 Processing | Already corrected for the atmosphere by ESA (Level-2A, proved in section 2); stored numbers become reflectance with `(DN − 1000) / 10000` |
 
 > [!NOTE]
-> **Colour only (RGB).** Only the three colour bands are used: no infrared, no cloud mask, no elevation. The layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is an inference.
+> **Colour only (RGB).** We use only the three colour bands: no infrared, no cloud mask, no elevation. The layout matches the Lumwana copper mine; the brief only says "an open-pit mining site in Zambia", so the name is our inference.
 
-🏭 **What is on the ground.** To say *where* change happens, the mine's 8 facilities (pits, waste dumps, tailings, plant, town) were outlined on sharp aerial imagery and checked against the 2023 image (`configs/facility_register.yaml`, [on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities)):
+🏭 **What is on the ground.** To say *where* change happens, we outlined the mine's 8 facilities (pits, waste dumps, tailings, plant, town) on sharp aerial imagery and checked them against the 2023 image (`configs/facility_register.yaml`, [on the map](https://s2change.dzaky.ai.id/#/map?layer=facilities)):
 
 ![The 8 named facilities of the mine: pits, waste dumps, the tailings storage facility, the plant, the fresh-water dam, camp and town](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/09_facility_register.png)
 
@@ -65,13 +65,13 @@ Looking at the two images side by side, a straight diagonal line runs through bo
 </tr>
 </table>
 
-🔎 **Proof 1. One side is a known pass, the other is not.** The satellite took no image of the site on 12 Aug. So each file was compared with a real single pass that covers the whole site: before with *4 Jul*, after with *2 Sep*. West of the seam <b class="good">every pixel is identical</b> in all three bands; east of it, <b class="bad">none is</b>. The brightness jumps exactly at the seam (e): the edge of a pass, not something on the ground.
+🔎 **Proof 1. One side is a known pass, the other is not.** The satellite took no image of the site on 12 Aug. So we compared each file with a real single pass that covers the whole site: before with *4 Jul*, after with *2 Sep*. West of the seam <b class="good">every pixel is identical</b> in all three bands; east of it, <b class="bad">none is</b>. The brightness jumps exactly at the seam (e): the edge of a pass, not something on the ground.
 
 ![Each supplied file beside the full-coverage single pass found inside it, with the brightness profile across its seam](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/07_trap_proof.png)
 
 *Before with before, after with after: identical on one side of the yellow line, different on the other (`scripts/fig_trap_proof.py`).*
 
-🧬 **Proof 2. Every pixel traced to its pass.** All 55–56 archived images of the site from the 75 days before each date were compared with the files, pixel by pixel (`s2cd provenance`). Two images per date match every pixel exactly, and their records give the true dates. The two files switch pass at slightly different lines, so together they split the site into **three zones**:
+🧬 **Proof 2. Every pixel traced to its pass.** We compared all 55–56 archived images of the site from the 75 days before each date with the files, pixel by pixel (`s2cd provenance`). Two images per date match every pixel exactly, and their records give the true dates. The two files switch pass at slightly different lines, so together they split the site into **three zones**:
 
 ![Source pass of every pixel on both dates, the three zones they form, and the real time gap of each](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/06_provenance.png)
 
@@ -133,7 +133,7 @@ $$
 z(p) = \big(\,s_{\text{before}}(p),\; s_{\text{after}}(p)\,\big)
 $$
 
-Here $s(p)$ is the pass that pixel $p$ came from; each different pair is one zone. This grouping is this work's own; the passes and their dates come from the Sentinel-2 archive on Microsoft Planetary Computer. Nothing is tuned: the files decide the zones. A second check that uses only the images, by finding the straight brightness jumps, draws the same borders (99 % agreement).
+Here $s(p)$ is the pass that pixel $p$ came from; each different pair is one zone. This grouping is our own; the passes and their dates come from the Sentinel-2 archive on Microsoft Planetary Computer. Nothing is tuned: the files decide the zones. A second check that uses only the images, by finding the straight brightness jumps, draws the same borders (99 % agreement).
 
 ![Step 1 sketch: each file is two satellite passes stitched along a seam; the two seams sit at different places, so overlaying them gives three zones, west, a thin middle strip and east, each with its own pair of pass dates](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/17_step1_zones.svg)
 
@@ -156,7 +156,7 @@ $$
 \qquad \text{for every pixel } p \text{ in zone } z
 $$
 
-Here $c$ is the slope and $a$ the offset of the line, one pair per zone $z$ and band $b$. They are found in four steps:
+Here $c$ is the slope and $a$ the offset of the line, one pair per zone $z$ and band $b$. The method finds them in four steps:
 
 **2.1 Fit a line through all pixels of the zone.** Both images have noise, so the fit measures each pixel's distance straight across to the line (orthogonal regression), not only up and down; the usual least-squares fit would make the line too flat.
 
@@ -203,7 +203,7 @@ $$
 \in \mathbb{R}^{3}
 $$
 
-On stable ground $\Delta$ is not exactly zero. Sensor noise, tiny shifts and growing plants make it *flicker*, and bright ground flickers more than dark ground (figure below, A and B). So each zone $z$ is split into 6 brightness classes $k$, darkest to brightest, with equal pixel counts (this work's design). In each class, the flicker of stable pixels is summed up by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (how much each band varies and how the bands vary together, a 3 × 3 covariance). Here stable ground is defined more loosely ($z_r < 4$ instead of 2.5), so the rare large flickers are counted too.
+On stable ground $\Delta$ is not exactly zero. Sensor noise, tiny shifts and growing plants make it *flicker*, and bright ground flickers more than dark ground (figure below, A and B). So each zone $z$ is split into 6 brightness classes $k$, darkest to brightest, with equal pixel counts (our design). In each class, the flicker of stable pixels is summed up by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (how much each band varies and how the bands vary together, a 3 × 3 covariance). Here stable ground is defined more loosely ($z_r < 4$ instead of 2.5), so the rare large flickers are counted too.
 
 ![Steps 3 and 4 on real pixels: A and B, change vectors of held-out stable pixels in the darkest and brightest class of the west zone, with the 1-in-1,000 ellipse, which is bigger for bright ground; C, the score of held-out stable pixels lies below the cut-off of 16.27 while the pixels on the change map lie above it](https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/19_step3_4_noise.svg)
 
@@ -226,7 +226,7 @@ $$
 \qquad \text{with } \alpha = 10^{-3}
 $$
 
-**Checked, then corrected** (this work's own safeguard). The textbook cut-off assumes flicker follows a perfect bell curve, but real flicker has more extreme values. So 30 % of the stable pixels (in blocks of 32 × 32 pixels) were kept out of step 3 and used as a test. With the textbook cut-off, 0.36–1.2 % of them passed instead of 0.1 %. So each brightness class gets its own cut-off: the score that only 1 in 1,000 of its test pixels exceed (19.9 to 33.0). Scores are rescaled so the map keeps one cut-off, 16.27. On the test pixels the rate is then 0.09–0.11 %, on target.
+**Checked, then corrected** (our own safeguard). The textbook cut-off assumes flicker follows a perfect bell curve, but real flicker has more extreme values. So we kept 30 % of the stable pixels (in blocks of 32 × 32 pixels) out of step 3 and used them as a test. With the textbook cut-off, 0.36–1.2 % of them passed instead of 0.1 %. So each brightness class gets its own cut-off: the score that only 1 in 1,000 of its test pixels exceed (19.9 to 33.0). Scores are rescaled so the map keeps one cut-off, 16.27. On the test pixels the rate is then 0.09–0.11 %, on target.
 
 💡 **What "1 in 1,000" means.** Flicker alone passes the cut-off **1 pixel in 1,000**. The site has 2.6 million pixels, so about *2,600* (0.26 km²) pass by chance, as **lone specks**; real change passes as **solid patches**. Step 6 uses that difference.
 
@@ -239,7 +239,7 @@ $$
 
 #### 5. Skip the seams
 
-Pixels within 90 m of a seam are not scored (this work's rule): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
+Pixels within 90 m of a seam are not scored (our rule): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
 
 **Why skip them.** Steps 2–4 assume each zone behaves the same everywhere. Next to a seam it does not (figure below). In the first 10 m, 13 times as many pixels pass the cut-off as away from seams; 9 times at 10–20 m, 4 times at 20–30 m, and normal from about 40 m. The cause was not measured. Likely reasons: the seam is the edge of a pass, the 10 m pixel grid follows the slanted seam in steps, and the two passes are shifted very slightly. Either way, real change and seam errors cannot be told apart there, so the strip is left out rather than guessed.
 
@@ -253,7 +253,7 @@ Pixels within 90 m of a seam are not scored (this work's rule): $\operatorname{d
 
 #### 6. Clean up
 
-Like most maps, this one has a smallest patch it shows, the *minimum mapping unit*: 0.2 ha (2,000 m², 20 pixels), this work's choice, tested in the next subsection. Thin lines and specks are removed, smaller patches dropped and smaller holes filled.
+Like most maps, this one has a smallest patch it shows, the *minimum mapping unit*: 0.2 ha (2,000 m², 20 pixels), our choice, tested in the next subsection. Thin lines and specks are removed, smaller patches dropped and smaller holes filled.
 
 ❌ **Without it:** thousands of lone specks:
 
@@ -276,7 +276,7 @@ The two images line up: checked in 8 windows per zone, they are offset by at mos
 
 ### 🎚️ Would other settings give a different answer?
 
-Two numbers in the method are choices, not facts: **how strict the cut-off is** (step 4, 1 in 1,000) and **the smallest patch kept** (step 6, 2,000 m²). So the whole run was repeated with both made looser and stricter, 16 combinations in all. The extremes and our choice:
+Two numbers in the method are choices, not facts: **how strict the cut-off is** (step 4, 1 in 1,000) and **the smallest patch kept** (step 6, 2,000 m²). So we repeated the whole run with both looser and stricter, 16 combinations in all. The extremes and our choice:
 
 | Setting | Changed area | Share inside the mine |
 |---|---:|---:|
@@ -364,9 +364,9 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 </tr>
 </table>
 
-200 random points were checked by eye, 50 in each of four groups: both maps say change, only this map, only the provided method, neither. Each point is weighted by the size of its group, so one sample scores both maps fairly ([Olofsson et al. 2014](#ref-olofsson-2014); [Stehman 2014](#ref-stehman-2014)).
+We drew 200 random points, 50 in each of four groups: both maps say change, only this map, only the provided method, neither. Each point is weighted by the size of its group, so one sample scores both maps fairly ([Olofsson et al. 2014](#ref-olofsson-2014); [Stehman 2014](#ref-stehman-2014)).
 
-🏷️ **How the points were labelled:**
+🏷️ **Who labelled the points:**
 
 - **Two independent AI vision labellers**, from before/after image chips, blind to both maps.
 - Agreement 80 % (Cohen's κ 0.46, moderate; [Cohen 1960](#ref-cohen-1960)); the 40 disagreements settled by a third look with a wider view.
@@ -565,7 +565,7 @@ erDiagram
 ## 🚧 8. Limitations and next steps
 
 > [!WARNING]
-> **The map misses most subtle change.** Recall is <b class="bad">0.17 ± 0.11</b>: it is built to avoid false alarms, and three colour bands cannot separate faint tailings and burn changes from noise (the [five reasons](#-5-how-accurate-is-it)).
+> **The map misses most subtle change.** Recall is <b class="bad">0.17 ± 0.11</b>: we built it to avoid false alarms, and three colour bands cannot separate faint tailings and burn changes from noise (the [five reasons](#-5-how-accurate-is-it)).
 
 🔬 **Next validation step.** A human analyst relabels the 200 points, plus about 200 more in the "no change" groups, on very-high-resolution imagery from the same weeks (Planet or Esri Wayback). That tightens recall, replaces AI labels, and gives the first training set for a learned model; a per-type threshold would recover the missed tailings changes.
 
