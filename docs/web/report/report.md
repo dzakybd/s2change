@@ -225,7 +225,15 @@ This textbook cut-off assumes the flicker is a perfect bell curve. Real flicker 
 
 #### 5. Skip the seams
 
-Pixels within 90 m of a seam mix two passes and are not scored (this work's rule; 90 m is a choice): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
+Pixels within 90 m of a seam are not scored (this work's rule): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
+
+**Why skip them.** Steps 2 to 4 assume that each zone behaves the same everywhere. Next to a seam this fails: the change score is far noisier there than anywhere else (figure below). In the first 10 m, 13 times as many pixels pass the cut-off as away from the seams, 9 times at 10–20 m and 4 times at 20–30 m. From about 40 m on, the rate is the same as everywhere else. The cause was not measured separately. The seam is the edge of one pass's swath, so the likely reasons are edge effects in that pass, a 10 m pixel grid that follows the slanted seam in steps, and tiny shifts between the two passes. Whatever the cause, real change and seam errors cannot be told apart in this strip, so it is left out rather than guessed.
+
+**Why 90 m.** The noisy strip is about 30–40 m wide on each side. 90 m (9 pixels) is roughly twice that, a safety margin. It costs 2.4 % of the site. None of the real changes missed in section 5 lie in it: the nearest is 340 m from a seam.
+
+![Share of pixels past the cut-off by distance to the nearest seam: about 47 % in the first 10 m, falling to the site-wide level of 3.6 % by 40 m; the skipped strip covers 0 to 90 m](figures/20_step5_seam.svg)
+
+*Step 5 on real pixels (`scripts/fig_method_steps.py`): all pixels, before the seams are skipped. The level away from seams (3.6 %) is mostly real change in the mine.*
 
 ❌ **Without it:** 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b>.
 

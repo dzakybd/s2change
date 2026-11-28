@@ -3,6 +3,7 @@
     docs/figures/17_step1_zones.svg     step 1, how the site splits into three zones (schematic)
     docs/figures/18_step2_matching.svg  step 2, brightness matching, one line per zone (real pixels, blue band B02)
     docs/figures/19_step3_4_noise.svg   steps 3-4, normal flicker per brightness class and the d2 cut-off (real pixels)
+    docs/figures/20_step5_seam.svg      step 5, share of pixels past the cut-off by distance to the nearest seam (real pixels)
 
     uv run python scripts/fig_method_steps.py
 
@@ -117,7 +118,13 @@ def load_data() -> dict:
             "bright": float(np.median(bright[sel & norm.noise_pif])),
         }
     d2 = p.cva.d2
+    dist_m = p.seam_dist * p.before.grid.transform.a
+    past = np.nan_to_num(d2) > float(stats.chi2.isf(cfg.rule.far, len(cfg.bands)))
+    edges = np.arange(0, 310, 10)
+    seam = [float(past[p.valid & (dist_m >= lo) & (dist_m < lo + 10)].mean()) for lo in edges[:-1]]
     return {
+        "seam": (edges[:-1] + 5, np.array(seam), float(past[p.valid & (dist_m >= 100) & (dist_m < 300)].mean())),
+        "skipped_share": summary["valid_share_within_seam_buffer"],
         "fits": fits,
         "stable": stable,
         "shift": shift,
@@ -138,7 +145,9 @@ def txt(ax, x, y, s, size=BODY_PT, color=INK, ha="left", va="center", weight="no
 
 
 def header(ax, n: str, title: str, sub: str) -> None:
-    ax.text(0, 1.15, f"{n}  {title}", transform=ax.transAxes, fontsize=TITLE_PT, fontweight="bold", color=INK, va="bottom")
+    ax.text(
+        0, 1.15, f"{n}  {title}".strip(), transform=ax.transAxes, fontsize=TITLE_PT, fontweight="bold", color=INK, va="bottom"
+    )
     ax.text(0, 1.12, sub, transform=ax.transAxes, fontsize=SUB_PT, color=MUTED, va="top")
 
 
@@ -536,6 +545,42 @@ def panel_d2(ax, data: dict) -> None:
     )
 
 
+# step 5 -------------------------------------------------------------------------------------------------------------
+def panel_seam(ax, data: dict) -> None:
+    style_axes(ax)
+    mid, rate, plateau = data["seam"]
+    buf = data["seam_buffer_m"]
+    ax.axvspan(0, buf, color="#cbd5e1", alpha=0.5, lw=0, hatch="xxxx", ec="#94a3b8")
+    ax.axhline(plateau * 100, color=MUTED, lw=1.4, ls=(0, (5, 3)))
+    ax.plot(mid, rate * 100, color=RED, lw=3, marker="o", ms=6, zorder=3)
+    ax.set_xlim(0, 300)
+    ax.set_ylim(0, rate.max() * 110)
+    ax.set_xlabel("Distance to the nearest seam (m)", fontsize=BODY_PT, color=MUTED, labelpad=6)
+    ax.set_ylabel("Pixels past the cut-off (%)", fontsize=BODY_PT, color=MUTED, labelpad=6)
+    txt(
+        ax,
+        buf / 2,
+        rate.max() * 100 * 0.62,
+        f"skipped\n0–{buf} m\n({data['skipped_share'] * 100:.1f} % of the site)",
+        size=BODY_PT,
+        ha="center",
+        weight="bold",
+        color=INK,
+    )
+    txt(
+        ax,
+        295,
+        plateau * 100 + 1.6,
+        f"away from seams: {plateau * 100:.1f} %",
+        size=SMALL_PT + 0.5,
+        color=MUTED,
+        ha="right",
+        va="bottom",
+    )
+    for x, r in zip(mid[:3], rate[:3], strict=True):
+        txt(ax, x + 6, r * 100, f"{r / plateau:.0f}×", size=SMALL_PT + 0.5, color=RED, weight="bold", va="bottom")
+
+
 def save(fig, name: str) -> None:
     out = FIG / name
     fig.savefig(out, format="svg", bbox_inches="tight", facecolor="white", metadata={"Date": None})
@@ -600,6 +645,18 @@ def main() -> None:
     header(ax2, "B", "Same zone, bright ground", "Bright ground flickers more: a bigger ellipse")
     header(ax3, "C", "Step 4: one score, one cut-off", "d² = distance from normal flicker, in units of that flicker")
     save(fig, "19_step3_4_noise.svg")
+    fig = plt.figure(figsize=(16, 5.2), dpi=100, facecolor="white")
+    ax = fig.add_axes((0.06, 0.13, 0.92, 0.66))
+    panel_seam(ax, data)
+    header(
+        ax,
+        "",
+        "Step 5: the seam strip is unreliable",
+        "All pixels, all zones. Real change is spread evenly; seam errors pile up in the first 30–40 m",
+    )
+    save(fig, "20_step5_seam.svg")
+    mid, rate, plateau = data["seam"]
+    print("seam profile:", ", ".join(f"{m:.0f} m {r / plateau:.1f}x" for m, r in zip(mid[:6], rate[:6], strict=True)))
     for z, (slope, icpt) in data["fits"].items():
         print(f"zone {z} B02 fit matches run_summary.json: before = {slope:.6f} * after + {icpt:.6f}")
     for k, c in classes.items():
