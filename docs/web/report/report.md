@@ -4,9 +4,9 @@
 
 **Two free satellite images of one copper mine: what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/MBTmg62P2ew)
 
-<a href="https://s2change.dzaky.ai.id/web/video/s2change-explainer.mp4"><img src="figures/video_thumb.jpg" width="720" alt="Video: 2:48 plain-language explainer"></a>
+<a href="https://youtu.be/WTbyVi3259M"><img src="figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
 
-*Prefer watching? A [2:48 explainer](https://s2change.dzaky.ai.id/web/video/s2change-explainer.mp4) tells the same story in plain words.*
+*Prefer watching? A [2:52 explainer](https://youtu.be/WTbyVi3259M) tells the same story in plain words.*
 
 🧭 **The story, in order:** 📦 [the data](#-1-the-data) → 🪤 [a trap hidden in it](#-2-the-data-trap-each-date-is-two-passes) → ⚙️ [a method built around the trap](#-3-the-method) → 📍 [what changed](#-4-what-changed) → 🎯 [how accurate it is](#-5-how-accurate-is-it) → 🧭 [what it means](#-6-what-it-means) → 🏗️ [the system](#-7-the-system-stack-agent-and-database) → 🚧 [limits](#-8-limitations-and-next-steps).
 
@@ -235,7 +235,7 @@ $$
 | **Score** $d^2$ | <img src="figures/wide_05.jpg" width="300" alt="Change intensity, whole site"> | <img src="figures/close_05.jpg" width="300" alt="Change intensity, close-up"> |
 | **Flagged** | <img src="figures/wide_06.jpg" width="300" alt="Raw threshold, whole site"> | <img src="figures/close_06.jpg" width="300" alt="Raw threshold, close-up"> |
 
-*Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.74 km² in 4,479 patches.*
+*Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.81 km² in 4,543 patches.*
 
 #### 5️⃣ Skip the seams
 
@@ -253,26 +253,54 @@ Pixels within 90 m of a seam are not scored (our rule): $\operatorname{dist}(p, 
 
 #### 6️⃣ Clean up
 
-Like most maps, this one has a smallest patch it shows, the *minimum mapping unit*: 0.2 ha (2,000 m², 20 pixels), our choice, tested in the next subsection. Thin lines and specks are removed, smaller patches dropped and smaller holes filled.
+Like most maps, this one has a smallest patch it shows, the *minimum mapping unit*: 0.2 ha (2,000 m², 0.002 km², 20 pixels), our choice, tested in the next subsection. Thin lines and specks are removed, smaller patches dropped and smaller holes filled.
 
-❌ **Without it:** thousands of lone specks:
-
-| After step | Changed area | Patches | Of which smaller than 2,000 m² |
-|---|---:|---:|---:|
-| 4️⃣ Flag (1 in 1,000) | 6.74 km² | 4,479 | 4,189 |
-| 5️⃣ Skip the seams | 5.93 km² | 4,258 | 3,989 |
-| 6️⃣ Clean up | <b class="good">4.17 km²</b> | <b class="good">223</b> | 0 |
-
-*Most patches are specks: chance hits and the edges of real change. Real change is what is left: 223 polygons.*
+❌ **Without it:** 4,322 patches instead of 223, and 4,051 of them are specks smaller than 0.2 ha: chance hits and the ragged edges of real change (table below).
 
 | | Whole site | Close-up: tailings dam wall |
 |---|---|---|
 | **Seams skipped, cleaned** | <img src="figures/wide_07.jpg" width="300" alt="Cleaned change mask, whole site"> | <img src="figures/close_07.jpg" width="300" alt="Cleaned change mask, close-up"> |
 | 📤 **Typed and explained** | <img src="figures/wide_08.jpg" width="300" alt="Typed change polygons, whole site"> | <img src="figures/close_08.jpg" width="300" alt="Typed change polygons, close-up"> |
 
-*The result, <b class="good">4.17 km² in 223 polygons</b>. Each polygon then gets a likely type from its colour change and facility, and one plain sentence. Here: **Tailings dam wall likely raised**, 0.39 km², with the advice to check the dam-raise plan and inspect the embankment.*
+*The result, <b class="good">4.17 km² in 223 polygons</b>. Each polygon then gets a likely type from its colour change and facility, and one plain sentence. Here: **Tailings dam wall likely raised** (the app's label), 0.39 km², with the advice to check the dam-raise plan and inspect the embankment. The operator's public record shows no raise in 2023, so read it as earthworks or clearing on the wall ([section 6](#-what-public-sources-say)).*
 
 The two images line up: checked in 8 windows per zone, they are offset by at most 0.05 pixel (50 cm), so nothing is shifted or resampled. A full run takes about 14 s on a laptop.
+
+### 📉 How much each step removes
+
+Each row adds one step to the row above, on the same run (`scripts/funnel.py`, `data/processed/funnel.csv`). The first three rows keep the provided method's rule (colour distance with an automatic threshold), so only the input changes; from step 4 on, the noise test decides. *Raw* is the flagged area before any cleanup.
+
+| Step added | Flagged, raw | After cleanup | Patches |
+|---|---:|---:|---:|
+| Provided method, as is | <b class="bad">126.6 km²</b> | <b class="bad">111.4 km²</b> | 17,799 |
+| 2️⃣ Brightness matched, but one line for the whole site | 16.9 km² | 13.1 km² | 6,395 |
+| 1️⃣ 2️⃣ Three zones, brightness matched per zone | 9.7 km² | 7.0 km² | 3,927 |
+| 3️⃣ 4️⃣ Noise test: keep what flicker passes 1 in 1,000 | 6.8 km² | 4.5 km² | 4,543 |
+| 5️⃣ Seams skipped (90 m) | 6.0 km² | 4.2 km² | 4,322 |
+| 6️⃣ Cleanup (patches from 0.2 ha) | <b class="good">4.17 km²</b> | <b class="good">4.17 km²</b> | <b class="good">223</b> |
+
+💡 **What it shows.** Matching the brightness removes almost all of the false change: 127 → 17 km² with one line for the site, 9.7 km² with one line per zone. The haze and pass differences, not the method's threshold, were the provided method's real problem. The noise test then takes the result from a threshold that changes with every image pair to a fixed, measured false-alarm rate (1 in 1,000), and the last two steps remove the seam strip and the specks.
+
+### 📐 Why these numbers
+
+Every number in the method, what it is based on, and how it was checked. *Measured* means the value comes from this data; *choice* means a judgment, tested where marked.
+
+| Number | Value | Why | Basis |
+|---|---|---|---|
+| Reflectance offset and scale | −1,000, ÷ 10,000 | The product format since January 2022 | ESA rule ([ESA 2021](#ref-esa-2021)); the dark-pixel check in the code confirms the offset |
+| Zones | 3 | One per pair of passes | Measured: traced from the archive (section 2); an image-only check agrees on 99 % of pixels |
+| Line fit | Orthogonal regression | Both images have noise; an ordinary fit would make the line too flat | Standard for this task ([Canty & Nielsen 2008](#ref-canty-2008)) |
+| Drop from the fit when the robust score passes | 2.5 | Keeps the line on stable ground | Choice, tested: 2.0 and 3.0 change the west and east slopes by less than 0.5 %; only the thin middle strip moves (1.19 to 1.27) |
+| Fitting rounds | 5 | Until the stable set stops changing | Measured: from 5 to 8 rounds the slopes change by less than 1 % and the stable share by 0.1 point (85.7 → 85.6 %) |
+| Stable set for the noise model | robust score under 4 | Keeps the rare large flickers, so the noise is not underestimated | Choice: a looser cut than 2.5; at 4 only about 0.01 % of pure noise would be dropped |
+| Brightness classes per zone | 6 | Bright ground flickers more than dark ground | Measured: in the west zone the flicker grows from 0.0063 to 0.0097 (blue) and 0.0100 to 0.0128 (red) from the darkest to the brightest class; without classes, 22 times too many false alarms. Each class needs at least 500 stable pixels |
+| False-alarm rate | 1 in 1,000 | Lets about 2,600 chance pixels (0.26 km²) through, 6 % of the 4.17 km² result, as specks that step 6 removes | Choice, tested: from 1 in 100 to 1 in 100,000 the conclusions hold (next subsection) |
+| Held-out test pixels | 30 %, in 32 × 32 pixel blocks | Checks the false-alarm rate on pixels the model did not see; blocks of 320 m because neighbouring pixels are alike (correlation 0.65 at one pixel) | Choice; needs at least 20,000 test pixels per class to measure a 1-in-1,000 rate |
+| Seam strip | 90 m | The seam errors fade out by about 40 m; 90 m is about twice that | Measured (step 5 figure); costs 2.4 % of the site |
+| Line and speck removal | 10 m (one pixel) | Removes one- and two-pixel lines from small shifts between passes | Choice |
+| Smallest patch, and largest hole filled | 0.2 ha = 2,000 m² = 0.002 km² (20 pixels) | Removes the specks; a real change of mining interest (a tip face, a bench, a tailings beach) is larger | Choice, tested: 0.1 to 1 ha (next subsection); removes 4,099 specks for 1.8 km² |
+| Accuracy sample | 200 points, 50 per group | At least 50 per group is the usual minimum | [Olofsson et al. 2014](#ref-olofsson-2014) |
+| Facility outlines | about 50 m accuracy | Drawn by hand on sharp imagery | Choice; changes near an edge can fall in the neighbouring facility |
 
 ### 🎚️ Would other settings give a different answer?
 
@@ -321,7 +349,7 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 |---|---|---|---:|---:|---|
 | <img src="figures/icon_tailings_deposition.svg" width="20" alt=""> | Tailings deposition | mining activity | 63 | 1.86 km² | Wet slurry and drying beaches moving on the tailings facility |
 | <img src="figures/icon_waste_dumping.svg" width="20" alt=""> | Waste dumping | mining activity | 47 | 0.75 km² | Brighter, redder faces at dumps and pit edges: fresh oxidised rock |
-| <img src="figures/icon_tailings_dam_raise.svg" width="20" alt=""> | Tailings dam wall raised | mining activity | 4 | 0.44 km² | Fresh fill on the embankment where vegetation was |
+| <img src="figures/icon_tailings_dam_raise.svg" width="20" alt=""> | Tailings dam wall: earthworks | mining activity | 4 | 0.44 km² | Bare ground on the embankment where vegetation was; not a documented raise (section 6) |
 | <img src="figures/icon_seasonal_vegetation_or_burn.svg" width="20" alt=""> | Seasonal vegetation or burn | seasonal / vegetation | 22 | 0.39 km² | Dry-season browning or burn scars outside the mine |
 | <img src="figures/icon_pit_excavation.svg" width="20" alt=""> | Pit excavation | mining activity | 33 | 0.40 km² | Changes on pit steps (benches) and floors |
 | <img src="figures/icon_water_level_change.svg" width="20" alt=""> | Water level change | water change | 8 | 0.18 km² | Pond and pit-lake edges moving |
@@ -418,7 +446,7 @@ The real fix starts with **more and better labels**, so a few uncertain points n
 **In short:**
 
 - ⛏️ **The mine was working, not spreading.** Tailings spread, waste tipped, pits worked; outside the mine only 0.02 km² is clearing.
-- 🧱 **Fresh fill on the tailings dam's south-east wall, likely a wall raise:** <b class="hl">0.39 km²</b> where vegetation was. The first thing a dam-safety team would want to see.
+- 🧱 **Fresh earthworks on the tailings dam's south-east wall:** <b class="hl">0.39 km²</b> of bare ground where vegetation was. Not a documented raise: the operator reports none between 2013 and 2027, so maintenance or clearing is more likely. Still the first thing a dam-safety team would want to check.
 - 🪤 **The data had a trap**, and the provided method maps it as change (<b class="bad">111 km²</b>); found, proved and corrected.
 - 🎯 **Precise, not complete:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), but it finds only part of the subtle change (recall 0.17), because three colour bands cannot tell it from flicker. More bands and better labels would raise it.
 
@@ -426,7 +454,7 @@ The real fix starts with **more and better labels**, so a few uncertain points n
 
 | Category | Area | What it is |
 |---|---:|---|
-| ⛏️ Mining activity | <b class="hl">3.4 km²</b> | Tailings deposition, waste dumping, pit work, a likely dam-wall raise |
+| ⛏️ Mining activity | <b class="hl">3.4 km²</b> | Tailings deposition, waste dumping, pit work, earthworks on the dam wall |
 | 🌾 Seasonal vegetation | 0.39 km² | Dry-season browning or burns outside the mine |
 | 🪓 Land clearing | 0.02 km² | Outside the mine; no urban expansion |
 | 〰️ Noise and artifacts | 0.14 km² | Mostly removed by the seam handling; the rest labelled, with unexplained and small builds |
@@ -439,6 +467,18 @@ The real fix starts with **more and better labels**, so a few uncertain points n
 | Brighter and redder faces at dumps | Fresh waste rock | Sun 10° higher on slopes, dust | A same-season date; very-high-resolution imagery |
 | Bench changes inside pits | Excavation | Shadows shifting with the sun | Sun-matched pairs; elevation data |
 | Browner patches outside the mine | Grass drying or burning | Wet ground (RGB cannot separate them) | Fire records; recovery after rain |
+| Bare ground on the TSF wall where vegetation was | Earthworks or vegetation clearing on the embankment | A wall raise, but none is documented for 2013 to 2027 | The operator's construction records; a later date |
+
+### 📰 What public sources say
+
+The images show change, not its cause. Public records about the mine and the region support most of the reading and correct one part of it:
+
+| Finding here | What public sources say | Verdict |
+|---|---|---|
+| 🧱 Fresh earthworks on the tailings dam wall, July to August 2023 | The operator's tailings disclosure: the main embankment was "raised four times using the downstream construction method" and reached its current 48 m "in 2013"; "the next major construction stages are planned for 2027". The facility's consequence class is **High** ([Barrick 2025](#ref-barrick-2025)) | ❗ **Not a wall raise.** No raise is documented in 2023, so the change is more likely maintenance earthworks or vegetation clearing on the wall. It still deserves a look: a High-consequence dam is exactly where unexplained wall works matter |
+| ⛏️ Waste dumping and pit work | In October 2023 the mine was "ramping up owner mining with both the reopening of the Malundwe pit as well as delivery of the new owner mining pre-stripping fleet" ([Barrick 2023a](#ref-barrick-2023a)); a switch to an own "fleet for waste stripping" began in late 2022 ([Barrick 2023b](#ref-barrick-2023b); [International Mining 2023](#ref-im-2023)) | ✅ Consistent: more waste stripping and a reopened pit in 2023 |
+| 🌾 Browning and burn scars outside the mine; the hazier "after" image | Zambia has "no rain at all" in June to August; "in the middle to late dry season, bushfires are prevalent, and smoke is noticeable by smell and as a haze" ([Wikipedia, Climate of Zambia](#ref-wiki-zambia)) | ✅ Consistent: both dates fall in the dry season, and late-August smoke haze fits the haze that step 2 removes |
+| 🛡️ Why watch tailings walls at all | In February 2025 a tailings dam at another Zambian copper mine (Sino-Metals Leach, near Kitwe) collapsed and released about 50 million litres of acidic waste into the Kafue River system ([Daily Maverick 2025](#ref-dm-2025)) | Context only: a different mine and operator |
 
 > [!WARNING]
 > **Confidence is not accuracy.** "Confidence" is a change-magnitude score. Precision and recall are measured on a random sample ([how accurate](#-5-how-accurate-is-it)); a polygon's confidence is not its probability of being right.
@@ -603,6 +643,12 @@ Security controls of the app are in [docs/system.md](https://github.com/dzakybd/
 - <a id="ref-stehman-2014"></a>Stehman (2014). [Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes](https://doi.org/10.1080/01431161.2014.930207). *Int. J. Remote Sens.* 35(13):4923–4939. *Scoring both maps with one sample, section 5.*
 - <a id="ref-cohen-1960"></a>Cohen (1960). [A coefficient of agreement for nominal scales](https://doi.org/10.1177/001316446002000104). *Educ. Psychol. Meas.* 20(1):37–46. *Labeller agreement (κ), section 5.*
 - <a id="ref-aybar-2026"></a>Aybar et al. (2026). [A radiometrically and spatially consistent super-resolution framework for Sentinel-2](https://doi.org/10.1016/j.rse.2025.115222). *Remote Sens. Environ.* 334:115222. *SEN2SR, the map's 2.5 m display layer.*
+- <a id="ref-barrick-2025"></a>Barrick (2025). [GISTM Principle 15 public disclosure: Lumwana tailings storage facility](https://s25.q4cdn.com/322814910/files/doc_downloads/gistm/Lumwana-TSF_GISTM_Principle-15_2025_Final.pdf). 5 August 2025. *Raise history and consequence class of the tailings dam, section 6.*
+- <a id="ref-barrick-2023a"></a>Barrick (2023a). [Barrick strengthens Zambia partnership, invests in major expansion of Lumwana mine](https://s25.q4cdn.com/322814910/files/doc_news/2023/10/Barrick_Strengthens_Zambia_Partnership_Invests_in_Major_Expansion_of_Lumwana_Mine.pdf). News release, 4 October 2023. *Section 6.*
+- <a id="ref-barrick-2023b"></a>Barrick (2023b). [Third quarter 2023 management's discussion and analysis](https://s25.q4cdn.com/322814910/files/doc_financial/quarterly_results/2023/q3/Barrick_Q3_2023_MD-A.pdf). November 2023. *Section 6.*
+- <a id="ref-im-2023"></a>International Mining (2023). [Barrick's Lumwana copper mine in Zambia gearing up for the future](https://im-mining.com/2023/07/11/barricks-lumwana-copper-mine-in-zambia-gearing-up-for-the-future/). 11 July 2023. *Section 6.*
+- <a id="ref-dm-2025"></a>Daily Maverick (2025). [Massive environmental disaster unfolding as poison from Chinese mine flows down major Zambian river](https://www.dailymaverick.co.za/article/2025-03-25-massive-environmental-disaster-unfolding-as-poison-from-chinese-mine-flows-down-major-zambian-river/). 25 March 2025. *Section 6.*
+- <a id="ref-wiki-zambia"></a>Wikipedia (2026). [Climate of Zambia](https://en.wikipedia.org/wiki/Climate_of_Zambia). Accessed 28 November 2026. *Dry season and fire haze, section 6.*
 
 ---
 

@@ -1,0 +1,7 @@
+step,what,raw_km2,cleaned_km2,patches,patches_under_mmu
+0,"Provided method: colour distance, Otsu threshold",126.6,111.43,17799,16294
+2a,Brightness matched with one line for the whole site,16.89,13.11,6395,5848
+1+2,"Three zones, brightness matched per zone",9.7,7.01,3927,3522
+3+4,"Noise test: what flicker passes 1 in 1,000",6.81,4.51,4543,4251
+5,Seams skipped (90 m),6.0,4.17,4322,4051
+6,"Cleanup: specks under 0.2 ha dropped, holes filled",4.17,4.17,223,0
