@@ -12,7 +12,7 @@ import { Menu } from "../map/menu";
 import { MapStage } from "../map/stage";
 import { Swipe } from "../map/swipe";
 import { installTooltips } from "../map/tooltip";
-import { facilityCard, featureCard, legendHtml } from "../map/cards";
+import { facilityCard, featureCard, legendHtml, type StrengthRank } from "../map/cards";
 import type { ListUi } from "../map/changes";
 import { featureBounds, RunOverlay } from "../overlays";
 import type { Route } from "../router";
@@ -58,7 +58,7 @@ const TEMPLATE = `
       </div>
       <div class="oblique-panel glass" hidden>
         <label class="rng"><span>Bearing <output id="o-bearing-v">${DEFAULT_BEARING}°</output></span><input id="o-bearing" type="range" min="0" max="359" step="1" value="${DEFAULT_BEARING}" aria-label="Bearing in degrees"></label>
-        <label class="chk"><input id="o-extrude" type="checkbox" checked><span>Raise changes by confidence<small>Taller = stronger change. A data view, not terrain.</small></span></label>
+        <label class="chk"><input id="o-extrude" type="checkbox" checked><span>Raise changes by strength<small>Taller = stronger change. A data view, not terrain.</small></span></label>
       </div>
       <aside class="inspector glass" hidden aria-live="polite"></aside>
     </div>
@@ -95,9 +95,9 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     const legend = q(el, ".legend");
 
     /* Inspector */
-    const strongerThan = (c: number): number | null => {
+    const strongerThan = (c: number): StrengthRank | null => {
       const all = ds.changes.features.map((f) => f.properties.confidence).filter((v) => Number.isFinite(v));
-      return all.length && Number.isFinite(c) ? all.filter((v) => v < c).length / all.length : null;
+      return all.length && Number.isFinite(c) ? { below: all.filter((v) => v < c).length, total: all.length } : null;
     };
     const markSelected = (fid: number | null) => {
       selectedFid = fid;

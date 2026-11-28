@@ -14,14 +14,22 @@ const SOURCE = {
   area: "Area of the polygon: connected 10 m pixels flagged as changed by the calibrated change vector analysis, vectorised (algorithmic).",
   why: "Written by fixed rules (s2cd/interpret.py), not by AI: thresholds on RGB indices (water, greenness, redness, brightness) before and after, plus overlap with the analyst-drawn facility register. The numbers are this polygon's own.",
   type: "Assigned by the same fixed rules as Why this label; the category in brackets is a fixed mapping to the brief's change categories.",
-  confidence: "How far this change stands above the normal flicker between the two images, ranked against the other changes. Stored as the confidence score (0 at the detection threshold, 1 at 100 times it). Not a probability of being right: accuracy is measured separately (report, section 5).",
+  confidence: "Each pixel's change is measured against the normal flicker between the two images (its d²). At the detection threshold a pixel counts as changed; this polygon's pixels are on average this many times past it. Stored in the database as confidence = log10(d² ÷ threshold) ÷ 2, averaged over the polygon and kept between 0 and 1 (1 = 100 times the threshold). Not a probability of being right: accuracy is measured separately (report, section 5).",
   direction: "Algorithmic: mean brightness of the polygon after versus before.",
   facility: "Spatial overlay with the facility register, whose outlines were drawn by an analyst on very-high-resolution imagery.",
 };
 const tip = (label: string, key: keyof typeof SOURCE) => `<dt class="src" tabindex="0" data-tip="${esc(SOURCE[key])}">${label}</dt>`;
 
-/** `strongerThan`: share of this pair's changes with a lower confidence, to read the score against the others. */
-export function featureCard(p: ChangeProps, facilityName: string | null, strongerThan: number | null = null): string {
+/** How many changes of the same result have a lower confidence, out of how many. */
+export interface StrengthRank {
+  below: number;
+  total: number;
+}
+
+/** confidence = log10(d² / threshold) / 2, so the polygon's (geometric) mean d² is 10^(2 × confidence) times the threshold. */
+const timesThreshold = (conf: number) => (conf >= 1 ? "100× or more" : `about ${(10 ** (2 * conf)).toFixed(10 ** (2 * conf) < 10 ? 1 : 0)}×`);
+
+export function featureCard(p: ChangeProps, facilityName: string | null, rank: StrengthRank | null = null): string {
   const t = typeInfo(p.change_type);
   const conf = Math.max(0, Math.min(1, p.confidence));
   const why = p.explanation?.trim() || p.evidence?.trim();
@@ -32,7 +40,7 @@ export function featureCard(p: ChangeProps, facilityName: string | null, stronge
   <details class="tech" open><summary>Technical details</summary>
   <dl class="facts">
     <div>${tip("Change type", "type")}<dd>${esc(t.label)} <span class="muted">(${esc(p.brief_category || "change")})</span></dd></div>
-    <div>${tip("Change strength", "confidence")}<dd>${strongerThan === null ? `<span class="num">${p.confidence.toFixed(2)}</span>` : `Stronger than ${fmtPct(strongerThan)} of the changes`}<span class="meter" aria-hidden="true"><i style="width:${((strongerThan ?? conf) * 100).toFixed(0)}%"></i></span>${strongerThan === null ? "" : `<span class="muted conf-rank">score ${p.confidence.toFixed(2)} of 1</span>`}</dd></div>
+    <div>${tip("Change strength", "confidence")}<dd>${timesThreshold(conf)} the detection threshold<span class="meter" aria-hidden="true"><i style="width:${((rank ? rank.below / rank.total : conf) * 100).toFixed(0)}%"></i></span><span class="muted conf-rank">${rank ? `stronger than ${fmtInt(rank.below)} of the ${fmtInt(rank.total)} changes · ` : ""}confidence ${p.confidence.toFixed(2)}</span></dd></div>
     <div>${tip("Direction", "direction")}<dd>${esc(p.change_direction)}</dd></div>
     <div class="wide">${tip("Facility", "facility")}<dd>${p.facility_id ? `${esc(facilityName ?? p.facility_id)} <span class="muted">(${esc(p.facility_id)})</span>` : '<span class="muted">Outside the register</span>'}</dd></div>
   </dl></details>`;
