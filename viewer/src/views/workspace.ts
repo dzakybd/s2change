@@ -62,7 +62,6 @@ const TEMPLATE = `
       </div>
       <aside class="inspector glass" hidden aria-live="polite"></aside>
     </div>
-    <div class="result-chip glass" hidden><span></span><button type="button" class="btn ghost icon sm" aria-label="Remove query result from the map">×</button></div>
     <section class="legend glass" aria-label="Legend"></section>
     <div class="ws-loading"><span class="spinner"></span><span>Loading the map…</span></div>
   </div>
@@ -404,26 +403,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       if (!inspector.hidden) closeInspector();
     });
 
-    /* Query result from the Database tab */
-    const chip = q(el, ".result-chip");
-    let shownResult: unknown = null;
-    const syncQueryResult = () => {
-      const r = ctx.queryResult;
-      if (r === shownResult) return;
-      shownResult = r;
-      st.setQueryResult(r?.geojson ?? null);
-      chip.hidden = !r;
-      if (r) {
-        q(chip, "span").textContent = `${r.label} · ${r.geojson.features.length} feature${r.geojson.features.length === 1 ? "" : "s"}`;
-        const b = featureBounds(r.geojson.features as Feature[]);
-        if (b) st.fit(b, { padding: 110, maxZoom: 16 });
-      }
-    };
-    q(chip, "button").addEventListener("click", () => {
-      ctx.queryResult = null;
-      syncQueryResult();
-    });
-
     /* Analyst host */
     const runs = new RunOverlay(st.main, ds.changes);
     const fit = (features: Feature[], maxZoom: number) => {
@@ -525,7 +504,6 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
         const wantTrue = p.get("result") === "true";
         if (wantTrue ? ds.id !== TRUE_PASSES_ID : ds.id === TRUE_PASSES_ID) void setResult(wantTrue ? "true" : "mosaic");
         el.dataset["init"] = "1";
-        syncQueryResult();
       }
       requestAnimationFrame(() => st.resize());
     };

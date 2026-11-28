@@ -133,7 +133,6 @@ export class MapStage {
     await Promise.all(this.maps.map((m) => (m.loaded() ? Promise.resolve() : new Promise<void>((r) => m.once("load", () => r())))));
     await Promise.all(this.maps.map(addTypeIcons));
     for (const m of this.maps) this.addLayers(m);
-    this.addOverlayLayers(this.main);
     this.addFacilityLabels();
     this.buildChangeLabels();
     this.apply();
@@ -186,15 +185,6 @@ export class MapStage {
         "icon-pitch-alignment": "viewport",
       },
     });
-  }
-
-  /** Interaction layers that only exist on the interactive map. */
-  private addOverlayLayers(m: maplibregl.Map): void {
-    const empty: FeatureCollection = { type: "FeatureCollection", features: [] };
-    m.addSource("query-result", { type: "geojson", data: empty });
-    m.addLayer({ id: "query-fill", type: "fill", source: "query-result", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": "#c4b5fd", "fill-opacity": 0.28 } });
-    m.addLayer({ id: "query-line", type: "line", source: "query-result", paint: { "line-color": "#c4b5fd", "line-width": 2 } });
-    m.addLayer({ id: "query-pts", type: "circle", source: "query-result", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#c4b5fd", "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.5 } });
   }
 
   private addFacilityLabels(): void {
@@ -415,11 +405,7 @@ export class MapStage {
     }
   }
 
-  /* Query result and fitting */
-
-  setQueryResult(fc: FeatureCollection | null): void {
-    (this.main.getSource("query-result") as maplibregl.GeoJSONSource).setData(fc ?? { type: "FeatureCollection", features: [] });
-  }
+  /* Fitting */
 
   fit(b: maplibregl.LngLatBounds, opts: { padding?: maplibregl.PaddingOptions | number; maxZoom?: number } = {}): void {
     this.main.fitBounds(b, { padding: opts.padding ?? 80, maxZoom: opts.maxZoom ?? 17, duration: prefersReducedMotion() ? 0 : 800, easing: easeOut });

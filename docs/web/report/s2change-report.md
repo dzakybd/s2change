@@ -4,9 +4,9 @@
 
 **Two free satellite images of one copper mine: what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/MBTmg62P2ew)
 
-<a href="https://youtu.be/WTbyVi3259M"><img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
+<a href="https://youtu.be/8pGhwnsoD38"><img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
 
-*Prefer watching? A [2:52 explainer](https://youtu.be/WTbyVi3259M) tells the same story in plain words.*
+*Prefer watching? A [2:52 explainer](https://youtu.be/8pGhwnsoD38) tells the same story in plain words.*
 
 🧭 **The story, in order:** 📦 [the data](#-1-the-data) → 🪤 [a trap hidden in it](#-2-the-data-trap-each-date-is-two-passes) → ⚙️ [a method built around the trap](#-3-the-method) → 📍 [what changed](#-4-what-changed) → 🎯 [how accurate it is](#-5-how-accurate-is-it) → 🧭 [what it means](#-6-what-it-means) → 🏗️ [the system](#-7-the-system-stack-agent-and-database) → 🚧 [limits](#-8-limitations-and-next-steps).
 

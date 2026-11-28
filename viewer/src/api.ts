@@ -137,14 +137,12 @@ interface PageQuery {
   desc?: boolean;
   column?: string | undefined;
   value?: string | undefined;
-  geojson?: boolean;
 }
 export function dbPage(s: ReadyApi, table: string, q: PageQuery, signal?: AbortSignal): Promise<DbPage> {
   const p = new URLSearchParams({ page: String(q.page), size: String(q.size) });
   if (q.sort) p.set("sort", q.sort);
   if (q.desc) p.set("desc", "true");
   if (q.column !== undefined && q.value !== undefined) (p.set("column", q.column), p.set("value", q.value));
-  if (q.geojson) p.set("geojson", "true");
   return call<DbPage>(s, "GET", `/api/db/tables/${encodeURIComponent(table)}?${p}`, undefined, signal);
 }
 export const dbConnection = (s: ReadyApi) => call<DbConnection>(s, "GET", "/api/db/connection");

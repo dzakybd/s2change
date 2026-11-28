@@ -24,7 +24,7 @@ const LOADERS: Record<RouteName, { group: string; load: () => Promise<(ctx: AppC
 const main = document.getElementById("main") as HTMLElement;
 document.getElementById("brand-logo")!.innerHTML = logoSvg(28, "hdr");
 
-const ctx: AppContext = { api: resolveApi(), queryResult: null };
+const ctx: AppContext = { api: resolveApi() };
 void initAuth(ctx.api);
 mountAuthChip(document.getElementById("auth-chip") as HTMLElement, ctx.api);
 const views = new Map<string, Promise<View>>();

@@ -5,7 +5,7 @@ import { ApiError, dbConnection, dbExportUrl, dbPage, dbSchema, dbUri, friendlyE
 import { BLOB_URL, LIVE_URL, esc, fmtInt, q } from "../domain";
 import { renderRich } from "../rich";
 import type { Route } from "../router";
-import { hrefFor, replaceParams } from "../router";
+import { replaceParams } from "../router";
 import type { DbPage, DbTable } from "../types";
 import { withUnlock } from "../unlock";
 
@@ -173,7 +173,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       ].join("");
       const filter = state.filter ? `<span class="filter">Filtered: <b class="mono">${esc(state.filter.column)} = ${esc(state.filter.value)}</b><button type="button" class="linkish" data-clear>Clear</button></span>` : "";
       info.innerHTML = `<div class="ex-head"><div><h3 class="mono">${esc(t.table)}</h3><p>${esc(t.description)}</p></div>
-        <div class="ex-actions">${t.geometry ? '<button type="button" class="btn sm" data-map>Show these rows on the map</button>' : ""}<a class="btn sm" href="${dbExportUrl(api, t.table)}" download>Download table (.sql)</a></div></div>
+        <div class="ex-actions"><a class="btn sm" href="${dbExportUrl(api, t.table)}" download>Download table (.sql)</a></div></div>
         <div class="ex-meta">${meta}</div>${filter}`;
     }
 
@@ -243,7 +243,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       void load();
     }
 
-    body.addEventListener("click", async (e) => {
+    body.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
       const tab = t.closest<HTMLElement>(".ex-tab")?.dataset["table"];
       if (tab) return open({ table: tab, filter: null });
@@ -256,19 +256,6 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       if (sort) return open({ sort, desc: state.sort === sort ? !state.desc : false, page: 1 });
       const pg = t.closest<HTMLElement>("[data-page]")?.dataset["page"];
       if (pg) return open({ page: Number(pg) });
-      if (t.closest("[data-map]")) {
-        const btn = t.closest<HTMLButtonElement>("[data-map]")!;
-        btn.disabled = true;
-        try {
-          const p = await dbPage(api, state.table, { page: state.page, size: state.size, sort: state.sort, desc: state.desc, column: state.filter?.column, value: state.filter?.value, geojson: true });
-          if (p.geojson?.features.length) {
-            ctx.queryResult = { label: `${state.table}, page ${p.page}`, geojson: p.geojson };
-            location.hash = hrefFor("map");
-          }
-        } finally {
-          btn.disabled = false;
-        }
-      }
     });
     body.addEventListener("change", (e) => {
       const s = e.target as HTMLSelectElement;
