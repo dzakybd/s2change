@@ -202,6 +202,8 @@
   .tool { width: 36px; padding: 0; justify-content: center; }
 }
 @media (min-width: 721px) and (max-width: 1060px) { .swipe-label { bottom: 96px; } }
+/* An open change list covers the before label on narrower screens; the Comparing chip still shows both dates. */
+@media (max-width: 1060px) { .ws-stage:has(.legend:not(.collapsed)) .swipe-label.l { visibility: hidden; } }
 
 @media (max-width: 720px) {
   .menu-btn { min-width: 0; }
