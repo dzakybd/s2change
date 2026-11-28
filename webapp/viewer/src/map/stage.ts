@@ -1,4 +1,4 @@
-import type { FeatureCollection, Point } from "geojson";
+import type { Feature, FeatureCollection, Point } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, StyleSpecification } from "maplibre-gl";
@@ -114,7 +114,10 @@ export class MapStage {
     this.layer = opts.initialLayer;
     this.swipe = opts.initialSwipe;
     this.dataset = opts.dataset;
-    const common = { style: BASE_STYLE, bounds: featureBounds(opts.aoi.features) ?? undefined, fitBoundsOptions: { padding: 24 }, maxZoom: 19, maxPitch: 70 } as const;
+    // A phone is too narrow for the whole study area: start on the mine itself (the facility outlines).
+    const phone = opts.main.clientWidth < 720;
+    const start = (phone ? featureBounds(opts.dataset.facilities.features as Feature[]) : null) ?? featureBounds(opts.aoi.features);
+    const common = { style: BASE_STYLE, bounds: start ?? undefined, fitBoundsOptions: { padding: phone ? 12 : 24 }, maxZoom: 19, maxPitch: 70 } as const;
     this.main = new maplibregl.Map({ ...common, container: opts.main, attributionControl: { compact: true } });
     this.compare = new maplibregl.Map({ ...common, container: opts.compare, interactive: false, attributionControl: false });
     this.maps = [this.main, this.compare];

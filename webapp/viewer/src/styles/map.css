@@ -205,6 +205,7 @@
 @media (max-width: 1060px) { .ws-stage:has(.legend:not(.collapsed)) .swipe-label.l { visibility: hidden; } }
 
 @media (max-width: 720px) {
+  .swipe-label { bottom: 90px; } /* above the collapsed What changed bar */
   .menu-btn { min-width: 0; }
   .hud-row { flex-wrap: wrap; }
   .hud-row > .menu { flex: 1 1 100%; }
@@ -229,7 +230,6 @@
   .legend:has(.seg) { width: calc(100% - 24px); max-height: 52%; }
   .ch-list { max-height: 34vh; }
   .chg-label { max-width: 220px; font-size: 11px; }
-  .swipe-label { bottom: 90px; }
   .maplibregl-ctrl-bottom-right { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

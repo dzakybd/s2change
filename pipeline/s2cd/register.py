@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 import geopandas as gpd
@@ -22,6 +23,11 @@ from .io import Grid
 
 REGISTER = Path(__file__).resolve().parents[2] / "pipeline" / "config" / "facility_register.yaml"
 MINE_CLASSES = ("pit_dump_complex", "waste_dump", "tailings", "plant")  # the mine footprint; camp, town and dam are context
+
+
+def _km2(ha: float) -> str:
+    """Hectares as km² with two decimals, halves rounded up like the map (219.5 ha -> 2.20, where float formatting gives 2.19)."""
+    return str((Decimal(str(ha)) / 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 def load(path: Path = REGISTER) -> list[dict]:
@@ -76,7 +82,7 @@ def change_by_facility(facilities: gpd.GeoDataFrame, changes: gpd.GeoDataFrame) 
         by_fac = {f: dict(zip(g.change_type, g.ha, strict=True)) for f, g in top.groupby("facility_id")}
         out["change_types"] = [by_fac.get(f) for f in out.index]  # None where nothing changed
     out["summary"] = [
-        f"{n}: {c / 100:.2f} km² changed ({s:.0%} of {a / 100:.1f} km²)"
+        f"{n}: {_km2(c)} km² changed ({s:.0%} of {a / 100:.1f} km²)"
         + (f"; mostly {max(t, key=t.get).replace('_', ' ')}" if isinstance(t, dict) and t else "")
         for n, c, s, a, t in zip(
             out.name,
