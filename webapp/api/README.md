@@ -86,7 +86,7 @@ Report section 7 lists every endpoint; webapp/api/main.py has their exact shapes
 
 ## Access code
 
-Reading is public: the report, the map (the provided pair and the true-pass pair), downloads, the database explorer and SQL dumps, and every other `GET`. Two things need the access code: the agent chat (`POST /api/agent/chat`) and the full read-only database URI (`GET /api/db/connection/uri`). The code goes to evaluators with the submission.
+Reading is public: the report, the map (the provided pair and the true-pass pair), downloads, the database explorer and SQL dumps, and every other `GET`. Two things need the access code: the agent chat (`POST /api/agent/chat`) and the full read-only database URI (`GET /api/db/connection/uri`). The gate is optional: the live site runs without it (no `ACCESS_CODE_HASH`), relying on the rate limits and the daily cap.
 
 How it works (`webapp/api/auth.py`, standard library only): `POST /api/auth/login {code}` checks the code in constant time against `ACCESS_CODE_HASH` and sets the cookie `s2c_session` = `<issued-at>.<HMAC-SHA256>` (signed with `SESSION_SECRET`; `HttpOnly; Secure; SameSite=Strict; Path=/api`, 7 days). A gated endpoint without a valid cookie answers `401 {"detail": "This feature needs the access code."}`. Logins are limited to `LOGIN_RATE` per IP; a wrong code returns one generic 401. `POST /api/auth/logout` clears the cookie and `GET /api/auth/status` returns `{enabled, authenticated}`. The cookie is `Secure`, so use HTTPS (browsers also accept it on `http://localhost`).
 

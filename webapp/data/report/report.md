@@ -605,7 +605,7 @@ erDiagram
 
 ### 🔌 The API
 
-*Everything the map, the database tab and the agent read, at `https://s2change.dzaky.ai.id/api`. Reading is public; the two marked 🔑 need the access code.*
+*Everything the map, the database tab and the agent read, at `https://s2change.dzaky.ai.id/api`. Everything is public; requests are rate-limited per visitor.*
 
 | Method and path | Returns |
 |---|---|
@@ -618,20 +618,18 @@ erDiagram
 | `GET /api/db/tables/{table}?page=&size=&sort=&desc=&column=&value=` | One page of a table (10 to 100 rows), sortable and filterable on its own columns |
 | `GET /api/db/export.sql?table=` | A SQL dump: `CREATE TABLE` with the live constraints and one `INSERT` per row |
 | `GET /api/db/connection` | Server versions and the read-only connection string, password masked |
-| 🔑 `GET /api/db/connection/uri` | The full read-only connection string |
-| 🔑 `POST /api/agent/chat {messages}` | `{answer, actions, charts, tables, tool_calls}` |
-| `POST /api/auth/login {code}` · `/logout` · `GET /api/auth/status` | Sign in with the access code; a signed cookie, valid 7 days |
+| `GET /api/db/connection/uri` | The full read-only connection string |
+| `POST /api/agent/chat {messages}` | `{answer, actions, charts, tables, tool_calls}` |
 
 ### 🔐 Security
 
-*The public site is read-only by construction; what costs compute or LLM budget sits behind an access code.*
+*The public site is read-only by construction; what costs compute or LLM budget is rate-limited and capped.*
 
 | | Control | What it does |
 |---|---|---|
 | 🗄️ | Read-only database role | The API and the agent connect as `s2cd_reader`: `SELECT` only, read-only transactions, 5 s timeout. Writes fail in the database itself |
 | 🧱 | SQL guard | The agent's `readonly_sql` passes a sqlglot check: one `SELECT`, allow-listed tables, no DDL, DML or system functions, `LIMIT` at most 200. The database tab runs no free SQL |
-| ⏱️ | Rate limits | Per IP: chat 6/min, table pages 60/min, SQL dumps 6/min, login 5/min; 300 chat calls a day for the whole service |
-| 🔑 | Access code | Checked against a salted PBKDF2 hash; earns an `HttpOnly`, `Secure`, `SameSite=Strict` cookie |
+| ⏱️ | Rate limits | Per IP: chat 6/min, table pages 60/min, SQL dumps 6/min; 300 chat calls a day for the whole service |
 | 🤫 | Secrets | Keys, passwords and the cookie secret live only in the server's `.env`, never in git; errors shown to users are generic |
 | 🌐 | Transport | TLS at Caddy, HSTS, a Content-Security-Policy limited to this site and the map tiles, `X-Frame-Options: DENY`; request bodies capped at 64 KB |
 | 🤖 | LLM hardening | Only the 11 typed tools; user and tool text is treated as data; no tool writes, so an injection can at worst give a wrong read-only answer |

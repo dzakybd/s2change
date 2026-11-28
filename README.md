@@ -36,7 +36,7 @@ Without `DATABASE_URL` the run skips the database step and says so.
 
 The results are also in a hosted PostGIS, which you can query or run the app against without any setup:
 
-1. Open the [Database tab](https://s2change.dzaky.ai.id/#/database), press **Unlock** and enter the access code from the submission email. Copy the read-only connection string (`s2cd_reader`: `SELECT` only, 5 s per query).
+1. Open the [Database tab](https://s2change.dzaky.ai.id/#/database), press **Copy URI** to get the read-only connection string (`s2cd_reader`: `SELECT` only, 5 s per query).
 2. Query it with any client, for example `psql "<uri>" -c "SELECT change_type, round(sum(area_m2)) FROM change_features GROUP BY 1"`, or add it in QGIS as a PostGIS connection (the `change_features_wgs84` view is in lon/lat).
 3. Or run the app locally on it:
 
@@ -46,7 +46,7 @@ READER_DATABASE_URL='<uri>' uv run uvicorn api.main:app --app-dir webapp --port 
 cd webapp/viewer && npm ci && npm run dev                               # http://localhost:5173 (proxies /api to :8000)
 ```
 
-Locally there is no access code, so everything is open. The agent chat also needs `GEMINI_API_KEY`; everything else works without it. Without the code, the Database tab still browses every table and downloads each one as a SQL dump (`psql -f table.sql` into any PostGIS).
+The agent chat also needs `GEMINI_API_KEY`; everything else works without it. The Database tab can also download each table as a SQL dump (`psql -f table.sql` into any PostGIS).
 
 ## What you get
 
@@ -120,6 +120,6 @@ Settings (thresholds, minimum patch size, seam buffer) are in `pipeline/config/d
 
 ## The app (optional)
 
-Everything above runs offline. The app at [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) shows the same results without installing anything: the report, a map with before/after swipe, the facilities, a database explorer and downloads. The analyst agent and the full database URI need the access code from the submission email.
+Everything above runs offline. The app at [s2change.dzaky.ai.id](https://s2change.dzaky.ai.id) shows the same results without installing anything: the report, a map with before/after swipe, the facilities, a database explorer, downloads and the analyst agent. Nothing needs a login; requests are rate-limited per visitor, and the agent has a daily cap.
 
 Running the app yourself needs a PostGIS database and an LLM key: see [webapp/api/README.md](webapp/api/README.md). Architecture, agent, database, API and security are in [report section 7](report.md#-7-the-system-stack-agent-and-database).
