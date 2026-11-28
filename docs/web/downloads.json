@@ -73,6 +73,40 @@
      "image": "previews/data_processed_change_significance_tif.webp"
     },
     {
+     "path": "data/processed/change_map_baseline.tif",
+     "title": "change_map_baseline.tif",
+     "desc": "The provided method's change intensity: colour distance between the dates, scaled 0 to 254.",
+     "size": "1.5 MB",
+     "kind": "magnitude",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "euclidean distance, min-max scaled 0-254"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "255"
+      ]
+     ],
+     "image": "previews/data_processed_change_map_baseline_tif.webp"
+    },
+    {
      "path": "data/processed/change_binary.tif",
      "title": "change_binary.tif",
      "desc": "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
@@ -247,6 +281,256 @@
       ]
      ],
      "image": "previews/data_processed_sentinel2_20230902_stack_normalized_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "How the method sees the scene",
+   "blurb": "The intermediate layers behind steps 1 and 5 of the report: which pass each pixel came from and the zones matched separately.",
+   "items": [
+    {
+     "path": "data/processed/provenance/source_scene.tif",
+     "title": "source_scene.tif",
+     "desc": "Which satellite pass each pixel was taken from; band 1 for the earlier image, band 2 for the later.",
+     "size": "36 KB",
+     "kind": "zones",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "source 2023-08-12, source 2023-09-02"
+      ],
+      [
+       "Type",
+       "int8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-1"
+      ]
+     ],
+     "image": "previews/data_processed_provenance_source_scene_tif.webp"
+    },
+    {
+     "path": "data/processed/radiometric_zones.tif",
+     "title": "radiometric_zones.tif",
+     "desc": "The three zones (pass pairs) whose brightness is matched separately; -1 = no data.",
+     "size": "42 KB",
+     "kind": "zones",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "zone id (provenance)"
+      ],
+      [
+       "Type",
+       "int16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-1"
+      ]
+     ],
+     "image": "previews/data_processed_radiometric_zones_tif.webp"
+    },
+    {
+     "path": "data/processed/stripe_zones_detected.tif",
+     "title": "stripe_zones_detected.tif",
+     "desc": "The same zones found from the pixels alone, without the scene metadata, as a cross-check.",
+     "size": "50 KB",
+     "kind": "zones",
+     "facts": [
+      [
+       "Size",
+       "1,673 × 1,597 px"
+      ],
+      [
+       "Bands",
+       "data-driven stripe zone id"
+      ],
+      [
+       "Type",
+       "int16"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "10 m"
+      ],
+      [
+       "No data",
+       "-1"
+      ]
+     ],
+     "image": "previews/data_processed_stripe_zones_detected_tif.webp"
+    }
+   ]
+  },
+  {
+   "title": "Super-resolved 2.5 m true colour (map backdrop only)",
+   "blurb": "SEN2SR (ESA OpenSR) sharpens the 10 m bands to 2.5 m. The fine detail is a model estimate, so it is used only as the map backdrop, never for change detection. 8-bit display colour (scripts/super_resolution.py).",
+   "items": [
+    {
+     "path": "data/processed/super_resolution/sentinel2_20230812_sr_2p5m.tif",
+     "title": "sentinel2_20230812_sr_2p5m.tif",
+     "desc": "The image labelled 2023-08-12 at 2.5 m.",
+     "size": "5.9 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/data_processed_super_resolution_sentinel2_20230812_sr_2p5m_tif.webp"
+    },
+    {
+     "path": "data/processed/super_resolution/sentinel2_20230902_sr_2p5m.tif",
+     "title": "sentinel2_20230902_sr_2p5m.tif",
+     "desc": "The image labelled 2023-09-02 at 2.5 m.",
+     "size": "4.9 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/data_processed_super_resolution_sentinel2_20230902_sr_2p5m_tif.webp"
+    },
+    {
+     "path": "data/processed/super_resolution/true_passes_20230808_sr_2p5m.tif",
+     "title": "true_passes_20230808_sr_2p5m.tif",
+     "desc": "The true single pass of 2023-08-08 at 2.5 m.",
+     "size": "6.1 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/data_processed_super_resolution_true_passes_20230808_sr_2p5m_tif.webp"
+    },
+    {
+     "path": "data/processed/super_resolution/true_passes_20230902_sr_2p5m.tif",
+     "title": "true_passes_20230902_sr_2p5m.tif",
+     "desc": "The true single pass of 2023-09-02 at 2.5 m.",
+     "size": "4.5 MB",
+     "kind": "photo",
+     "facts": [
+      [
+       "Size",
+       "6,692 × 6,388 px"
+      ],
+      [
+       "Bands",
+       "band 1, band 2, band 3"
+      ],
+      [
+       "Type",
+       "uint8"
+      ],
+      [
+       "CRS",
+       "EPSG:32735"
+      ],
+      [
+       "Pixel",
+       "2.5 m"
+      ],
+      [
+       "No data",
+       "none"
+      ]
+     ],
+     "image": "previews/data_processed_super_resolution_true_passes_20230902_sr_2p5m_tif.webp"
     }
    ]
   },
@@ -727,22 +1011,423 @@
    ]
   },
   {
+   "title": "Numbers and checks",
+   "blurb": "The tables behind the report's figures, and the accuracy check.",
+   "items": [
+    {
+     "path": "data/processed/run_summary.json",
+     "title": "run_summary.json",
+     "desc": "Every number the pipeline measured on its last run.",
+     "size": "10 KB",
+     "kind": "text",
+     "document": "previews/data_processed_run_summary_json.md"
+    },
+    {
+     "path": "data/processed/funnel.csv",
+     "title": "funnel.csv",
+     "desc": "How much flagged area each step of the method removes.",
+     "size": "1 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "6"
+      ],
+      [
+       "Columns",
+       "6: step, what, raw_km2, cleaned_km2, patches, patches_under_mmu"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "step",
+       "what",
+       "raw_km2",
+       "cleaned_km2",
+       "patches",
+       "patches_under_mmu"
+      ],
+      "rows": [
+       [
+        "0",
+        "Provided method: colour distance, Otsu threshold",
+        "126.6",
+        "111.43",
+        "17799",
+        "16294"
+       ],
+       [
+        "2a",
+        "Brightness matched with one line for the whole site",
+        "16.89",
+        "13.11",
+        "6395",
+        "5848"
+       ],
+       [
+        "1+2",
+        "Three zones, brightness matched per zone",
+        "9.7",
+        "7.01",
+        "3927",
+        "3522"
+       ],
+       [
+        "3+4",
+        "Noise test: what flicker passes 1 in 1,000",
+        "6.81",
+        "4.51",
+        "4543",
+        "4251"
+       ],
+       [
+        "5",
+        "Seams skipped (90 m)",
+        "6.0",
+        "4.17",
+        "4322",
+        "4051"
+       ],
+       [
+        "6",
+        "Cleanup: specks under 0.2 ha dropped, holes filled",
+        "4.17",
+        "4.17",
+        "223",
+        "0"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "data/processed/sensitivity.csv",
+     "title": "sensitivity.csv",
+     "desc": "Changed area under other threshold and minimum-area settings.",
+     "size": "1 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "16"
+      ],
+      [
+       "Columns",
+       "7: far, mmu_ha, changed_ha, changed_pct_of_aoi, share_in_mine_footprint, share_in_register_mine_classes, is_default"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "far",
+       "mmu_ha",
+       "changed_ha",
+       "changed_pct_of_aoi",
+       "share_in_mine_footprint",
+       "share_in_register_mine_classes",
+       "is_default"
+      ],
+      "rows": [
+       [
+        "0.01",
+        "0.1",
+        "695.4",
+        "2.63",
+        "0.668",
+        "0.667",
+        "False"
+       ],
+       [
+        "0.01",
+        "0.2",
+        "669.2",
+        "2.53",
+        "0.667",
+        "0.67",
+        "False"
+       ],
+       [
+        "0.01",
+        "0.5",
+        "622.6",
+        "2.35",
+        "0.664",
+        "0.672",
+        "False"
+       ],
+       [
+        "0.01",
+        "1.0",
+        "579.9",
+        "2.19",
+        "0.658",
+        "0.674",
+        "False"
+       ],
+       [
+        "0.001",
+        "0.1",
+        "434.3",
+        "1.64",
+        "0.797",
+        "0.804",
+        "False"
+       ],
+       [
+        "0.001",
+        "0.2",
+        "417.2",
+        "1.58",
+        "0.802",
+        "0.81",
+        "True"
+       ],
+       [
+        "0.001",
+        "0.5",
+        "387.2",
+        "1.46",
+        "0.806",
+        "0.82",
+        "False"
+       ],
+       [
+        "0.001",
+        "1.0",
+        "354.8",
+        "1.34",
+        "0.804",
+        "0.832",
+        "False"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "data/validation/sample.csv",
+     "title": "sample.csv",
+     "desc": "The 160 check points, drawn at random within strata.",
+     "size": "10 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "200"
+      ],
+      [
+       "Columns",
+       "9: id, stratum, row, col, x, y, ours, base, ours_type"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "id",
+       "stratum",
+       "row",
+       "col",
+       "x",
+       "y",
+       "ours",
+       "base",
+       "ours_type"
+      ],
+      "rows": [
+       [
+        "P001",
+        "3",
+        "1382",
+        "728",
+        "375715.0",
+        "8639945.0",
+        "0",
+        "1",
+        ""
+       ],
+       [
+        "P002",
+        "3",
+        "713",
+        "458",
+        "373015.0",
+        "8646635.0",
+        "0",
+        "1",
+        ""
+       ],
+       [
+        "P003",
+        "1",
+        "669",
+        "1117",
+        "379605.0",
+        "8647075.0",
+        "1",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P004",
+        "3",
+        "1446",
+        "621",
+        "374645.0",
+        "8639305.0",
+        "0",
+        "1",
+        ""
+       ],
+       [
+        "P005",
+        "1",
+        "1160",
+        "1139",
+        "379825.0",
+        "8642165.0",
+        "1",
+        "1",
+        "waste_dumping"
+       ],
+       [
+        "P006",
+        "1",
+        "531",
+        "1147",
+        "379905.0",
+        "8648455.0",
+        "1",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P007",
+        "2",
+        "692",
+        "195",
+        "370385.0",
+        "8646845.0",
+        "1",
+        "0",
+        "waste_dumping"
+       ],
+       [
+        "P008",
+        "2",
+        "812",
+        "786",
+        "376295.0",
+        "8645645.0",
+        "1",
+        "0",
+        "infrastructure_or_settlement"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "data/validation/labels_adjudicated.csv",
+     "title": "labels_adjudicated.csv",
+     "desc": "The labels where the two passes disagreed, after review.",
+     "size": "1 KB",
+     "kind": "csv",
+     "facts": [
+      [
+       "Rows",
+       "40"
+      ],
+      [
+       "Columns",
+       "3: id, change, type"
+      ]
+     ],
+     "sample": {
+      "columns": [
+       "id",
+       "change",
+       "type"
+      ],
+      "rows": [
+       [
+        "P002",
+        "1",
+        "waste_dumping"
+       ],
+       [
+        "P005",
+        "1",
+        "waste_dumping"
+       ],
+       [
+        "P006",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P008",
+        "1",
+        "water_level_change"
+       ],
+       [
+        "P010",
+        "1",
+        "construction_or_road"
+       ],
+       [
+        "P014",
+        "1",
+        "tailings_deposition"
+       ],
+       [
+        "P015",
+        "1",
+        "vegetation_loss_or_burn"
+       ],
+       [
+        "P031",
+        "1",
+        "construction_or_road"
+       ]
+      ]
+     }
+    },
+    {
+     "path": "data/validation/accuracy.json",
+     "title": "accuracy.json",
+     "desc": "Precision, recall and their confidence intervals for both methods.",
+     "size": "1 KB",
+     "kind": "text",
+     "document": "previews/data_validation_accuracy_json.md"
+    }
+   ]
+  },
+  {
+   "title": "Database",
+   "blurb": "PostGIS schema and example queries; the live tables are in the Database tab.",
+   "items": [
+    {
+     "path": "sql/schema_postgis.sql",
+     "title": "schema_postgis.sql",
+     "desc": "Tables, geometry columns and indexes of the change database.",
+     "size": "3 KB",
+     "kind": "text",
+     "document": "previews/sql_schema_postgis_sql.md"
+    },
+    {
+     "path": "sql/queries_postgis.sql",
+     "title": "queries_postgis.sql",
+     "desc": "Example spatial queries (area by type, changes per facility, and more).",
+     "size": "5 KB",
+     "kind": "text",
+     "document": "previews/sql_queries_postgis_sql.md"
+    }
+   ]
+  },
+  {
    "title": "Documents",
    "blurb": "",
    "items": [
     {
-     "path": "docs/api.md",
-     "title": "api.md",
-     "desc": "Every HTTP endpoint behind the map, database console and agent, with request and response shapes.",
-     "size": "4 KB",
-     "kind": "markdown",
-     "document": "previews/api.md"
-    },
-    {
      "path": "report.md",
      "title": "report.md",
      "desc": "The full write-up, as shown in the Report tab.",
-     "size": "59 KB",
+     "size": "62 KB",
      "kind": "report"
     }
    ]

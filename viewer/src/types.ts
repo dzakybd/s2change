@@ -109,7 +109,7 @@ export interface AgentResponse {
   tool_calls: AgentToolCall[];
 }
 
-/* API payloads (docs/api.md) */
+/* API payloads (report section 7, The API) */
 
 interface DbColumn {
   name: string;

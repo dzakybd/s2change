@@ -2,7 +2,7 @@
 
 One place to evaluate the whole take-home: a Vite + strict TypeScript + MapLibre GL app with four hash-routed tabs
 (`#/report`, `#/map`, `#/database`, `#/downloads`). The agent is a panel on the map (`#/map?agent=1`); `#/agent` and `#/analyst` open that panel. Live at
-https://s2change.dzaky.ai.id, also buildable for GitHub Pages.
+https://s2change.dzaky.ai.id.
 
 | Tab | What it does | Needs the API? |
 |---|---|---|
@@ -15,7 +15,7 @@ https://s2change.dzaky.ai.id, also buildable for GitHub Pages.
 ```bash
 npm install
 npm run dev        # http://localhost:5173, serves ../docs/web at /web/, proxies /api to :8000
-npm run build      # typecheck + bundle into ../docs/viewer/ (GitHub Pages, data at ../web/)
+npm run build      # typecheck + bundle into dist/
 npm run build:site # bundle into dist-site/ for a site root, data at ./web/ (VITE_DATA_BASE=./web/)
 npm run preview    # serves the built app and /web/ locally (`vite preview --outDir dist-site` for the site build)
 ```
@@ -31,17 +31,17 @@ uv run python -m s2cd.site   # docs/web/downloads.json + previews/, facilities/ 
 - Hash routes are deep links, and map state lives in the hash: `#/map?layer=facilities&swipe=0`.
   Layers: `types` (default), `after`, `before`, `intensity`, `facilities`.
 - `?mock` serves every API call from `fixtures/` (`fixtures/agent/*.json` for the chat, `fixtures/api/*.json` for the
-  database, dates, comparison job and brief). `?mock=429` / `?mock=error` simulate chat failures.
+  database and the brief). `?mock=429` / `?mock=error` simulate chat failures.
 - `?api=<url>` points at another backend, e.g. `?api=http://127.0.0.1:8000`.
 - `?data=<url>` overrides the data location (otherwise `VITE_DATA_BASE`, then `../web/`).
-- On `*.github.io`, or when `/api/health` fails, live features show a calm explanation linking to the live site.
+- When `/api/health` fails, live features show a calm explanation linking to the live site.
 - Open the map with any URL, then `window.__stage` exposes the two synced MapLibre maps (used by screenshots).
 
 ## Structure
 
 `src/main.ts` is the shell and router; each view loads on demand, so the entry bundle stays small and MapLibre only
 loads with the Map and Analyst tabs. `src/map/` holds the map engine (`stage.ts`), layer definitions, cards, the
-AOI geometry and the swipe. `src/api.ts` is the typed client for `docs/api.md`; `src/mock.ts` is the
+AOI geometry and the swipe. `src/api.ts` is the typed client for the API (report section 7); `src/mock.ts` is the
 fixture backend. `src/rich.ts` renders sanitised Markdown (marked + DOMPurify) for the report and the brief.
 
 Motion is deliberately small: ease-out on enter, 150-220 ms, a 0.97 press scale, no animation on keyboard actions

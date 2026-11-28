@@ -7,7 +7,7 @@ import { renderRich } from "../rich";
 import { hrefFor } from "../router";
 
 /** docs/web/downloads.json, written by `python -m s2cd.site` from the files themselves (sizes, previews, samples). */
-type Kind = "rgb" | "magnitude" | "binary" | "vector" | "markdown" | "report";
+type Kind = "rgb" | "photo" | "magnitude" | "zones" | "binary" | "vector" | "csv" | "text" | "markdown" | "report";
 interface Item {
   path: string;
   title: string;
@@ -23,7 +23,8 @@ interface Catalogue {
   groups: { title: string; blurb: string; items: Item[] }[];
 }
 
-const FORMAT: Record<Kind, string> = { rgb: "GeoTIFF", magnitude: "GeoTIFF", binary: "GeoTIFF", vector: "GeoJSON", markdown: "Markdown", report: "Markdown" };
+const FORMAT: Partial<Record<Kind, string>> = { rgb: "GeoTIFF", photo: "GeoTIFF", magnitude: "GeoTIFF", zones: "GeoTIFF", binary: "GeoTIFF", vector: "GeoJSON", csv: "CSV", markdown: "Markdown", report: "Markdown" };
+const format = (i: Item) => FORMAT[i.kind] ?? (i.path.split(".").pop() ?? "").toUpperCase();
 const DL = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2v8m-3-3 3 3 3-3M3 13h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 /** The preview inside a card: the rendered image, the table list, or the start of the document. */
@@ -43,7 +44,7 @@ function card(i: Item, key: string): string {
   const media = `<span class="dl-media${i.image ? " img" : ""}">${thumb(i)}${previewable ? '<span class="dl-zoom">Preview</span>' : ""}</span>`;
   return `<article class="card dl-card">
     ${previewable ? `<button type="button" class="dl-open" data-key="${key}" aria-label="Preview ${esc(i.title)}">${media}</button>` : `<a class="dl-open" href="${hrefFor("report")}" aria-label="Open the Report tab">${media}</a>`}
-    <div class="dl-top"><h3 class="mono">${esc(i.title)}</h3><span class="pill">${FORMAT[i.kind]}</span></div>
+    <div class="dl-top"><h3 class="mono">${esc(i.title)}</h3><span class="pill">${format(i)}</span></div>
     <p>${esc(i.desc)}</p>
     <div class="dl-foot"><span class="muted num">${esc(i.size)}</span>${action(i)}</div>
   </article>`;
@@ -78,7 +79,7 @@ function openPreview(i: Item): void {
   const dlg = document.createElement("dialog");
   dlg.className = "dl-pv";
   dlg.setAttribute("aria-labelledby", "dl-pv-title");
-  dlg.innerHTML = `<header><div><h2 id="dl-pv-title" class="mono">${esc(i.title)}</h2><span class="muted">${FORMAT[i.kind]} · ${esc(i.size)}</span></div><div class="dl-pv-act">${action(i)}<button type="button" class="btn sm ghost" data-close aria-label="Close">Close</button></div></header><div class="dl-pv-scroll"><p class="muted"><span class="spinner"></span> Loading…</p></div>`;
+  dlg.innerHTML = `<header><div><h2 id="dl-pv-title" class="mono">${esc(i.title)}</h2><span class="muted">${format(i)} · ${esc(i.size)}</span></div><div class="dl-pv-act">${action(i)}<button type="button" class="btn sm ghost" data-close aria-label="Close">Close</button></div></header><div class="dl-pv-scroll"><p class="muted"><span class="spinner"></span> Loading…</p></div>`;
   const scroll = q(dlg, ".dl-pv-scroll");
   const close = () => {
     if (prefersReducedMotion() || dlg.classList.contains("closing")) return dlg.close();

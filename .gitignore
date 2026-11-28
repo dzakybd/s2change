@@ -10,6 +10,5 @@ viewer/dist/
 data/cache/
 .env
 
-data/compare/
 data/scenes/
 data/experiments/

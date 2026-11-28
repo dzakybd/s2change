@@ -13,6 +13,8 @@ def reader() -> Engine:
     url = os.environ.get("READER_DATABASE_URL")
     if not url:
         raise RuntimeError("READER_DATABASE_URL is not set")
+    if url.startswith("postgresql://"):  # the plain URI the Database tab hands out; the installed driver is psycopg 3
+        url = "postgresql+psycopg://" + url.removeprefix("postgresql://")
     return create_engine(url, pool_pre_ping=True, pool_size=5, max_overflow=5)
 
 

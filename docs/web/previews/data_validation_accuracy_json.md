@@ -1,0 +1,81 @@
+```json
+{
+  "n": 200,
+  "labeller_agreement": 0.8,
+  "cohen_kappa": 0.458,
+  "maps": {
+    "ours": {
+      "overall_accuracy": [
+        0.9424781079724476,
+        0.02096676413635045
+      ],
+      "user_accuracy_change": [
+        0.668695862569562,
+        0.054523432977691015
+      ],
+      "producer_accuracy_change": [
+        0.16635811453580293,
+        0.05664227552657132
+      ],
+      "mapped_change_km2": 4.133
+    },
+    "base": {
+      "overall_accuracy": [
+        0.6163170140967724,
+        0.02096676413635045
+      ],
+      "user_accuracy_change": [
+        0.11906286793211385,
+        0.04158622302927252
+      ],
+      "producer_accuracy_change": [
+        0.7986241680950595,
+        0.15696782914110513
+      ],
+      "mapped_change_km2": 111.4336
+    }
+  },
+  "reference_change_km2": [
+    16.613076000000003,
+    5.547201947671202
+  ],
+  "ours_change_points_confirmed_by_type": {
+    "infrastructure_or_settlement": [
+      1,
+      1
+    ],
+    "noise_or_artifact": [
+      3,
+      7
+    ],
+    "pit_excavation": [
+      1,
+      4
+    ],
+    "seasonal_vegetation_or_burn": [
+      17,
+      23
+    ],
+    "tailings_dam_raise": [
+      3,
+      6
+    ],
+    "tailings_deposition": [
+      19,
+      37
+    ],
+    "unexplained": [
+      0,
+      2
+    ],
+    "waste_dumping": [
+      12,
+      18
+    ],
+    "water_level_change": [
+      1,
+      2
+    ]
+  }
+}
+```

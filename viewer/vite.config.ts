@@ -17,9 +17,8 @@ const MIME: Record<string, string> = {
 };
 
 /**
- * Serves ../docs/web at /web/ for `vite dev` and `vite preview`, so the viewer's default
- * data path (../web/ relative to index.html) resolves exactly like it does on GitHub Pages
- * (docs/viewer/ next to docs/web/). Nothing is copied: the build never touches docs/web.
+ * Serves ../docs/web at /web/ for `vite dev` and `vite preview`, as Caddy does in production.
+ * Nothing is copied: the build never touches docs/web.
  */
 function serveDocsWeb(): Plugin {
   const middleware: Connect.NextHandleFunction = (req, res, next) => {
@@ -47,7 +46,7 @@ export default defineConfig({
   server: { proxy: apiProxy },
   preview: { proxy: apiProxy },
   build: {
-    outDir: "../docs/viewer",
+    outDir: "dist",
     emptyOutDir: true,
     chunkSizeWarningLimit: 1500,
   },

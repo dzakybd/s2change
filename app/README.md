@@ -1,6 +1,6 @@
 # s2cd app: results, database explorer and the analyst
 
-The single place to inspect the solution, so evaluators never need a database client. A FastAPI service over the PostGIS results (the provided pair), a database explorer and a small grounded analyst agent (in the spirit of Solafune's ShigenBot) that answers with numbers taken from tools and returns **map actions, charts and tables**. The endpoint contract is `docs/api.md`; the evidence is RGB only (B02, B03, B04) and two dates.
+The single place to inspect the solution, so evaluators never need a database client. A FastAPI service over the PostGIS results (the provided pair), a database explorer and a small grounded analyst agent (in the spirit of Solafune's ShigenBot) that answers with numbers taken from tools and returns **map actions, charts and tables**. The endpoints are listed in report section 7 (The API); the evidence is RGB only (B02, B03, B04) and two dates.
 
 ```mermaid
 flowchart LR
@@ -57,7 +57,7 @@ The database step of `s2cd run` (`s2cd.db.write_postgis`) runs `sql/schema_postg
 
 ## API
 
-See `docs/api.md` for every endpoint and its shape. By module:
+Report section 7 lists every endpoint; app/main.py has their exact shapes. By module:
 
 - `app/results.py` (shared by the endpoints and the agent tools): `resolve_run`, `change_type_summary`, `facility_rows`, `facilities_geojson`, and `brief`, a deterministic markdown monitoring brief (headline, top facilities, change types, caveats, follow-up list) built from the database with no LLM.
 - `app/explorer.py`: `/api/db/schema` (tables with description, row counts, columns, keys from the live constraints, geometry SRID), `/api/db/tables/{table}` (one page; table, sort and filter names checked against the catalogue, values bound), `/api/db/export.sql` (a SQL dump that loads into any PostGIS) and `/api/db/connection` (versions and the masked read-only URI; the full URI needs the access code).

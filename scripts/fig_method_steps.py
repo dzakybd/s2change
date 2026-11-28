@@ -151,10 +151,6 @@ def header(ax, n: str, title: str, sub: str) -> None:
     ax.text(0, 1.12, sub, transform=ax.transAxes, fontsize=SUB_PT, color=MUTED, va="top")
 
 
-def arrow(ax, p0, p1, color=MUTED, lw=1.6) -> None:
-    ax.annotate("", xy=p1, xytext=p0, arrowprops={"arrowstyle": "-|>", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0})
-
-
 def canvas(ax, width: float) -> float:
     """Free drawing area where one x unit and one y unit are the same length on the page; returns the y extent."""
     box = ax.get_position()

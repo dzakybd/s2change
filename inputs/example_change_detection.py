@@ -1,7 +1,11 @@
 import numpy as np
+from typing import Tuple
 
 
-def compute_change_distance(image_before: np.ndarray, image_after: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def compute_change_distance(
+    image_before: np.ndarray,
+    image_after: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Compute change detection between two co-registered images using
     Euclidean distance in feature space.

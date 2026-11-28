@@ -1,1 +1,0 @@
-var e={answer:`This is the **mock agent**: canned answers stand in for the live backend. Try one of the suggested questions to see charts, tables, map actions and the tool-call trace.`,actions:[],charts:[],tables:[],tool_calls:[]};export{e as default};

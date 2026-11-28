@@ -1,7 +1,0 @@
-var e={answer:`**413 ha** changed between nominal 2023-08-12 and 2023-09-02 (215 polygons), about **1.56%** of the area of interest.
-
-- **81%** of it lies inside the mine footprint; the tailings facility alone accounts for 194 ha.
-- The largest classes are tailings deposition (185 ha), waste dumping (129 ha) and seasonal vegetation or burn (36 ha).
-- The provided Euclidean baseline flags 11,143 ha because mosaic seams and haze read as change; the two maps overlap only 3% (IoU).
-
-The chart splits the changed area by type.`,actions:[{type:`show_run`,run_id:`assignment`}],charts:[{type:`bar`,title:`Changed area by type (ha)`,x:[`tailings deposition`,`waste dumping`,`seasonal vegetation or burn`,`pit excavation`,`water level change`,`noise or artifact`,`unexplained`,`infrastructure or settlement`,`land clearing`,`mine expansion clearing`],series:[{name:`ha`,y:[185.3,128.9,36.4,25.8,18.3,8.9,4.5,4,1,.2]}]},{type:`bar`,title:`Changed area by method (ha)`,x:[`Robust CVA`,`Euclidean`],series:[{name:`ha`,y:[413.3,11143.36]}]}],tables:[{title:`Facilities by changed area`,columns:[`Facility`,`Class`,`Changed (ha)`,`Share of facility`],rows:[[`Tailings storage facility`,`tailings`,193.6,.086],[`South pit complex`,`pit_dump_complex`,37.7,.019],[`Eastern waste dumps`,`waste_dump`,36.2,.083],[`North-west pit complex`,`pit_dump_complex`,33.6,.03],[`Process plant and central yard`,`plant`,4.9,.025]]}],tool_calls:[{name:`run_summary`,args:{run_id:`assignment`}},{name:`query_facilities`,args:{order_by:`changed_ha desc`,limit:5}}]};export{e as default};

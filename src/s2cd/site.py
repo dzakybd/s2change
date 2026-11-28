@@ -8,7 +8,7 @@ Writes, under docs/web/ (served at /web/ by the live site and by GitHub Pages):
   overlays, centred on the facility (before, and normalized after with the detected change outlined in yellow), shown
   in the report's facility table;
 * downloads.json and previews/*: the Downloads catalogue with each file's real size and a preview rendered from the file
-  (a quick-look image of every GeoTIFF and GeoJSON, a copy of api.md);
+  (a quick-look image of every GeoTIFF and GeoJSON, a sample of every table);
 * report/report.md and report/figures/*: report.md with its images copied (docs/figures, or any repo-relative path
   such as the logo in viewer/public/ and the facility thumbnails) and the links rewritten so the document renders from
   docs/web/report/; report/s2change-report.md is the downloadable copy, with images loaded from GitHub.
@@ -110,10 +110,12 @@ def thumbnails(out: Path = WEB / "facilities") -> dict[str, dict[str, str]]:
 # Downloads: the file catalogue and a preview of each file
 
 PREVIEW_PX = 560  # long side of a preview image
+TEXT_LINES = 160  # lines of a JSON or SQL file shown in its preview
 NO_DATA_RGB = (241, 243, 246)
 
-# (group, blurb, [(repo path, description, preview kind)]). Preview kinds: rgb (B02/B03/B04 stack), magnitude (a
-# continuous change layer), binary (0/1/255), vector (GeoJSON), markdown, report (the Report tab itself).
+# (group, blurb, [(repo path, description, preview kind)]). Preview kinds: rgb (B02/B03/B04 stack), photo (8-bit
+# display RGB), magnitude (a continuous layer), zones (integer ids), binary (0/1/255), vector (GeoJSON), csv, text
+# (JSON or SQL shown as code), markdown, report (the Report tab itself).
 DOWNLOADS = [
     (
         "Change maps",
@@ -121,6 +123,11 @@ DOWNLOADS = [
         [
             ("data/processed/change_map.tif", "Robust change magnitude per pixel (log10 d²).", "magnitude"),
             ("data/processed/change_significance.tif", "−log10 p of the change under the noise model.", "magnitude"),
+            (
+                "data/processed/change_map_baseline.tif",
+                "The provided method's change intensity: colour distance between the dates, scaled 0 to 254.",
+                "magnitude",
+            ),
             (
                 "data/processed/change_binary.tif",
                 "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
@@ -151,6 +158,55 @@ DOWNLOADS = [
                 "data/processed/sentinel2_20230902_stack_normalized.tif",
                 "The later date after per-zone radiometric normalisation.",
                 "rgb",
+            ),
+        ],
+    ),
+    (
+        "How the method sees the scene",
+        "The intermediate layers behind steps 1 and 5 of the report: which pass each pixel came from and the zones"
+        " matched separately.",
+        [
+            (
+                "data/processed/provenance/source_scene.tif",
+                "Which satellite pass each pixel was taken from; band 1 for the earlier image, band 2 for the later.",
+                "zones",
+            ),
+            (
+                "data/processed/radiometric_zones.tif",
+                "The three zones (pass pairs) whose brightness is matched separately; -1 = no data.",
+                "zones",
+            ),
+            (
+                "data/processed/stripe_zones_detected.tif",
+                "The same zones found from the pixels alone, without the scene metadata, as a cross-check.",
+                "zones",
+            ),
+        ],
+    ),
+    (
+        "Super-resolved 2.5 m true colour (map backdrop only)",
+        "SEN2SR (ESA OpenSR) sharpens the 10 m bands to 2.5 m. The fine detail is a model estimate, so it is used only"
+        " as the map backdrop, never for change detection. 8-bit display colour (scripts/super_resolution.py).",
+        [
+            (
+                "data/processed/super_resolution/sentinel2_20230812_sr_2p5m.tif",
+                "The image labelled 2023-08-12 at 2.5 m.",
+                "photo",
+            ),
+            (
+                "data/processed/super_resolution/sentinel2_20230902_sr_2p5m.tif",
+                "The image labelled 2023-09-02 at 2.5 m.",
+                "photo",
+            ),
+            (
+                "data/processed/super_resolution/true_passes_20230808_sr_2p5m.tif",
+                "The true single pass of 2023-08-08 at 2.5 m.",
+                "photo",
+            ),
+            (
+                "data/processed/super_resolution/true_passes_20230902_sr_2p5m.tif",
+                "The true single pass of 2023-09-02 at 2.5 m.",
+                "photo",
             ),
         ],
     ),
@@ -197,14 +253,29 @@ DOWNLOADS = [
         ],
     ),
     (
+        "Numbers and checks",
+        "The tables behind the report's figures, and the accuracy check.",
+        [
+            ("data/processed/run_summary.json", "Every number the pipeline measured on its last run.", "text"),
+            ("data/processed/funnel.csv", "How much flagged area each step of the method removes.", "csv"),
+            ("data/processed/sensitivity.csv", "Changed area under other threshold and minimum-area settings.", "csv"),
+            ("data/validation/sample.csv", "The 160 check points, drawn at random within strata.", "csv"),
+            ("data/validation/labels_adjudicated.csv", "The labels where the two passes disagreed, after review.", "csv"),
+            ("data/validation/accuracy.json", "Precision, recall and their confidence intervals for both methods.", "text"),
+        ],
+    ),
+    (
+        "Database",
+        "PostGIS schema and example queries; the live tables are in the Database tab.",
+        [
+            ("sql/schema_postgis.sql", "Tables, geometry columns and indexes of the change database.", "text"),
+            ("sql/queries_postgis.sql", "Example spatial queries (area by type, changes per facility, and more).", "text"),
+        ],
+    ),
+    (
         "Documents",
         "",
         [
-            (
-                "docs/api.md",
-                "Every HTTP endpoint behind the map, database console and agent, with request and response shapes.",
-                "markdown",
-            ),
             ("report.md", "The full write-up, as shown in the Report tab.", "report"),
         ],
     ),
@@ -234,6 +305,7 @@ def _raster_preview(path: Path, kind: str, out: Path) -> list[list[str]]:
         shape = (src.count, round(src.height * scale), round(src.width * scale))
         a = src.read(out_shape=shape).astype("float32")
         nodata = src.nodata
+        mask = src.read_masks(1, out_shape=shape[1:])
         facts = [
             ["Size", f"{src.width:,} × {src.height:,} px"],
             ["Bands", ", ".join(d or f"band {i + 1}" for i, d in enumerate(src.descriptions))],
@@ -245,6 +317,11 @@ def _raster_preview(path: Path, kind: str, out: Path) -> list[list[str]]:
     valid = np.all(a != nodata, axis=0) & np.all(np.isfinite(a), axis=0) if nodata is not None else np.all(np.isfinite(a), axis=0)
     if kind == "rgb":
         img = np.stack([_stretch(a[b], valid) ** 0.8 for b in (2, 1, 0)], axis=-1)
+    elif kind == "photo":
+        img = np.moveaxis(a[:3], 0, -1) / 255
+        valid = mask > 0
+    elif kind == "zones":
+        img = colormaps["tab10"](np.clip(a[0], 0, 9).astype(int) % 10)[..., :3]
     elif kind == "magnitude":
         img = colormaps["magma"](_stretch(a[0], valid, 2, 99.5) ** 0.6)[..., :3]
     else:  # binary: change in orange on slate
@@ -304,6 +381,15 @@ def _vector_preview(path: Path, out: Path) -> tuple[list[list[str]], dict]:
     return facts, {"columns": shown, "rows": rows}
 
 
+def _csv_preview(path: Path, n: int = 8) -> tuple[list[list[str]], dict]:
+    import csv
+
+    with path.open(newline="") as f:
+        rows = list(csv.reader(f))
+    head, body = rows[0], rows[1:]
+    return [["Rows", f"{len(body):,}"], ["Columns", f"{len(head)}: {', '.join(head)}"]], {"columns": head, "rows": body[:n]}
+
+
 def _cell(v) -> str:
     if isinstance(v, float):
         return f"{v:,.2f}"
@@ -325,12 +411,20 @@ def downloads(out: Path = WEB / "previews") -> list[dict]:
                 continue
             slug = re.sub(r"[^a-z0-9]+", "_", repo_path.lower()).strip("_")
             item = {"path": repo_path, "title": path.name, "desc": desc, "size": _size(path.stat().st_size), "kind": kind}
-            if kind in ("rgb", "magnitude", "binary"):
+            if kind in ("rgb", "photo", "magnitude", "zones", "binary"):
                 item["facts"] = _raster_preview(path, kind, out / f"{slug}.webp")
                 item["image"] = f"previews/{slug}.webp"
             elif kind == "vector":
                 item["facts"], item["sample"] = _vector_preview(path, out / f"{slug}.webp")
                 item["image"] = f"previews/{slug}.webp"
+            elif kind == "csv":
+                item["facts"], item["sample"] = _csv_preview(path)
+            elif kind == "text":
+                lines = path.read_text().splitlines()
+                more = f"\n… {len(lines) - TEXT_LINES:,} more lines in the file" if len(lines) > TEXT_LINES else ""
+                fence = "json" if path.suffix == ".json" else "sql"
+                (out / f"{slug}.md").write_text(f"```{fence}\n" + "\n".join(lines[:TEXT_LINES]) + f"\n```{more}\n")
+                item["document"] = f"previews/{slug}.md"
             elif kind == "markdown":
                 shutil.copyfile(path, out / path.name)
                 item["document"] = f"previews/{path.name}"

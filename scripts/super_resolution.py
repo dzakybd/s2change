@@ -10,7 +10,7 @@ read here because the model needs it, from the same source scenes as each analys
 * true passes:   the scenes of data/experiments/scenes (scripts/real_dates.py), in the order they were mosaicked.
 
 Writes sr_before.webp / sr_after.webp next to each pair's overlays (docs/web, docs/web/true_passes) and adds them to its
-manifest.json.
+manifest.json, plus a georeferenced 8-bit true-colour GeoTIFF of each image in data/processed/super_resolution/.
 """
 
 from __future__ import annotations
@@ -33,14 +33,15 @@ STAC_CACHE = Path("data/cache/stac")
 SCALE = 4
 PATCH, STRIDE = 128, 96
 PROVENANCE = Path("data/processed/provenance")
+TIF_DIR = Path("data/processed/super_resolution")
 PAIRS = {
     Path("docs/web"): {
-        "before": (Path("inputs/data/sentinel2_20230812"), 0),
-        "after": (Path("inputs/data/sentinel2_20230902"), 1),
+        "before": (Path("inputs/data/sentinel2_20230812"), 0, "sentinel2_20230812_sr_2p5m.tif"),
+        "after": (Path("inputs/data/sentinel2_20230902"), 1, "sentinel2_20230902_sr_2p5m.tif"),
     },
     Path("docs/web/true_passes"): {
-        "before": (Path("data/experiments/scenes/sentinel2_20230808"), None),
-        "after": (Path("data/experiments/scenes/sentinel2_20230902"), None),
+        "before": (Path("data/experiments/scenes/sentinel2_20230808"), None, "true_passes_20230808_sr_2p5m.tif"),
+        "after": (Path("data/experiments/scenes/sentinel2_20230902"), None, "true_passes_20230902_sr_2p5m.tif"),
     },
 }
 
@@ -123,15 +124,29 @@ def super_resolve(model, device: str, folder: Path, provenance_band: int | None)
     return sr[[2, 1, 0]], valid, fine  # back to B02, B03, B04 for viz.rgb
 
 
+def write_geotiff(img: np.ndarray, grid: Grid, path: Path) -> None:
+    """(4, H, W) uint8 RGBA -> tiled JPEG GeoTIFF on ``grid``, alpha kept as the internal mask (keeps it under ~15 MB)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    profile = dict(driver="GTiff", width=grid.width, height=grid.height, count=3, dtype="uint8", crs=grid.crs,
+                   transform=grid.transform, tiled=True, blockxsize=512, blockysize=512, compress="JPEG",
+                   photometric="YCBCR", jpeg_quality=88)  # fmt: skip
+    with rasterio.Env(GDAL_TIFF_INTERNAL_MASK=True), rasterio.open(path, "w", **profile) as ds:
+        ds.write(img[:3])
+        ds.write_mask(img[3])
+        ds.update_tags(SOURCE="SEN2SR Lite x4 from Sentinel-2 L2A B02/B03/B04/B08; display only, not used for change detection")
+
+
 def main() -> None:
     model, device = load_model()
     for web, sides in PAIRS.items():
         manifest_path = web / "manifest.json"
         manifest = json.loads(manifest_path.read_text())
-        for side, (folder, band) in sides.items():
+        for side, (folder, band, tif) in sides.items():
             sr, valid, fine = super_resolve(model, device, folder, band)
             key = f"sr_{side}"
-            bounds = viz.warp_webp(viz.rgba(sr, valid), fine, web / f"{key}.webp")
+            img = viz.rgba(sr, valid)
+            write_geotiff(img, fine, TIF_DIR / tif)
+            bounds = viz.warp_webp(img, fine, web / f"{key}.webp")
             label = manifest["date_labels"][side] if "date_labels" in manifest else side
             title = f"Super-resolved 2.5 m (SEN2SR), {label}"
             manifest["rasters"][key] = {"url": f"{key}.webp", "label": title, "bounds": bounds}

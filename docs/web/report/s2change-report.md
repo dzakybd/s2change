@@ -2,13 +2,13 @@
 
 # What changed at an open-pit copper mine in NW Zambia?
 
-**Two free satellite images of one copper mine: what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/MBTmg62P2ew)
+**Two free satellite images of one copper mine: what changed, what it most likely is, and who should act on it.** [Open the map](https://s2change.dzaky.ai.id/#/map) · [Ask the agent](https://s2change.dzaky.ai.id/#/map?agent=1) · [Explore the database](https://s2change.dzaky.ai.id/#/database) · [Downloads](https://s2change.dzaky.ai.id/#/downloads) · [Repository](https://github.com/dzakybd/s2change) · [Video](https://youtu.be/8pGhwnsoD38)
 
 <a href="https://youtu.be/8pGhwnsoD38"><img src="https://raw.githubusercontent.com/dzakybd/s2change/main/docs/web/report/figures/video_thumb.jpg" width="720" alt="Video: 2:52 plain-language explainer on YouTube"></a>
 
 *Prefer watching? A [2:52 explainer](https://youtu.be/8pGhwnsoD38) tells the same story in plain words.*
 
-🧭 **The story, in order:** 📦 [the data](#-1-the-data) → 🪤 [a trap hidden in it](#-2-the-data-trap-each-date-is-two-passes) → ⚙️ [a method built around the trap](#-3-the-method) → 📍 [what changed](#-4-what-changed) → 🎯 [how accurate it is](#-5-how-accurate-is-it) → 🧭 [what it means](#-6-what-it-means) → 🏗️ [the system](#-7-the-system-stack-agent-and-database) → 🚧 [limits](#-8-limitations-and-next-steps).
+🧭 **The story, in order:** 📦 [the data](#-1-the-data) → 🪤 [a trap hidden in it](#-2-the-data-trap-each-date-is-two-passes) → ⚙️ [a method built around the trap](#-3-method-built-around-the-trap) → 📍 [what changed](#-4-results-what-changed) → 🎯 [how accurate it is](#-5-how-accurate-is-it) → 🧭 [what it means](#-6-interpretation-what-it-means) → 🏗️ [the system](#-7-the-system-stack-agent-and-database) → 🚧 [limits](#-8-limitations-and-next-steps).
 
 > [!TIP]
 > **Words used in this report**
@@ -87,7 +87,7 @@ Looking at the two images side by side, a straight diagonal line runs through bo
 
 ⚠️ **Why it matters.** The provided example method compares the files as if each were one image, so it maps the brightness jump between passes as change: <b class="bad">111 km²</b>, 42 % of the site ([see it on the map](https://s2change.dzaky.ai.id/#/map?layer=baseline&oblique=0)). Any method for this data has to handle the zones first.
 
-## ⚙️ 3. The method
+## ⚙️ 3. Method: built around the trap
 
 Two methods run on the same images and are stored in the same database:
 
@@ -264,7 +264,7 @@ Like most maps, this one has a smallest patch it shows, the *minimum mapping uni
 
 *The result, <b class="good">4.17 km² in 223 polygons</b>. Each polygon then gets a likely type from its colour change and facility, and one plain sentence. Here: **Earthworks on the tailings dam wall**, 0.39 km², with the advice to check the operator's maintenance and construction log and inspect the embankment. No wall raise is on public record for 2023 ([section 6](#-what-public-sources-say)).*
 
-The two images line up: checked in 8 windows per zone, they are offset by at most 0.05 pixel (50 cm), so nothing is shifted or resampled. A full run takes about 14 s on a laptop.
+The two images line up: checked in 8 windows per zone, they are offset by at most 0.05 pixel (50 cm), so nothing is shifted or resampled. A full run takes about 15 s on a laptop.
 
 ### 📉 How much each step removes
 
@@ -324,7 +324,7 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 | 🔍 SEN2SR super-resolution ([Aybar et al. 2026](#ref-aybar-2026)) | A sharper 2.5 m true-colour layer of the analysed dates on the map, so changes are easier to read | ❌ No, display only: the model invents fine detail that differs between dates and would look like change |
 | 🤖 AI vision labellers | Labelling the accuracy points (section 5) | ❌ No, accuracy only |
 
-## 📍 4. What changed
+## 📍 4. Results: what changed
 
 <table class="kpi">
 <tr>
@@ -441,12 +441,12 @@ Without the trap, recall is *not* higher. With only 25 days between passes there
 
 The real fix starts with **more and better labels**, so a few uncertain points no longer decide the number, then **more bands** (see [next steps](#-8-limitations-and-next-steps)).
 
-## 🧭 6. What it means
+## 🧭 6. Interpretation: what it means
 
 **In short:**
 
 - ⛏️ **The mine was working, not spreading.** Tailings spread, waste tipped, pits worked; outside the mine only 0.02 km² is clearing.
-- 🧱 **Fresh earthworks on the tailings dam's south-east wall:** <b class="hl">0.39 km²</b> of bare ground where vegetation was. Not a documented raise: the operator reports none between 2013 and 2027, so maintenance or clearing is more likely. Still the first thing a dam-safety team would want to check.
+- 🧱 **Fresh earthworks on the tailings dam's south-east wall:** <b class="hl">0.44 km²</b> of bare ground where vegetation was, 0.39 km² of it in one patch, the largest change on the site. Not a documented raise: the operator reports none between 2013 and 2027, so maintenance or clearing is more likely. Still the first thing a dam-safety team would want to check.
 - 🪤 **The data had a trap**, and the provided method maps it as change (<b class="bad">111 km²</b>); found, proved and corrected.
 - 🎯 **Precise, not complete:** right <b class="good">2 times in 3</b> when it says "changed" (the provided method: <b class="bad">1 in 8</b>), but it finds only part of the subtle change (recall 0.17), because three colour bands cannot tell it from flicker. More bands and better labels would raise it.
 
@@ -521,7 +521,7 @@ flowchart LR
 
 *Ask in plain words; it answers with numbers from the database and moves the map.*
 
-- 🧰 **Tools only, no free hand:** 12 typed tools. deepagents' own planning, file, shell and sub-agent tools are switched off: a question needs a few calls, and each extra tool is attack surface.
+- 🧰 **Tools only, no free hand:** 11 typed tools. deepagents' own planning, file, shell and sub-agent tools are switched off: a question needs a few calls, and each extra tool is attack surface.
 - 🔒 **Read-only by construction:** every query runs as `s2cd_reader` (`SELECT` only, 5 s timeout); free SQL passes a sqlglot guard (one `SELECT`, allow-listed tables, `LIMIT` ≤ 200).
 - 🧾 **Shows its work:** each answer returns the tool calls, including the SQL, so a number can be checked.
 - 🎯 **Honest framing:** the prompt states RGB-only evidence, the true pass dates, that confidence is signal strength (not accuracy) and that a change type is a hypothesis.
@@ -602,6 +602,39 @@ erDiagram
 
 `change_features_wgs84` is a view in lon/lat for web maps. Example queries: [PostGIS](https://github.com/dzakybd/s2change/blob/main/sql/queries_postgis.sql) · [explore it live](https://s2change.dzaky.ai.id/#/database).
 
+### 🔌 The API
+
+*Everything the map, the database tab and the agent read, at `https://s2change.dzaky.ai.id/api`. Reading is public; the two marked 🔑 need the access code.*
+
+| Method and path | Returns |
+|---|---|
+| `GET /api/health` | `{ok, db, model}` |
+| `GET /api/runs` | One row per run: method, dates, changed area, polygon count |
+| `GET /api/changes?run_id=&limit=` | The change polygons as GeoJSON (lon/lat) with type, sentence, confidence and facility |
+| `GET /api/facilities` | The facility register as GeoJSON, with the change in each |
+| `GET /api/brief?run_id=` | A monitoring brief in markdown, built from the database without an LLM |
+| `GET /api/db/schema` | Every table: columns, keys, links, geometry type and row count |
+| `GET /api/db/tables/{table}?page=&size=&sort=&desc=&column=&value=` | One page of a table (10 to 100 rows), sortable and filterable on its own columns |
+| `GET /api/db/export.sql?table=` | A SQL dump: `CREATE TABLE` with the live constraints and one `INSERT` per row |
+| `GET /api/db/connection` | Server versions and the read-only connection string, password masked |
+| 🔑 `GET /api/db/connection/uri` | The full read-only connection string |
+| 🔑 `POST /api/agent/chat {messages}` | `{answer, actions, charts, tables, tool_calls}` |
+| `POST /api/auth/login {code}` · `/logout` · `GET /api/auth/status` | Sign in with the access code; a signed cookie, valid 7 days |
+
+### 🔐 Security
+
+*The public site is read-only by construction; what costs compute or LLM budget sits behind an access code.*
+
+| | Control | What it does |
+|---|---|---|
+| 🗄️ | Read-only database role | The API and the agent connect as `s2cd_reader`: `SELECT` only, read-only transactions, 5 s timeout. Writes fail in the database itself |
+| 🧱 | SQL guard | The agent's `readonly_sql` passes a sqlglot check: one `SELECT`, allow-listed tables, no DDL, DML or system functions, `LIMIT` at most 200. The database tab runs no free SQL |
+| ⏱️ | Rate limits | Per IP: chat 6/min, table pages 60/min, SQL dumps 6/min, login 5/min; 300 chat calls a day for the whole service |
+| 🔑 | Access code | Checked against a salted PBKDF2 hash; earns an `HttpOnly`, `Secure`, `SameSite=Strict` cookie |
+| 🤫 | Secrets | Keys, passwords and the cookie secret live only in the server's `.env`, never in git; errors shown to users are generic |
+| 🌐 | Transport | TLS at Caddy, HSTS, a Content-Security-Policy limited to this site and the map tiles, `X-Frame-Options: DENY`; request bodies capped at 64 KB |
+| 🤖 | LLM hardening | Only the 11 typed tools; user and tool text is treated as data; no tool writes, so an injection can at worst give a wrong read-only answer |
+
 ## 🚧 8. Limitations and next steps
 
 > [!WARNING]
@@ -622,12 +655,10 @@ erDiagram
 | # | Task | Done | See it |
 |---|---|---|---|
 | 1 ✅ | Data preparation | B02–B04 loaded, CRS, transform and shape checked, stacked | [Section 1](#-1-the-data) · `src/s2cd/io.py` → `data/processed/sentinel2_*_stack.tif` |
-| 2 ✅ | Change detection | The provided example, unchanged, and a calibrated change vector analysis | [Section 3](#-3-the-method) · [Change intensity map](https://s2change.dzaky.ai.id/#/map?layer=intensity) |
+| 2 ✅ | Change detection | The provided example, unchanged, and a calibrated change vector analysis | [Section 3](#-3-method-built-around-the-trap) · [Change intensity map](https://s2change.dzaky.ai.id/#/map?layer=intensity) |
 | 3 ✅ | Store in a geospatial DB | PostGIS with spatial indexes, written by the pipeline; explorer, SQL dump, API | [Section 7](#-7-the-system-stack-agent-and-database) · [Database](https://s2change.dzaky.ai.id/#/database) |
 | 4 ✅ | Visualise | Static figures here; interactive map with swipe, types and facilities | [Map](https://s2change.dzaky.ai.id/#/map) |
-| 5 ✅ | Interpret | Typed polygons with a sentence each, facility register, confounders | [Section 4](#-4-what-changed) · [Section 6](#-6-what-it-means) |
-
-Security controls of the app are in [docs/system.md](https://github.com/dzakybd/s2change/blob/main/docs/system.md).
+| 5 ✅ | Report: Method, Results, Interpretation | Sections 3, 4 and 6; typed polygons with a sentence each, facility register, confounders | [Section 4](#-4-results-what-changed) · [Section 6](#-6-interpretation-what-it-means) |
 
 ### References
 

@@ -57,6 +57,7 @@ dev = [
 [tool.ruff]
 line-length = 130
 target-version = "py312"
+extend-exclude = ["inputs"]  # the provided files, kept byte for byte
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "NPY", "SIM"]

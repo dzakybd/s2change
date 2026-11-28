@@ -43,7 +43,7 @@ compose-run: ## Build the image and run the pipeline fully inside docker compose
 query: ## Run sql/queries_postgis.sql in the local compose db
 	$(COMPOSE) exec -T db psql -U s2cd -d s2cd -f - < sql/queries_postgis.sql
 
-viewer: ## Build the web viewer (viewer/dist)
+viewer: ## Build the web viewer into viewer/dist
 	cd viewer && npm ci && npm run build
 
 report-pdf: ## Print the Report tab to docs/web/report/s2change-report.pdf (starts its own dev server)
