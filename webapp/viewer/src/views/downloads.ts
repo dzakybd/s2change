@@ -102,7 +102,7 @@ export async function createDownloads(_ctx: AppContext): Promise<View> {
   const el = document.createElement("div");
   el.className = "view";
   el.innerHTML = `<div class="page dl">
-    <div class="page-head"><h1>Take the data with you</h1><p>Everything the map and the database are built from. Each card previews the file; downloads come from the GitHub repository, so they are the same bytes the pipeline wrote.</p></div>
+    <div class="page-head"><h1>Take the data with you</h1><p>Every file behind the map and the database. Click a card to preview it; downloads come straight from the GitHub repository.</p></div>
     <div id="dl-body"><div class="dl-skel" role="status"><span class="sr-only">Loading the file list…</span>${'<div class="card"><i class="skel s-img"></i><i class="skel s-t"></i><i class="skel s-l"></i></div>'.repeat(6)}</div></div></div>`;
   const body = q(el, "#dl-body");
   const items = new Map<string, Item>();

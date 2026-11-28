@@ -2,12 +2,12 @@
  "groups": [
   {
    "title": "Change maps",
-   "blurb": "GeoTIFFs on the 10 m grid of the scenes (EPSG:32735). Open in QGIS or rasterio.",
+   "blurb": "Maps you can open in QGIS or any GIS (GeoTIFF, 10 m pixels).",
    "items": [
     {
      "path": "outputs/change_map.tif",
      "title": "change_map.tif",
-     "desc": "Robust change magnitude per pixel (log10 d²).",
+     "desc": "How much each pixel changed (our method).",
      "size": "11.2 MB",
      "kind": "magnitude",
      "facts": [
@@ -41,7 +41,7 @@
     {
      "path": "outputs/change_significance.tif",
      "title": "change_significance.tif",
-     "desc": "−log10 p of the change under the noise model.",
+     "desc": "How unlikely each pixel's change is to be noise (our method).",
      "size": "10.5 MB",
      "kind": "magnitude",
      "facts": [
@@ -75,7 +75,7 @@
     {
      "path": "outputs/change_map_baseline.tif",
      "title": "change_map_baseline.tif",
-     "desc": "The provided method's change intensity: colour distance between the dates, scaled 0 to 254.",
+     "desc": "How much each pixel changed (the provided method).",
      "size": "1.5 MB",
      "kind": "magnitude",
      "facts": [
@@ -109,7 +109,7 @@
     {
      "path": "outputs/change_binary.tif",
      "title": "change_binary.tif",
-     "desc": "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
+     "desc": "Changed (1) or not (0), our method; 255 = no data.",
      "size": "40 KB",
      "kind": "binary",
      "facts": [
@@ -143,7 +143,7 @@
     {
      "path": "outputs/change_binary_baseline.tif",
      "title": "change_binary_baseline.tif",
-     "desc": "The provided method's result (colour distance, automatic threshold), cleaned the same way.",
+     "desc": "Changed (1) or not (0), the provided method.",
      "size": "210 KB",
      "kind": "binary",
      "facts": [
@@ -178,12 +178,12 @@
   },
   {
    "title": "Sentinel-2 stacks",
-   "blurb": "B02, B03, B04 as delivered, plus the later date normalised to the earlier one.",
+   "blurb": "The blue, green and red bands of each image, stacked into one file.",
    "items": [
     {
      "path": "outputs/sentinel2_20230812_stack.tif",
      "title": "sentinel2_20230812_stack.tif",
-     "desc": "Labelled 2023-08-12; stitched from the passes of 2023-07-01 and 07-04.",
+     "desc": "The 'before' image (labelled 2023-08-12).",
      "size": "13.8 MB",
      "kind": "rgb",
      "facts": [
@@ -217,7 +217,7 @@
     {
      "path": "outputs/sentinel2_20230902_stack.tif",
      "title": "sentinel2_20230902_stack.tif",
-     "desc": "Labelled 2023-09-02; stitched from the passes of 2023-08-25 and 09-02, as delivered.",
+     "desc": "The 'after' image (labelled 2023-09-02).",
      "size": "13.2 MB",
      "kind": "rgb",
      "facts": [
@@ -251,7 +251,7 @@
     {
      "path": "outputs/sentinel2_20230902_stack_normalized.tif",
      "title": "sentinel2_20230902_stack_normalized.tif",
-     "desc": "The later date after per-zone radiometric normalisation.",
+     "desc": "The 'after' image with its brightness matched to the 'before' image.",
      "size": "14.1 MB",
      "kind": "rgb",
      "facts": [
@@ -285,13 +285,13 @@
    ]
   },
   {
-   "title": "How the method sees the scene",
-   "blurb": "The intermediate layers behind steps 1 and 5 of the report: which pass each pixel came from and the zones matched separately.",
+   "title": "Behind the method",
+   "blurb": "Each image is two satellite passes stitched together. These maps show where (report, section 2).",
    "items": [
     {
      "path": "outputs/provenance/source_scene.tif",
      "title": "source_scene.tif",
-     "desc": "Which satellite pass each pixel was taken from; band 1 for the earlier image, band 2 for the later.",
+     "desc": "Which satellite pass each pixel came from (band 1: before, band 2: after).",
      "size": "36 KB",
      "kind": "zones",
      "facts": [
@@ -325,7 +325,7 @@
     {
      "path": "outputs/radiometric_zones.tif",
      "title": "radiometric_zones.tif",
-     "desc": "The three zones (pass pairs) whose brightness is matched separately; -1 = no data.",
+     "desc": "The three zones we match separately; -1 = no data.",
      "size": "42 KB",
      "kind": "zones",
      "facts": [
@@ -359,7 +359,7 @@
     {
      "path": "outputs/stripe_zones_detected.tif",
      "title": "stripe_zones_detected.tif",
-     "desc": "The same zones found from the pixels alone, without the scene metadata, as a cross-check.",
+     "desc": "The same zones found from the pixels alone, as a cross-check.",
      "size": "50 KB",
      "kind": "zones",
      "facts": [
@@ -393,13 +393,13 @@
    ]
   },
   {
-   "title": "Super-resolved 2.5 m true colour (map backdrop only)",
-   "blurb": "SEN2SR (ESA OpenSR) sharpens the 10 m bands to 2.5 m. The fine detail is a model estimate, so it is used only as the map backdrop, never for change detection. 8-bit display colour (pipeline/scripts/super_resolution.py).",
+   "title": "Sharpened 2.5 m images (for viewing)",
+   "blurb": "An AI model (SEN2SR) sharpens the 10 m images to 2.5 m. The extra detail is estimated, so we only use it as the map background, never to detect change.",
    "items": [
     {
      "path": "outputs/super_resolution/sentinel2_20230812_sr_2p5m.tif",
      "title": "sentinel2_20230812_sr_2p5m.tif",
-     "desc": "The image labelled 2023-08-12 at 2.5 m.",
+     "desc": "The 'before' image at 2.5 m.",
      "size": "5.9 MB",
      "kind": "photo",
      "facts": [
@@ -433,7 +433,7 @@
     {
      "path": "outputs/super_resolution/sentinel2_20230902_sr_2p5m.tif",
      "title": "sentinel2_20230902_sr_2p5m.tif",
-     "desc": "The image labelled 2023-09-02 at 2.5 m.",
+     "desc": "The 'after' image at 2.5 m.",
      "size": "4.9 MB",
      "kind": "photo",
      "facts": [
@@ -467,7 +467,7 @@
     {
      "path": "outputs/super_resolution/true_passes_20230808_sr_2p5m.tif",
      "title": "true_passes_20230808_sr_2p5m.tif",
-     "desc": "The true single pass of 2023-08-08 at 2.5 m.",
+     "desc": "The single pass of 2023-08-08 at 2.5 m.",
      "size": "6.1 MB",
      "kind": "photo",
      "facts": [
@@ -501,7 +501,7 @@
     {
      "path": "outputs/super_resolution/true_passes_20230902_sr_2p5m.tif",
      "title": "true_passes_20230902_sr_2p5m.tif",
-     "desc": "The true single pass of 2023-09-02 at 2.5 m.",
+     "desc": "The single pass of 2023-09-02 at 2.5 m.",
      "size": "4.5 MB",
      "kind": "photo",
      "facts": [
@@ -535,13 +535,13 @@
    ]
   },
   {
-   "title": "True single passes (comparison)",
-   "blurb": "The same site from single-pass scenes on the true acquisition dates, with no seams: the check behind the data trap (pipeline/scripts/real_dates.py; on the map: Result, Ours, true passes).",
+   "title": "Check: unstitched images",
+   "blurb": "The same site from two single satellite passes, with no stitching, to check our result (report, section 4; on the map: Result, Our method, unstitched images).",
    "items": [
     {
      "path": "outputs/true_passes/sentinel2_20230808_stack.tif",
      "title": "sentinel2_20230808_stack.tif",
-     "desc": "2023-08-08, one pass (B02, B03, B04).",
+     "desc": "Single pass of 2023-08-08 (blue, green, red).",
      "size": "14.2 MB",
      "kind": "rgb",
      "facts": [
@@ -575,7 +575,7 @@
     {
      "path": "outputs/true_passes/sentinel2_20230902_stack.tif",
      "title": "sentinel2_20230902_stack.tif",
-     "desc": "2023-09-02, one pass (B02, B03, B04).",
+     "desc": "Single pass of 2023-09-02 (blue, green, red).",
      "size": "13.0 MB",
      "kind": "rgb",
      "facts": [
@@ -609,7 +609,7 @@
     {
      "path": "outputs/true_passes/change_map.tif",
      "title": "change_map.tif",
-     "desc": "Robust change magnitude per pixel for this pair.",
+     "desc": "How much each pixel changed between these two passes.",
      "size": "11.3 MB",
      "kind": "magnitude",
      "facts": [
@@ -643,7 +643,7 @@
     {
      "path": "outputs/true_passes/change_binary.tif",
      "title": "change_binary.tif",
-     "desc": "Changed (1) or not (0) for this pair; 255 = no data.",
+     "desc": "Changed (1) or not (0); 255 = no data.",
      "size": "22 KB",
      "kind": "binary",
      "facts": [
@@ -677,7 +677,7 @@
     {
      "path": "webapp/data/true_passes/change_features.geojson",
      "title": "change_features.geojson",
-     "desc": "The change polygons of this pair, typed like the main result.",
+     "desc": "The changed areas between these two passes.",
      "size": "372 KB",
      "kind": "vector",
      "facts": [
@@ -749,13 +749,13 @@
    ]
   },
   {
-   "title": "Vectors",
-   "blurb": "The change polygons as GeoJSON. The full tables live in the PostGIS database (Database tab, with SQL dumps).",
+   "title": "Changed areas (shapes)",
+   "blurb": "The changed areas as shapes (GeoJSON). The same data is in the Database tab.",
    "items": [
     {
      "path": "webapp/data/change_features.geojson",
      "title": "change_features.geojson",
-     "desc": "The change polygons with type, plain-language description, confidence and facility (web export).",
+     "desc": "Each changed area with its type, a plain sentence and the part of the mine.",
      "size": "665 KB",
      "kind": "vector",
      "facts": [
@@ -827,7 +827,7 @@
     {
      "path": "outputs/change_features.geojson",
      "title": "change_features.geojson",
-     "desc": "Full-precision export with every attribute the pipeline computed.",
+     "desc": "The same, with every number the pipeline computed.",
      "size": "6.8 MB",
      "kind": "vector",
      "facts": [
@@ -903,7 +903,7 @@
     {
      "path": "webapp/data/facilities.geojson",
      "title": "facilities.geojson",
-     "desc": "The facility register: outlines, area changed (hectares in the file) and the change mix.",
+     "desc": "The parts of the mine, with how much changed in each (hectares).",
      "size": "10 KB",
      "kind": "vector",
      "facts": [
@@ -975,7 +975,7 @@
     {
      "path": "webapp/data/aoi.geojson",
      "title": "aoi.geojson",
-     "desc": "The area of interest.",
+     "desc": "The area we were asked to study.",
      "size": "1 KB",
      "kind": "vector",
      "facts": [
@@ -1012,12 +1012,12 @@
   },
   {
    "title": "Numbers and checks",
-   "blurb": "The tables behind the report's figures, and the accuracy check.",
+   "blurb": "The numbers behind the report.",
    "items": [
     {
      "path": "outputs/run_summary.json",
      "title": "run_summary.json",
-     "desc": "Every number the pipeline measured on its last run.",
+     "desc": "Every number from the last run.",
      "size": "10 KB",
      "kind": "text",
      "document": "previews/outputs_run_summary_json.md"
@@ -1025,7 +1025,7 @@
     {
      "path": "outputs/funnel.csv",
      "title": "funnel.csv",
-     "desc": "How much flagged area each step of the method removes.",
+     "desc": "How much each step of the method removes.",
      "size": "1 KB",
      "kind": "csv",
      "facts": [
@@ -1102,7 +1102,7 @@
     {
      "path": "outputs/sensitivity.csv",
      "title": "sensitivity.csv",
-     "desc": "Changed area under other threshold and minimum-area settings.",
+     "desc": "How the result changes with stricter or looser settings.",
      "size": "1 KB",
      "kind": "csv",
      "facts": [
@@ -1204,7 +1204,7 @@
     {
      "path": "outputs/validation/sample.csv",
      "title": "sample.csv",
-     "desc": "The 160 check points, drawn at random within strata.",
+     "desc": "The 200 random points used to check accuracy.",
      "size": "10 KB",
      "kind": "csv",
      "facts": [
@@ -1324,7 +1324,7 @@
     {
      "path": "outputs/validation/labels_adjudicated.csv",
      "title": "labels_adjudicated.csv",
-     "desc": "The labels where the two passes disagreed, after review.",
+     "desc": "The 40 points where the two labellers disagreed, after review.",
      "size": "1 KB",
      "kind": "csv",
      "facts": [
@@ -1390,7 +1390,7 @@
     {
      "path": "outputs/validation/accuracy.json",
      "title": "accuracy.json",
-     "desc": "Precision, recall and their confidence intervals for both methods.",
+     "desc": "How accurate each method is.",
      "size": "1 KB",
      "kind": "text",
      "document": "previews/outputs_validation_accuracy_json.md"
@@ -1399,12 +1399,12 @@
   },
   {
    "title": "Database",
-   "blurb": "PostGIS schema and example queries; the live tables are in the Database tab.",
+   "blurb": "How the database is built, and example queries. The live tables are in the Database tab.",
    "items": [
     {
      "path": "pipeline/sql/schema_postgis.sql",
      "title": "schema_postgis.sql",
-     "desc": "Tables, geometry columns and indexes of the change database.",
+     "desc": "Creates the tables.",
      "size": "3 KB",
      "kind": "text",
      "document": "previews/pipeline_sql_schema_postgis_sql.md"
@@ -1412,7 +1412,7 @@
     {
      "path": "pipeline/sql/queries_postgis.sql",
      "title": "queries_postgis.sql",
-     "desc": "Example spatial queries (area by type, changes per facility, and more).",
+     "desc": "Example questions in SQL: area by type, change per part of the mine, and more.",
      "size": "5 KB",
      "kind": "text",
      "document": "previews/pipeline_sql_queries_postgis_sql.md"

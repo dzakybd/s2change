@@ -370,7 +370,7 @@ The change itself is measured on the three 10 m bands only. Three more tools wen
 
 🧱 **The dam wall, dated.** Every polygon stores its zone, so its true dates are known: 0.40 of the 0.44 km² dam-wall fill lies in the east zone, *1 Jul → 25 Aug*.
 
-🔁 **What if we use true single passes instead?** The same pipeline on single passes that cover the whole site (`pipeline/scripts/real_dates.py`; on the map: Result → "Ours, true passes"):
+🔁 **What if we use true single passes instead?** The same pipeline on single passes that cover the whole site (`pipeline/scripts/real_dates.py`; on the map: Result → "Our method, unstitched images"):
 
 | Pair | Provided method | This method | Dam-wall fill |
 |---|---:|---:|---:|

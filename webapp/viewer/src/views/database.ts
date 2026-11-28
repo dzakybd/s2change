@@ -62,14 +62,14 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
   const el = document.createElement("div");
   el.className = "view";
   el.innerHTML = `<div class="page db">
-    <div class="page-head"><h1>Explore the PostGIS database</h1><p>The change polygons and the facility register live in PostGIS on Supabase. Browse every table a page at a time, follow the keys between them, and take the data with you as SQL.</p></div>
+    <div class="page-head"><h1>Explore the PostGIS database</h1><p>The results are stored in a PostGIS database. Browse each table, click a link to jump between them, or download a table as SQL.</p></div>
     <div id="db-body"><div class="db-skel" role="status"><span class="sr-only">Connecting to the database…</span><i class="skel s-card"></i><i class="skel s-tall"></i></div></div></div>`;
   const body = q(el, "#db-body");
   let started = false;
   let pending: Route | null = null;
 
   function offline(reason: string): void {
-    body.innerHTML = `<div class="callout offline"><b>The database is live-only</b><p>${esc(reason)} The explorer reads PostGIS through the API, which GitHub Pages cannot host.</p><p><a class="btn primary" href="${LIVE_URL}/#/database" target="_blank" rel="noopener noreferrer">Open s2change.dzaky.ai.id</a> <a class="btn" href="${BLOB_URL}pipeline/sql/schema_postgis.sql" target="_blank" rel="noopener noreferrer">Read the schema</a></p></div>`;
+    body.innerHTML = `<div class="callout offline"><b>The database is live-only</b><p>${esc(reason)} Open the live site to browse it.</p><p><a class="btn primary" href="${LIVE_URL}/#/database" target="_blank" rel="noopener noreferrer">Open s2change.dzaky.ai.id</a> <a class="btn" href="${BLOB_URL}pipeline/sql/schema_postgis.sql" target="_blank" rel="noopener noreferrer">Read the schema</a></p></div>`;
   }
 
   async function start(api: ReadyApi): Promise<void> {
@@ -97,7 +97,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       <section class="card conn" aria-labelledby="conn-h">
         <div class="conn-head"><h2 id="conn-h">Connection</h2><div class="conn-badges" id="conn-badges"><span class="muted"><span class="spinner"></span></span></div></div>
         <div class="conn-uri"><code id="conn-uri" class="mono">…</code><button type="button" class="btn sm primary" id="copy-uri" aria-live="polite">Copy URI</button></div>
-        <p class="muted conn-hint">A read-only role (<code>SELECT</code> only, 5 s statement timeout). Copying the full URI, password included, needs the access code. Try it: <code>psql "&lt;uri&gt;" -c "SELECT postgis_full_version();"</code></p>
+        <p class="muted conn-hint">Read-only: you can query but not change anything. Try it: <code>psql "&lt;uri&gt;" -c "SELECT postgis_full_version();"</code></p>
         <div class="conn-actions"><a class="btn sm" href="${dbExportUrl(api)}" download>Download the whole database (.sql)</a><span class="muted">Schema, constraints, indexes and every row; geometry as EWKB, loads into any PostGIS.</span></div>
       </section>
       <details class="card erd" open><summary><span>How the tables relate</span><small class="muted">Entity-relationship diagram of the live schema. Click a table to open it below.</small></summary><div id="db-erd"><span class="muted"><span class="spinner"></span> Drawing…</span></div></details>

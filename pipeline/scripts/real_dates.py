@@ -6,8 +6,8 @@ Each provided "date" is a mosaic of two passes (2023-07-01/07-04 and 2023-08-25/
 single-pass scenes of relative orbit 121 that cover the whole AOI: 2023-07-04, 2023-08-08 (the clear date closest to the
 nominal 08-12) and 2023-09-02. Each pair below is run through the same pipeline (no provenance zones: a single pass
 has no seams) and the provided method, and the table is written to .cache/experiments/real_dates.json.
-The 2023-08-08 -> 2023-09-02 pair is also exported to webapp/data/true_passes/, the map's "Ours, true passes" result, and its
-stacks and change maps are copied to outputs/true_passes/ for the Downloads tab.
+The 2023-08-08 -> 2023-09-02 pair is also exported to webapp/data/true_passes/ (the map's "Our method, unstitched images"
+result), and its stacks and change maps are copied to outputs/true_passes/ for the Downloads tab.
 """
 
 from __future__ import annotations

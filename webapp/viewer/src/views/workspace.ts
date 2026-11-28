@@ -217,12 +217,12 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       ds.id === TRUE_PASSES_ID ? "true" : state.layer === "baseline" ? "original" : "mosaic";
     const resultItems = () => {
       const items: { id: ResultId; label: string; hint: string; disabled?: boolean; disabledReason?: string }[] = [
-        { id: "original", label: "Original, as is", hint: `The provided method on the supplied images: ${km2(provided.summary?.["euclidean_baseline"])}, mostly pass seams and haze` },
-        { id: "mosaic", label: "Ours, supplied images", hint: `This method on the supplied images (each stitched from two passes), brightness matched per zone: ${km2(provided.summary?.["robust_cva"])}` },
+        { id: "original", label: "Provided method", hint: `The example method from the brief: ${km2(provided.summary?.["euclidean_baseline"])}, mostly seams and haze` },
+        { id: "mosaic", label: "Our method", hint: `Our method on the two images we were given: ${km2(provided.summary?.["robust_cva"])}` },
         {
           id: "true",
-          label: "Ours, true passes",
-          hint: truePasses ? `This method on single-pass scenes of the true dates, ${truePasses.date_before} → ${truePasses.date_after}: ${km2(truePasses.summary["robust_cva"])}` : "",
+          label: "Our method, unstitched images",
+          hint: truePasses ? `Our method on two single-pass images (${truePasses.date_before} → ${truePasses.date_after}), as a check: ${km2(truePasses.summary["robust_cva"])}` : "",
           disabled: !truePasses,
           disabledReason: "The true-pass export is not available",
         },

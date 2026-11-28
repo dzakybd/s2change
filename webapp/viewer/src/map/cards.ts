@@ -11,12 +11,12 @@ const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 
 /** Where each value on the change card comes from (shown as tooltips, map/tooltip.ts). None is written by an AI model. */
 const SOURCE = {
-  area: "Area of the polygon: connected 10 m pixels flagged as changed by the calibrated change vector analysis, vectorised (algorithmic).",
-  why: "Written by fixed rules (s2cd/interpret.py), not by AI: thresholds on RGB indices (water, greenness, redness, brightness) before and after, plus overlap with the analyst-drawn facility register. The numbers are this polygon's own.",
-  type: "Assigned by the same fixed rules as Why this label; the category in brackets is a fixed mapping to the brief's change categories.",
-  confidence: "Each pixel's change is measured against the normal flicker between the two images (its d²). At the detection threshold a pixel counts as changed; this polygon's pixels are on average this many times past it. Stored in the database as confidence = log10(d² ÷ threshold) ÷ 2, averaged over the polygon and kept between 0 and 1 (1 = 100 times the threshold). Not a probability of being right: accuracy is measured separately (report, section 5).",
-  direction: "Algorithmic: mean brightness of the polygon after versus before.",
-  facility: "Spatial overlay with the facility register, whose outlines were drawn by an analyst on very-high-resolution imagery.",
+  area: "The size of this changed patch.",
+  why: "Written by fixed colour rules, not by AI: how the colour changed, and where on the mine it is.",
+  type: "Our best guess from the colour change and the place. The brief's category is in brackets.",
+  confidence: "How far this change is above the normal flicker between the two images. Stored as 'confidence' (0 to 1). It is not the chance of being right.",
+  direction: "Whether the patch got brighter or darker.",
+  facility: "The part of the mine this patch is in.",
 };
 const tip = (label: string, key: keyof typeof SOURCE) => `<dt class="src" tabindex="0" data-tip="${esc(SOURCE[key])}">${label}</dt>`;
 
@@ -103,14 +103,14 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
       })
       .join("")}</ul>`;
   } else if (def.id === "intensity") {
-    body = `<div class="ramp" style="background:${INTENSITY_RAMP}"></div><div class="ramp-l"><span>no change</span><span>strong change</span></div><p class="note">log10 of the robust Mahalanobis distance d² per 10 m pixel, before thresholding.</p>`;
+    body = `<div class="ramp" style="background:${INTENSITY_RAMP}"></div><div class="ramp-l"><span>no change</span><span>strong change</span></div><p class="note">How much each 10 m pixel changed, compared with the normal flicker between the two images. Bright = strong change.</p>`;
   } else if (def.baseline) {
-    body = `<p class="lg-sub"><i class="swatch" style="background:#ef4444"></i> Provided baseline: 111.4 km², 42 % of the area</p><p class="lg-sub"><i class="swatch" style="background:transparent;box-shadow:inset 0 0 0 2px #0f172a"></i> This work, outlined in its type colours: 4.17 km²</p><p class="note">The straight diagonal bands are the seams between satellite passes inside each "date"; the baseline reads them, and haze, as change. Report section 2, "The data trap".</p>`;
+    body = `<p class="lg-sub"><i class="swatch" style="background:#ef4444"></i> The provided method: 111.4 km², 42 % of the area</p><p class="lg-sub"><i class="swatch" style="background:transparent;box-shadow:inset 0 0 0 2px #0f172a"></i> Our result, outlined: 4.17 km²</p><p class="note">The straight diagonal bands are where two satellite passes were stitched together. The provided method mistakes them, and haze, for change. See report section 2.</p>`;
   } else if (def.id === "facilities") {
     const rows = [...facilities].sort((a, b) => b.changed_ha - a.changed_ha);
     body = `<p class="lg-sub">${rows.length} facilities · area changed inside each. Click one for its breakdown.</p><ul class="lg-types">${rows
       .map((f) => `<li><button type="button" class="lg-row" data-fac="${esc(f.facility_id)}" title="${esc(FACILITY_CLASS_LABEL[f.class] ?? f.class)}">${facilityIcon(f.class, 20, facilityColor(f.facility_id))}<span>${esc(f.name)}</span><b class="num">${esc(f.facility_id)}</b><em class="num">${fmtKm2(f.changed_ha)}</em></button></li>`)
-      .join("")}</ul><p class="note">Names, classes and rough boxes are drawn by an analyst on the 2023-08-12 image (not in the provided data). Each outline is computed from the provided bands: the bare or water ground inside its box.</p>`;
+      .join("")}</ul><p class="note">We named and outlined the mine's parts ourselves on the image; they are not in the provided data.</p>`;
   } else {
     body = `<p class="note">${esc(def.hint)}.${ds.nominal ? " The two dates are file labels: each image is stitched from two satellite passes (07-01/07-04 and 08-25/09-02)." : ""} Outlines are the change polygons, coloured by type.</p>`;
   }

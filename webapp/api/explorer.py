@@ -22,10 +22,10 @@ from api import db
 
 # Shown in this order. Descriptions are what a reader needs to know before opening the table.
 TABLES = {
-    "change_runs": "One row per change-detection run: the method, the two dates, its parameters and summary numbers.",
-    "change_features": "Every change polygon, with its type, a plain-language description, confidence and facility.",
-    "facilities": "The facility register: pits, dumps, tailings, plant, camp, dam and town, outlined from the imagery.",
-    "facility_changes": "Area changed per facility in the default comparison, and the mix of change types.",
+    "change_runs": "One row per method: our method and the provided one, with their dates, settings and totals.",
+    "change_features": "Every changed area: its shape, size, type, a plain sentence and the part of the mine it is in.",
+    "facilities": "The parts of the mine (pits, dumps, tailings, plant, camp, dam, town), outlined by us on the image.",
+    "facility_changes": "How much changed in each part of the mine, and what kind of change.",
 }
 # Not a database constraint (a change can lie outside every facility), but the same key.
 LOGICAL_LINKS = [{"table": "change_features", "column": "facility_id", "ref_table": "facilities", "ref_column": "facility_id"}]

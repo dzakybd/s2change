@@ -119,159 +119,162 @@ NO_DATA_RGB = (241, 243, 246)
 DOWNLOADS = [
     (
         "Change maps",
-        "GeoTIFFs on the 10 m grid of the scenes (EPSG:32735). Open in QGIS or rasterio.",
+        "Maps you can open in QGIS or any GIS (GeoTIFF, 10 m pixels).",
         [
-            ("outputs/change_map.tif", "Robust change magnitude per pixel (log10 d²).", "magnitude"),
-            ("outputs/change_significance.tif", "−log10 p of the change under the noise model.", "magnitude"),
+            ("outputs/change_map.tif", "How much each pixel changed (our method).", "magnitude"),
+            ("outputs/change_significance.tif", "How unlikely each pixel's change is to be noise (our method).", "magnitude"),
             (
                 "outputs/change_map_baseline.tif",
-                "The provided method's change intensity: colour distance between the dates, scaled 0 to 254.",
+                "How much each pixel changed (the provided method).",
                 "magnitude",
             ),
             (
                 "outputs/change_binary.tif",
-                "Changed (1) or not (0) after the threshold, seam buffer and 2,000 m² minimum area; 255 = no data.",
+                "Changed (1) or not (0), our method; 255 = no data.",
                 "binary",
             ),
             (
                 "outputs/change_binary_baseline.tif",
-                "The provided method's result (colour distance, automatic threshold), cleaned the same way.",
+                "Changed (1) or not (0), the provided method.",
                 "binary",
             ),
         ],
     ),
     (
         "Sentinel-2 stacks",
-        "B02, B03, B04 as delivered, plus the later date normalised to the earlier one.",
+        "The blue, green and red bands of each image, stacked into one file.",
         [
             (
                 "outputs/sentinel2_20230812_stack.tif",
-                "Labelled 2023-08-12; stitched from the passes of 2023-07-01 and 07-04.",
+                "The 'before' image (labelled 2023-08-12).",
                 "rgb",
             ),
             (
                 "outputs/sentinel2_20230902_stack.tif",
-                "Labelled 2023-09-02; stitched from the passes of 2023-08-25 and 09-02, as delivered.",
+                "The 'after' image (labelled 2023-09-02).",
                 "rgb",
             ),
             (
                 "outputs/sentinel2_20230902_stack_normalized.tif",
-                "The later date after per-zone radiometric normalisation.",
+                "The 'after' image with its brightness matched to the 'before' image.",
                 "rgb",
             ),
         ],
     ),
     (
-        "How the method sees the scene",
-        "The intermediate layers behind steps 1 and 5 of the report: which pass each pixel came from and the zones"
-        " matched separately.",
+        "Behind the method",
+        "Each image is two satellite passes stitched together. These maps show where (report, section 2).",
         [
             (
                 "outputs/provenance/source_scene.tif",
-                "Which satellite pass each pixel was taken from; band 1 for the earlier image, band 2 for the later.",
+                "Which satellite pass each pixel came from (band 1: before, band 2: after).",
                 "zones",
             ),
             (
                 "outputs/radiometric_zones.tif",
-                "The three zones (pass pairs) whose brightness is matched separately; -1 = no data.",
+                "The three zones we match separately; -1 = no data.",
                 "zones",
             ),
             (
                 "outputs/stripe_zones_detected.tif",
-                "The same zones found from the pixels alone, without the scene metadata, as a cross-check.",
+                "The same zones found from the pixels alone, as a cross-check.",
                 "zones",
             ),
         ],
     ),
     (
-        "Super-resolved 2.5 m true colour (map backdrop only)",
-        "SEN2SR (ESA OpenSR) sharpens the 10 m bands to 2.5 m. The fine detail is a model estimate, so it is used only"
-        " as the map backdrop, never for change detection. 8-bit display colour (pipeline/scripts/super_resolution.py).",
+        "Sharpened 2.5 m images (for viewing)",
+        "An AI model (SEN2SR) sharpens the 10 m images to 2.5 m. The extra detail is estimated, so we only use it as the"
+        " map background, never to detect change.",
         [
             (
                 "outputs/super_resolution/sentinel2_20230812_sr_2p5m.tif",
-                "The image labelled 2023-08-12 at 2.5 m.",
+                "The 'before' image at 2.5 m.",
                 "photo",
             ),
             (
                 "outputs/super_resolution/sentinel2_20230902_sr_2p5m.tif",
-                "The image labelled 2023-09-02 at 2.5 m.",
+                "The 'after' image at 2.5 m.",
                 "photo",
             ),
             (
                 "outputs/super_resolution/true_passes_20230808_sr_2p5m.tif",
-                "The true single pass of 2023-08-08 at 2.5 m.",
+                "The single pass of 2023-08-08 at 2.5 m.",
                 "photo",
             ),
             (
                 "outputs/super_resolution/true_passes_20230902_sr_2p5m.tif",
-                "The true single pass of 2023-09-02 at 2.5 m.",
+                "The single pass of 2023-09-02 at 2.5 m.",
                 "photo",
             ),
         ],
     ),
     (
-        "True single passes (comparison)",
-        "The same site from single-pass scenes on the true acquisition dates, with no seams: the check behind the data trap"
-        " (pipeline/scripts/real_dates.py; on the map: Result, Ours, true passes).",
+        "Check: unstitched images",
+        "The same site from two single satellite passes, with no stitching, to check our result (report, section 4;"
+        " on the map: Result, Our method, unstitched images).",
         [
-            ("outputs/true_passes/sentinel2_20230808_stack.tif", "2023-08-08, one pass (B02, B03, B04).", "rgb"),
-            ("outputs/true_passes/sentinel2_20230902_stack.tif", "2023-09-02, one pass (B02, B03, B04).", "rgb"),
-            ("outputs/true_passes/change_map.tif", "Robust change magnitude per pixel for this pair.", "magnitude"),
+            ("outputs/true_passes/sentinel2_20230808_stack.tif", "Single pass of 2023-08-08 (blue, green, red).", "rgb"),
+            ("outputs/true_passes/sentinel2_20230902_stack.tif", "Single pass of 2023-09-02 (blue, green, red).", "rgb"),
+            ("outputs/true_passes/change_map.tif", "How much each pixel changed between these two passes.", "magnitude"),
             (
                 "outputs/true_passes/change_binary.tif",
-                "Changed (1) or not (0) for this pair; 255 = no data.",
+                "Changed (1) or not (0); 255 = no data.",
                 "binary",
             ),
             (
                 "webapp/data/true_passes/change_features.geojson",
-                "The change polygons of this pair, typed like the main result.",
+                "The changed areas between these two passes.",
                 "vector",
             ),
         ],
     ),
     (
-        "Vectors",
-        "The change polygons as GeoJSON. The full tables live in the PostGIS database (Database tab, with SQL dumps).",
+        "Changed areas (shapes)",
+        "The changed areas as shapes (GeoJSON). The same data is in the Database tab.",
         [
             (
                 "webapp/data/change_features.geojson",
-                "The change polygons with type, plain-language description, confidence and facility (web export).",
+                "Each changed area with its type, a plain sentence and the part of the mine.",
                 "vector",
             ),
             (
                 "outputs/change_features.geojson",
-                "Full-precision export with every attribute the pipeline computed.",
+                "The same, with every number the pipeline computed.",
                 "vector",
             ),
             (
                 "webapp/data/facilities.geojson",
-                "The facility register: outlines, area changed (hectares in the file) and the change mix.",
+                "The parts of the mine, with how much changed in each (hectares).",
                 "vector",
             ),
-            ("webapp/data/aoi.geojson", "The area of interest.", "vector"),
+            ("webapp/data/aoi.geojson", "The area we were asked to study.", "vector"),
         ],
     ),
     (
         "Numbers and checks",
-        "The tables behind the report's figures, and the accuracy check.",
+        "The numbers behind the report.",
         [
-            ("outputs/run_summary.json", "Every number the pipeline measured on its last run.", "text"),
-            ("outputs/funnel.csv", "How much flagged area each step of the method removes.", "csv"),
-            ("outputs/sensitivity.csv", "Changed area under other threshold and minimum-area settings.", "csv"),
-            ("outputs/validation/sample.csv", "The 160 check points, drawn at random within strata.", "csv"),
-            ("outputs/validation/labels_adjudicated.csv", "The labels where the two passes disagreed, after review.", "csv"),
-            ("outputs/validation/accuracy.json", "Precision, recall and their confidence intervals for both methods.", "text"),
+            ("outputs/run_summary.json", "Every number from the last run.", "text"),
+            ("outputs/funnel.csv", "How much each step of the method removes.", "csv"),
+            ("outputs/sensitivity.csv", "How the result changes with stricter or looser settings.", "csv"),
+            ("outputs/validation/sample.csv", "The 200 random points used to check accuracy.", "csv"),
+            (
+                "outputs/validation/labels_adjudicated.csv",
+                "The 40 points where the two labellers disagreed, after review.",
+                "csv",
+            ),
+            ("outputs/validation/accuracy.json", "How accurate each method is.", "text"),
         ],
     ),
     (
         "Database",
-        "PostGIS schema and example queries; the live tables are in the Database tab.",
+        "How the database is built, and example queries. The live tables are in the Database tab.",
         [
-            ("pipeline/sql/schema_postgis.sql", "Tables, geometry columns and indexes of the change database.", "text"),
+            ("pipeline/sql/schema_postgis.sql", "Creates the tables.", "text"),
             (
                 "pipeline/sql/queries_postgis.sql",
-                "Example spatial queries (area by type, changes per facility, and more).",
+                "Example questions in SQL: area by type, change per part of the mine, and more.",
                 "text",
             ),
         ],

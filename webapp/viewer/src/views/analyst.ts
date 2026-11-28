@@ -96,7 +96,7 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
     <div id="chat-banner"></div>
     <div class="chat-scroll" id="chat-scroll" aria-live="polite">
       <div class="welcome" id="chat-welcome">
-        <p>Ask about the change result. Answers can include charts, tables and map actions that move the map beside this panel, and every answer shows the tool calls behind it.</p>
+        <p>Ask a question about the changes. Answers can come with charts, tables and map moves, and show how each number was found.</p>
         <div class="chips" id="chat-chips">${SUGGESTIONS.map((s) => `<button type="button" class="chip">${esc(s)}</button>`).join("")}</div>
       </div>
       <div id="chat-log"></div>
