@@ -14,13 +14,6 @@ export function featureBounds(features: Feature[]): maplibregl.LngLatBounds | nu
   return b.isEmpty() ? null : b;
 }
 
-/** Id of a feature in a run: `properties.id`, then the GeoJSON `id`, then `properties.fid`. */
-function featureId(f: Feature, index: number): number {
-  const props = (f.properties ?? {}) as Record<string, unknown>;
-  for (const v of [props["id"], f.id, props["fid"]]) if (typeof v === "number" || (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v)))) return Number(v);
-  return index;
-}
-
 /**
  * Agent-driven polygon layers: a "run" layer for runs other than the loaded assignment result, and a
  * highlight layer drawn on top of whatever is shown. Ids refer to feature ids within a run.
@@ -58,7 +51,7 @@ export class RunOverlay {
 
   selectIds(fc: PolygonCollection, ids: number[]): Feature[] {
     const want = new Set(ids);
-    return fc.features.filter((f, i) => want.has(featureId(f, i)));
+    return fc.features.filter((f) => typeof f.id === "number" && want.has(f.id));
   }
 
   showRun(fc: PolygonCollection | null): void {

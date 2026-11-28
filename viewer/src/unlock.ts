@@ -4,8 +4,8 @@ import { ApiError, authStatus, friendlyError, login, logout } from "./api";
 import { prefersReducedMotion } from "./domain";
 
 /**
- * The access code, in one place. The server gates a few costly features (agent chat, SQL console, new
- * comparisons) and answers them with 401. `withUnlock` runs an action, and on a 401 asks for the code in a dialog and
+ * The access code, in one place. The server gates a few costly features (agent chat and the full
+ * database URI) and answers them with 401. `withUnlock` runs an action, and on a 401 asks for the code in a dialog and
  * retries the action once. The state (is there a code at all, is this browser unlocked) feeds the top-bar chip.
  */
 

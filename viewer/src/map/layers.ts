@@ -16,7 +16,7 @@ export interface LayerDef {
   facilities: boolean;
   /** Can be compared against "before" with the swipe. */
   swipe: boolean;
-  /** Not meaningful for a comparison the API computed (no static export behind it). */
+  /** Only meaningful for the provided pair. */
   providedOnly?: boolean;
   /** Shows the change polygons by type, with the What changed list and labels. */
   typed?: boolean;

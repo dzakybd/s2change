@@ -182,7 +182,7 @@
   .ws[data-mode="agent"] { flex-direction: column; }
   .ws[data-mode="agent"] .ws-chat { flex: 1 1 62%; min-width: 0; order: 2; box-shadow: 0 -1px 0 rgb(15 23 42 / 0.07); }
   .ws[data-mode="agent"] .ws-stage { flex: 0 0 38%; }
-  .ws[data-mode="agent"] .legend, .ws[data-mode="agent"] #hud-cmp, .ws[data-mode="agent"] .oblique-panel, .ws[data-mode="agent"] .hud-tr > .inspector { display: none; }
+  .ws[data-mode="agent"] .legend, .ws[data-mode="agent"] .oblique-panel, .ws[data-mode="agent"] .hud-tr > .inspector { display: none; }
 }
 /* Collapsed, the agent is a slim rail beside the map (wide screens) or gone (narrow ones, which reopen it from the Agent tool). */
 .chat-body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }

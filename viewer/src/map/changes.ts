@@ -1,9 +1,9 @@
 import { esc, fmtArea, fmtInt, fmtKm2, ha, typeIcon, typeInfo } from "../domain";
 import type { ChangeCollection, ChangeProps, Dataset } from "../types";
 
-/** The plain-words name of a change; older comparisons without a headline fall back to the type label. */
+/** The plain-words name of a change; a feature without a headline falls back to the type label. */
 export const changeTitle = (p: ChangeProps): string => p.headline?.trim() || typeInfo(p.change_type).label;
-/** Where it is, in words; older comparisons fall back to the facility id or the rule's explanation. */
+/** Where it is, in words; without a location it falls back to the facility id or the rule's explanation. */
 export const changeWhere = (p: ChangeProps): string => p.location?.trim() || (p.facility_id ? `at ${p.facility_id}` : p.explanation);
 
 const LIST_CAP = 50;

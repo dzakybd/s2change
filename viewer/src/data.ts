@@ -36,7 +36,7 @@ const loadManifest = memo(() => getJson<Manifest>(dataUrl("manifest.json")));
 export const loadAoi = memo(() => getJson<AoiCollection>(dataUrl("aoi.geojson")));
 
 /** Give every feature a sequential `fid`: the key for hover/selection feature-state. */
-export function indexed(fc: ChangeCollection): ChangeCollection {
+function indexed(fc: ChangeCollection): ChangeCollection {
   fc.features.forEach((f, i) => {
     f.properties.fid = i;
     f.properties.facility_id ??= null;
@@ -51,7 +51,7 @@ async function loadStatic(dir: string, id: string, nominal: boolean, manifest?: 
   const m = manifest ?? (await getJson<Manifest>(url("manifest.json")));
   const [raw, facilities] = await Promise.all([
     getJson<ChangeCollection>(url(m.vectors.changes)),
-    getJson<FacilityCollection>(url(m.vectors.facilities ?? "facilities.geojson")),
+    getJson<FacilityCollection>(url(m.vectors.facilities)),
   ]);
   const changes = indexed(raw);
   const rasters = Object.fromEntries(Object.entries(m.rasters).map(([k, r]) => [k, { url: url(r.url).href, bounds: r.bounds }])) as Dataset["rasters"];

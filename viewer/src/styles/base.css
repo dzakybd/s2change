@@ -187,7 +187,7 @@ tbody tr:first-child td { box-shadow: none; }
 @media (hover: hover) and (pointer: fine) { tbody tr:hover td { background: rgb(15 23 42 / 0.03); } }
 
 /* Rows that are pressed, not just hovered: tint on pointer-down so touch users get the same feedback as mouse users. */
-.lg-row:active, .dt:active:not(:disabled), .menu-pop [role="option"]:active:not([aria-disabled="true"]), .fac a:active, .toc a:active, .tbl summary:active, .trace summary:active { background-color: var(--tint-2); }
+.lg-row:active, .menu-pop [role="option"]:active:not([aria-disabled="true"]), .fac a:active, .toc a:active, .trace summary:active { background-color: var(--tint-2); }
 
 input[type="range"] { accent-color: var(--accent); width: 100%; }
 input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
@@ -195,9 +195,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgb(15 23 42 / 0.2); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.progress { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
-.progress > i { display: block; height: 100%; width: 40%; border-radius: 2px; background: var(--accent); animation: slide 1.4s var(--ease-in-out) infinite; }
-@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 
 /* Skeletons for the first paint of a view: the shape of the page, pulsing in opacity only. */
 .skel { display: block; border-radius: var(--r-sm); background: var(--surface-3); animation: skel 1.3s ease-in-out infinite alternate; }
@@ -225,7 +222,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
-  .progress > i { animation: none; width: 100%; opacity: 0.5; }
   .spinner { animation-duration: 1.6s !important; animation-iteration-count: infinite !important; }
 }
 @media (prefers-reduced-transparency: reduce) {

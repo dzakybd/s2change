@@ -61,8 +61,7 @@ async function call<T>(state: ReadyApi, method: "GET" | "POST", path: string, bo
     const retry = Number(res.headers.get("Retry-After"));
     let detail = `HTTP ${res.status}`;
     try {
-      const j = (await res.json()) as { detail?: unknown; message?: unknown; error?: unknown };
-      const d = j.detail ?? j.message ?? j.error;
+      const d = ((await res.json()) as { detail?: unknown }).detail;
       if (typeof d === "string" && d) detail = d;
     } catch {
       // body was not JSON
@@ -99,7 +98,7 @@ function normalizeResponse(raw: unknown): AgentResponse {
   const r = (raw ?? {}) as Record<string, unknown>;
   return {
     answer: typeof r["answer"] === "string" ? r["answer"] : "",
-    // `set_month` came from the removed timeline; anything the viewer cannot perform is dropped here.
+    // Actions the viewer cannot perform are dropped here.
     actions: arr<AgentAction>(r["actions"]).filter((a) => a && typeof a === "object" && ACTIONS.has(a.type)),
     charts: arr<AgentChart>(r["charts"]).filter((c) => c && Array.isArray(c.x) && Array.isArray(c.series)),
     tables: arr<AgentTable>(r["tables"]).filter((t) => t && Array.isArray(t.columns) && Array.isArray(t.rows)),
@@ -131,7 +130,7 @@ export const STATIC_RUN_IDS: ReadonlySet<string> = new Set(["assignment", "defau
 /* ---------- database explorer ---------- */
 
 export const dbSchema = (s: ReadyApi) => call<DbTable[]>(s, "GET", "/api/db/schema");
-export interface PageQuery {
+interface PageQuery {
   page: number;
   size: number;
   sort?: string | undefined;

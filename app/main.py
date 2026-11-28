@@ -130,13 +130,9 @@ class LoginRequest(BaseModel):
     code: str = Field(max_length=200)
 
 
-def auth_state(request: Request) -> dict:
-    return {"enabled": auth.enabled(), "authenticated": auth.authenticated(request)}
-
-
 @app.get("/api/auth/status")
 def auth_status(request: Request):
-    return auth_state(request)
+    return {"enabled": auth.enabled(), "authenticated": auth.authenticated(request)}
 
 
 @app.post("/api/auth/login")
