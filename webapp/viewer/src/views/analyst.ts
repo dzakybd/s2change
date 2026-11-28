@@ -3,16 +3,17 @@ import type { ApiState, ChatMessage } from "../api";
 import { brief, chat, friendlyError } from "../api";
 import { chartElement } from "../charts";
 import { CHEVRON, LIVE_URL, esc, q } from "../domain";
-import { renderMarkdown } from "../markdown";
 import { renderRich } from "../rich";
 import { withUnlock } from "../unlock";
 import type { AgentAction, AgentResponse, AgentTable } from "../types";
 
+// Must match api/analyst.py STARTERS, whose answers are cached on the server.
 const SUGGESTIONS = [
-  "How much changed and why?",
-  "Show the 5 largest changes in the mine footprint",
-  "Which facility changed the most?",
-  "Which changes are likely burn scars?",
+  "What changed at the mine, in one minute?",
+  "Show me the earthworks on the tailings dam wall",
+  "Which part of the mine changed the most?",
+  "Where was new waste rock dumped?",
+  "Which changes are probably not real?",
 ];
 
 /** What the chat can ask the viewer to do. Each returns an error message, or null on success. */
@@ -175,12 +176,11 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
     return null;
   };
 
-  const renderAnswer = (res: AgentResponse): HTMLElement => {
+  const renderAnswer = async (res: AgentResponse): Promise<HTMLElement> => {
     const el = document.createElement("div");
     el.className = "msg assistant";
-    const body = document.createElement("div");
-    body.className = "md";
-    body.innerHTML = renderMarkdown(res.answer || "_The agent returned no text._");
+    const body = await renderRich(res.answer || "_The agent returned no text._"); // tables, emoji and Mermaid, sanitised
+    body.classList.add("md");
     el.append(body);
     for (const c of res.charts) el.append(chartElement(c));
     for (const t of res.tables) el.append(tableElement(t));
@@ -240,7 +240,7 @@ export function mountAnalyst(root: HTMLElement, host: AgentHost, apiPromise: Pro
         return chat(live, history.slice(-20), signal);
       });
       history.push({ role: "assistant", content: res.answer });
-      const answer = renderAnswer(res);
+      const answer = await renderAnswer(res);
       pending.replaceWith(answer);
       // Long answers: keep their first lines in view instead of jumping to the end.
       if (answer.offsetHeight > scroller.clientHeight - 24) answer.scrollIntoView({ block: "start" });

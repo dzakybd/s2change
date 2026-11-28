@@ -17,10 +17,11 @@ from pathlib import Path
 log = logging.getLogger("s2cd.app")
 DEFAULT_MODEL = "gemini-3.5-flash"
 STARTERS = (
-    "How much changed and why?",
-    "Show the 5 largest changes in the mine footprint",
-    "Which facility changed the most?",
-    "Which changes are likely burn scars?",
+    "What changed at the mine, in one minute?",
+    "Show me the earthworks on the tailings dam wall",
+    "Which part of the mine changed the most?",
+    "Where was new waste rock dumped?",
+    "Which changes are probably not real?",
 )
 APP = Path(__file__).parent
 _lock = threading.Lock()

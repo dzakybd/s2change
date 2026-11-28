@@ -86,3 +86,9 @@ code.tool { color: var(--accent-ink); }
 
 .md .table-wrap th, .md .table-wrap td { white-space: normal; }
 #chat-close svg { transform: rotate(90deg); }
+.md table { display: block; max-width: 100%; overflow-x: auto; margin: 0 0 var(--s-3); border-collapse: collapse; font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+.md th, .md td { padding: 5px 8px; text-align: left; vertical-align: top; box-shadow: 0 -1px 0 rgb(15 23 42 / 0.07) inset; }
+.md th { color: var(--text-3); font-weight: 600; white-space: nowrap; }
+.md td { color: var(--text-2); }
+.md .mermaid-diagram { margin: 0 0 var(--s-3); padding: var(--s-2); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); overflow-x: auto; }
+.md .mermaid-diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
