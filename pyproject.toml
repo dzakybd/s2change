@@ -1,19 +1,21 @@
 [project]
 name = "s2cd"
 version = "0.1.0"
-description = "Sentinel-2 change detection for open-pit mine monitoring: stripe-aware radiometric normalization, robust CVA, PostGIS/SpatiaLite storage"
+description = "Sentinel-2 change detection for open-pit mine monitoring: stripe-aware radiometric normalization, robust CVA, PostGIS storage"
 readme = "README.md"
 authors = [
     { name = "Dzaky Zakiyal Fawwaz", email = "dzakybd@gmail.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "geoalchemy2>=0.21.0",
     "geopandas>=1.2.0",
     "matplotlib>=3.11.2",
     "numpy>=2.5.5",
     "psycopg[binary]>=3.3.9",
     "pyogrio>=0.13.0",
     "pyproj>=3.8.0",
+    "python-dotenv>=1.2.4",
     "pyyaml>=6.0.3",
     "rasterio>=1.5.2",
     "scikit-image>=0.26.0",
@@ -34,7 +36,6 @@ app = [
     "httpx>=0.28.1",
     "langchain-google-genai>=4.5.1",
     "langchain-openai>=1.8.3",
-    "python-dotenv>=1.2.4",
     "slowapi>=0.1.10",
     "sqlglot>=30.33.0",
     "uvicorn[standard]>=0.54.0",

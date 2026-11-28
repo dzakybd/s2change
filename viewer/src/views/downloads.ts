@@ -2,12 +2,12 @@ import "../styles/report.css"; // .prose, for the document preview
 import "../styles/downloads.css";
 import type { AppContext, View } from "../app";
 import { dataUrl, getJson } from "../data";
-import { BLOB_URL, RAW_URL, esc, fmtInt, prefersReducedMotion, q } from "../domain";
+import { BLOB_URL, RAW_URL, esc, prefersReducedMotion, q } from "../domain";
 import { renderRich } from "../rich";
 import { hrefFor } from "../router";
 
 /** docs/web/downloads.json, written by `python -m s2cd.site` from the files themselves (sizes, previews, samples). */
-type Kind = "rgb" | "magnitude" | "binary" | "vector" | "sqlite" | "markdown" | "report";
+type Kind = "rgb" | "magnitude" | "binary" | "vector" | "markdown" | "report";
 interface Item {
   path: string;
   title: string;
@@ -17,24 +17,18 @@ interface Item {
   image?: string;
   facts?: [string, string][];
   sample?: { columns: string[]; rows: string[][] };
-  tables?: { name: string; rows: number; columns: string[] }[];
   document?: string;
 }
 interface Catalogue {
   groups: { title: string; blurb: string; items: Item[] }[];
 }
 
-const FORMAT: Record<Kind, string> = { rgb: "GeoTIFF", magnitude: "GeoTIFF", binary: "GeoTIFF", vector: "GeoJSON", sqlite: "SpatiaLite", markdown: "Markdown", report: "Markdown" };
+const FORMAT: Record<Kind, string> = { rgb: "GeoTIFF", magnitude: "GeoTIFF", binary: "GeoTIFF", vector: "GeoJSON", markdown: "Markdown", report: "Markdown" };
 const DL = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2v8m-3-3 3 3 3-3M3 13h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
-function tablesHtml(tables: NonNullable<Item["tables"]>, full: boolean): string {
-  return `<ul class="dl-tables">${tables.map((t) => `<li><code>${esc(t.name)}</code><span class="num">${fmtInt(t.rows)} rows · ${t.columns.length} columns</span>${full ? `<small>${t.columns.map(esc).join(", ")}</small>` : ""}</li>`).join("")}</ul>`;
-}
 
 /** The preview inside a card: the rendered image, the table list, or the start of the document. */
 function thumb(i: Item): string {
   if (i.image) return `<img src="${dataUrl(i.image).href}" alt="" loading="lazy" decoding="async">`;
-  if (i.tables) return tablesHtml(i.tables, false);
   return `<div class="dl-doc" aria-hidden="true"><b>${esc(i.title)}</b><i></i><i></i><i class="w2"></i><i></i><i class="w3"></i></div>`;
 }
 
@@ -62,7 +56,7 @@ async function previewBody(i: Item): Promise<HTMLElement> {
   const sample = i.sample?.rows.length
     ? `<h3>First rows</h3><div class="table-wrap"><table><thead><tr>${i.sample.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${i.sample.rows.map((r) => `<tr>${r.map((v) => `<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
     : "";
-  box.innerHTML = `${i.image ? `<img class="dl-pv-img" src="${dataUrl(i.image).href}" alt="Preview of ${esc(i.title)}">` : ""}${i.tables ? tablesHtml(i.tables, true) : ""}${facts}${sample}`;
+  box.innerHTML = `${i.image ? `<img class="dl-pv-img" src="${dataUrl(i.image).href}" alt="Preview of ${esc(i.title)}">` : ""}${facts}${sample}`;
   if (i.document) {
     const res = await fetch(dataUrl(i.document));
     const doc = res.ok ? await renderRich(await res.text(), { imageBase: dataUrl(i.document) }) : Object.assign(document.createElement("p"), { textContent: `Could not load the document (HTTP ${res.status}).` });

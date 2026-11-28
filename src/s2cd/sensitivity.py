@@ -5,8 +5,8 @@ derived at the default nominal rate (1e-3), so the other rates are nominal rates
 (total changed area, share inside the mine footprint) hold across a wide band of settings, they
 are not artifacts of one threshold choice.
 
-The pipeline is run into a temporary directory and SQLite file, so the shipped outputs (``data/processed``, the database) are
-never touched; the default configuration (``configs/default.yaml``, with provenance zones when available) is used.
+The pipeline is run into a temporary directory without a database, so the shipped outputs and the database are never
+touched; the default configuration (``configs/default.yaml``, with provenance zones when available) is used.
 
 Run: ``uv run python -m s2cd.sensitivity`` (about a minute) ->
 data/processed/sensitivity.csv
@@ -33,7 +33,7 @@ def sweep() -> pd.DataFrame:
     """Changed area and footprint shares over the FAR x MMU grid (the run itself goes to a temporary directory)."""
     base = Config.from_yaml(Path("configs/default.yaml"))
     with tempfile.TemporaryDirectory() as tmp:
-        p = run(replace(base, out_dir=Path(tmp) / "processed", sqlite_path=Path(tmp) / "change_detection.sqlite"))
+        p = run(replace(base, out_dir=Path(tmp) / "processed"))
     grid = p.before.grid
     px_ha = grid.pixel_area_m2 / 1e4
     disturbed = vectorize.disturbed_footprint(p.refl_before, p.valid)

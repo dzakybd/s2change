@@ -21,7 +21,7 @@ flowchart LR
   end
   stac --> s2cd
   rasters --> s2cd
-  s2cd -->|app.publish| pg
+  s2cd -->|writes results| pg
   pg --> api
   api --> agent
   agent --> llm

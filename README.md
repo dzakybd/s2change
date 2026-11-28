@@ -12,11 +12,11 @@ Needs [uv](https://docs.astral.sh/uv/); Python 3.12 is installed from the lockfi
 
 ```bash
 uv sync                          # install
-uv run s2cd run                  # run the pipeline: stacks, change maps, polygons, SQLite database, figures
+uv run s2cd run                  # run the pipeline: stacks, change maps, polygons, figures (+ PostGIS if DATABASE_URL is set)
 uv run pytest -q -m "not slow"   # optional: tests
 ```
 
-The input is the provided data in `inputs/`, unchanged. The outputs are already committed, so they can be inspected without running anything.
+The input is the provided data in `inputs/`, unchanged. The outputs are already committed, so they can be inspected without running anything. The database step needs `DATABASE_URL` in `.env` (the production PostGIS); without it the run skips that step, and `make run-local` writes to a local PostGIS instead.
 
 ## What you get
 
@@ -25,7 +25,7 @@ The input is the provided data in `inputs/`, unchanged. The outputs are already 
 | 1 · Data preparation (B02–B04, CRS, transform and shape checked) | `data/processed/sentinel2_20230812_stack.tif`, `sentinel2_20230902_stack.tif` |
 | 2 · Change detection: the provided example | `data/processed/change_map_baseline.tif`, `change_binary_baseline.tif` |
 | 2 · Change detection: this work | `data/processed/change_map.tif`, `change_binary.tif` (+ `change_significance.tif`) |
-| 3 · Change polygons in a geospatial database | `data/change_detection.sqlite` (SpatiaLite, table `change_features`); `data/processed/change_features.geojson` |
+| 3 · Change polygons in a geospatial database | PostGIS (Supabase), table `change_features`: [explore it live](https://s2change.dzaky.ai.id/#/database), or locally with `make run-local`; also `data/processed/change_features.geojson` |
 | 4 · Visualisation | `docs/figures/`, plus the interactive map in the app |
 | 5 · Report | [report.md](report.md), also as a PDF in the app's Report tab |
 | Run settings and numbers | `data/processed/run_summary.json`, `sensitivity.csv` |
@@ -65,8 +65,8 @@ make help                          # list every task
 uv run s2cd provenance             # optional, online: trace each pixel to its satellite pass
 uv run python -m s2cd.sensitivity  # stricter / looser settings sweep
 make figures                       # re-render the report figures
-make query                         # example SQL against the SpatiaLite database
-make db-up && make run-postgis     # same pipeline into a local PostGIS (Docker)
+make run-local                     # same pipeline into a local PostGIS (Docker) instead of production
+make query                         # example SQL against that local PostGIS
 cd viewer && npm ci && npm run dev # the web app, locally
 ```
 

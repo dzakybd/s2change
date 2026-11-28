@@ -1,6 +1,6 @@
 # s2change: system, stack and security
 
-This is optional reading. The analysis the brief asks for is one Python package (`s2cd`) plus a SpatiaLite file; see the [README](../README.md) and the [report](../report.md). Everything below lets a reader check the results without installing anything: the pipeline writes files, `app.publish` loads them into PostGIS, a read-only API serves them, and a static viewer shows them.
+This is optional reading. The analysis the brief asks for is one Python package (`s2cd`) writing to PostGIS; see the [README](../README.md) and the [report](../report.md). Everything below lets a reader check the results without installing anything: the pipeline writes files, `app.publish` loads them into PostGIS, a read-only API serves them, and a static viewer shows them.
 
 ![Architecture: data, pipeline, storage, app server and browser, with the technology of each part](figures/12_architecture.png)
 
@@ -39,7 +39,7 @@ sequenceDiagram
 | Raster and numerics | rasterio, numpy, scipy, scikit-image | Windowed GeoTIFF/COG I/O, the robust covariance and statistics and morphology |
 | Vector | geopandas, shapely, pyogrio, pyproj | Polygons, validity repair, EPSG:32735 areas in m² |
 | Source scenes | pystac-client, planetary-computer | Optional extra: recovers the true acquisitions behind each mosaic, B02-B04 only |
-| Storage | PostGIS 16 with a GiST index, Supabase, SpatiaLite, SQLAlchemy, psycopg | A geospatial DB as the brief asks; the app reads through a `SELECT`-only role |
+| Storage | PostGIS 16 with a GiST index, Supabase, SQLAlchemy, psycopg | A geospatial DB as the brief asks; the app reads through a `SELECT`-only role |
 | API | FastAPI, uvicorn, slowapi, sqlglot | Typed endpoints, per-route rate limits, SQL parsed and checked before it runs |
 | Agent | LangChain deepagents, langchain-google-genai, langchain-openai (OpenRouter) | An agent restricted to typed tools plus knowledge notes, on Gemini (directly or via OpenRouter) |
 | Viewer | Vite, TypeScript, MapLibre GL, marked, DOMPurify, Mermaid | Static bundle, no server rendering; the report is rendered in the app from the same markdown |

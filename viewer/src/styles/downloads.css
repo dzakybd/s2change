@@ -26,12 +26,6 @@ a.dl-open { cursor: pointer; }
   .dl-open:hover .dl-zoom { opacity: 1; transform: none; }
 }
 @media (hover: none) { .dl-zoom { opacity: 1; transform: none; } }
-.dl-media .dl-tables { padding: var(--s-3); }
-.dl-tables { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.dl-tables li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px var(--s-3); font-size: var(--fs-xs); }
-.dl-tables code { font-weight: 600; color: var(--text); }
-.dl-tables span { color: var(--text-3); }
-.dl-tables small { flex-basis: 100%; font-family: var(--mono); font-size: 11px; color: var(--text-3); line-height: 1.5; }
 .dl-doc { display: grid; align-content: start; gap: 7px; height: 100%; padding: var(--s-4); }
 .dl-doc b { font-family: var(--mono); font-size: var(--fs-sm); margin-bottom: 4px; }
 .dl-doc i { height: 6px; border-radius: 3px; background: var(--surface-3); }

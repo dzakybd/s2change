@@ -10,7 +10,7 @@ https://s2change.dzaky.ai.id, also buildable for GitHub Pages.
 | Database | Connection card (live PostgreSQL/PostGIS versions, masked read-only URI, copy with the access code), interactive entity-relationship diagram (click a table), paged table explorer with sorting and key links between tables, "show this page on the map", SQL dump per table or for the whole database | yes (live-only; static hosts get an explanation) |
 | Report (landing tab) | `web/report/report.md` rendered with a table of contents, numbered figures, Mermaid diagrams and facility thumbnails; links into the app open in place | no |
 | Agent (panel on the Map) | Chat with charts, tables, map actions and a tool-call trace, plus "Generate monitoring brief" | yes |
-| Downloads | Rasters, stacks, SpatiaLite, GeoJSON, docs with a preview of each (`web/downloads.json`, `web/previews/`); files from GitHub raw links | no |
+| Downloads | Rasters, stacks, GeoJSON, docs with a preview of each (`web/downloads.json`, `web/previews/`); files from GitHub raw links | no |
 
 ```bash
 npm install

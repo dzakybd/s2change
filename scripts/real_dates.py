@@ -39,7 +39,7 @@ def main() -> None:
     rows = []
     for name, (before, after) in PAIRS.items():
         out = OUT / f"{before}_{after}".replace("inputs/data/sentinel2_", "provided_")
-        cfg = pipeline.Config(before=folder(before), after=folder(after), out_dir=out, sqlite_path=out / "db.sqlite")
+        cfg = pipeline.Config(before=folder(before), after=folder(after), out_dir=out)
         if "/" not in before:
             cfg.provenance_dir = out / "none"  # a single pass has no seams: do not borrow the mosaics' zones
         p = pipeline.run(cfg)

@@ -16,8 +16,7 @@ flowchart LR
   EXP -->|SELECT only| DB
   T -->|SELECT only| DB
   T -->|map_action, make_chart, make_table| C[per-request Collector<br/>contextvar]
-  PUB[python -m app.publish] -->|owner role, idempotent| DB
-  SQ[(data/change_detection.sqlite)] --> PUB
+  PUB[s2cd run<br/>pipeline] -->|owner role, idempotent| DB
 ```
 
 ## Run locally
@@ -27,16 +26,16 @@ uv sync --all-extras
 docker compose up -d db                     # or docker-compose; PostGIS on :5432
 cp app/.env.example .env                    # fill GEMINI_API_KEY and the passwords
 set -a; source .env; set +a                 # or export the variables yourself
-uv run --all-extras python -m app.publish   # loads data/change_detection.sqlite, creates s2cd_reader; safe to rerun
+uv run s2cd run                             # pipeline: writes the results to DATABASE_URL, creates s2cd_reader; safe to rerun
 uv run --all-extras uvicorn app.main:app --port 8000
 uv run --all-extras python -m app.evals     # needs the API running; writes app/evals/results.{md,json}
 ```
 
 Run the API from the repository root.
 
-Production data lives in Supabase PostGIS. Publish runs from a workstation with the owner URL (pooler, session mode, port 5432); the VPS only gets the read-only `s2cd_reader` URL. On Supabase, `schema_app.sql` also revokes the auto-exposed REST roles (`anon`, `authenticated`) on every table and grants the reader `USAGE` on the `extensions` schema where PostGIS lives.
+Production data lives in Supabase PostGIS. The pipeline writes it from a workstation with the owner URL (pooler, session mode, port 5432); the VPS only gets the read-only `s2cd_reader` URL. On Supabase, `schema_app.sql` also revokes the auto-exposed REST roles (`anon`, `authenticated`) on every table and grants the reader `USAGE` on the `extensions` schema where PostGIS lives.
 
-`publish` runs `sql/schema_postgis.sql` then `sql/schema_app.sql` (facility tables and the read-only role), makes the database hold exactly the runs in the SQLite file, loads `facilities` and `facility_changes`, then sets the reader password.
+The database step of `s2cd run` (`s2cd.db.write_postgis`) runs `sql/schema_postgis.sql` then `sql/schema_app.sql` (facility tables and the read-only role), makes the database hold exactly the runs of this pipeline run, loads `facilities` and `facility_changes`, then sets the reader password. Without `DATABASE_URL` the step is skipped.
 
 | Variable | Used by | Default / note |
 |---|---|---|
@@ -44,8 +43,8 @@ Production data lives in Supabase PostGIS. Publish runs from a workstation with 
 | `GEMINI_MODEL` | agent, `/api/health` | `gemini-3.5-flash` |
 | `LLM_PROVIDER` | agent | `google` (default) or `openrouter` (same model, for hosts where Google's API refuses the region) |
 | `OPENROUTER_API_KEY`, `AGENT_OPENROUTER_MODEL` | agent | only with `LLM_PROVIDER=openrouter`; model defaults to `google/<GEMINI_MODEL>` |
-| `DATABASE_URL` | `app.publish` only | owner connection (SQLAlchemy URL) |
-| `READER_PASSWORD` | `app.publish` | password given to `s2cd_reader` |
+| `DATABASE_URL` | `s2cd run` only | owner connection (SQLAlchemy URL); unset: no database step |
+| `READER_PASSWORD` | `s2cd run` | password given to `s2cd_reader` |
 | `READER_DATABASE_URL` | API, agent, evals | connection as `s2cd_reader` |
 | `AGENT_DAILY_CAP` | API | `300` chat calls per day, whole service |
 | `AGENT_RATE` | API | `6/minute` per client IP |

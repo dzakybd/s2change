@@ -61,7 +61,7 @@ def load_data() -> dict:
     os.chdir(ROOT)
     base = Config.from_yaml(Path("configs/default.yaml"))
     with tempfile.TemporaryDirectory() as tmp:
-        cfg = replace(base, out_dir=Path(tmp) / "processed", sqlite_path=Path(tmp) / "change_detection.sqlite")
+        cfg = replace(base, out_dir=Path(tmp) / "processed")
         p = run(cfg)
         with rasterio.open(Path(tmp) / "processed/change_binary.tif") as src:
             changed = (src.read(1) == 1) & p.valid

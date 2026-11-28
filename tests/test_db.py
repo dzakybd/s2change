@@ -5,7 +5,6 @@ from datetime import date
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pyogrio
 import pytest
 from conftest import make_grid
 
@@ -84,53 +83,6 @@ def test_as_feature_table_is_idempotent_on_multipolygons(tables):
     assert all(a.equals(b) for a, b in zip(once.geometry, twice.geometry, strict=True))
     assert twice.geometry.geom_type.eq("MultiPolygon").all()
     assert all(len(g.geoms) == 1 for g in twice.geometry)
-
-
-def test_write_sqlite_round_trip(tmp_path, tables):
-    feats, runs, _ = tables
-    path = db.write_sqlite(tmp_path / "nested" / "cd.sqlite", feats, runs)
-    assert path.exists()
-
-    info = pyogrio.read_info(path, layer="change_features")
-    assert info["geometry_type"] == "MultiPolygon"
-    assert info["crs"] == "EPSG:32735"
-    assert info["features"] == len(feats)
-
-    back = pyogrio.read_dataframe(path, layer="change_features")
-    assert back.crs.to_epsg() == 32735
-    assert back.geometry.geom_type.eq("MultiPolygon").all()
-    assert sorted(back.area_m2) == pytest.approx(sorted(feats.area_m2))
-    assert back.geometry.area.sum() == pytest.approx(feats.geometry.area.sum())
-    assert set(back.run_id) == set(feats.run_id)
-    assert set(back.change_direction) == {"brightening", "darkening"}
-    assert set(db.FEATURE_COLUMNS) <= set(back.columns)
-    assert back.in_disturbed_area.dtype == bool
-
-    runs_back = pyogrio.read_dataframe(path, sql="SELECT * FROM change_runs ORDER BY run_id", sql_dialect="SQLITE")
-    assert list(runs_back.run_id) == ["20230812_20230902_euclidean_baseline", "20230812_20230902_robust_cva"]
-    assert runs_back.params.iloc[0].startswith("{")
-    assert set(runs_back.method) == {"robust_cva", "euclidean_baseline"}
-
-
-def test_write_sqlite_overwrites_instead_of_appending(tmp_path, tables):
-    feats, runs, _ = tables
-    path = tmp_path / "cd.sqlite"
-    db.write_sqlite(path, feats, runs)
-    db.write_sqlite(path, feats, runs)
-    assert pyogrio.read_info(path, layer="change_features")["features"] == len(feats)
-    n_runs = pyogrio.read_dataframe(path, sql="SELECT count(*) AS n FROM change_runs", sql_dialect="SQLITE").n.iloc[0]
-    assert n_runs == 2
-
-
-def test_spatial_sql_runs_against_written_database(tmp_path, tables):
-    feats, runs, _ = tables
-    path = db.write_sqlite(tmp_path / "cd.sqlite", feats, runs)
-    out = pyogrio.read_dataframe(
-        path,
-        sql="SELECT method, SUM(ST_Area(geometry)) AS a FROM change_features GROUP BY method",
-        sql_dialect="SQLITE",
-    )
-    assert out.a.tolist() == [pytest.approx(16400.0)] * 2
 
 
 def test_runs_table_serializes_json():

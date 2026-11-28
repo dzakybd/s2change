@@ -1,23 +1,24 @@
-"""Store change polygons in SpatiaLite (default, single file) or PostGIS (``DATABASE_URL``).
+"""Store the results in PostGIS (``DATABASE_URL``): the production database, or the local one of ``make db-up``.
 
-Both backends get the same logical schema (see ``sql/schema_postgis.sql``):
+Schema: ``sql/schema_postgis.sql`` (results) and ``sql/schema_app.sql`` (facility register, read-only role):
 
 change_runs      one row per (date pair, method) run, with parameters and summary as JSON
 change_features  one row per change polygon, geometry stored as a valid MULTIPOLYGON in EPSG:32735
-facilities       (SpatiaLite only) the named facility outlines of the register
-facility_changes (SpatiaLite only) changed area, change types and a one-line summary per facility
+facilities       the named facility outlines of the register
+facility_changes changed area, change types and a one-line summary per facility
 
-Writes are idempotent per ``run_id``: rerunning the pipeline replaces that run's rows.
+Writes are idempotent: the database ends up holding exactly the runs of the last pipeline run.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import sys
 from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
-import pyogrio
 
 from .vectorize import as_valid_multipolygon
 
@@ -52,7 +53,9 @@ FEATURE_COLUMNS = [
     "what_to_check",
     "description",
 ]
-SCHEMA_SQL = Path(__file__).resolve().parents[2] / "sql" / "schema_postgis.sql"
+SQL_DIR = Path(__file__).resolve().parents[2] / "sql"
+SCHEMA_SQL = SQL_DIR / "schema_postgis.sql"
+SCHEMAS = (SCHEMA_SQL, SQL_DIR / "schema_app.sql")
 
 
 def as_feature_table(gdf: gpd.GeoDataFrame, run_id: str, method: str, date_before, date_after) -> gpd.GeoDataFrame:
@@ -68,67 +71,65 @@ def as_feature_table(gdf: gpd.GeoDataFrame, run_id: str, method: str, date_befor
     return out.set_geometry(out.geometry.apply(as_valid_multipolygon))
 
 
-def write_sqlite(
-    path: Path,
+def _nulls(df: pd.DataFrame) -> pd.DataFrame:
+    """NaN and NA become None, so they are stored as NULL (NaN would fail the CHECK constraints)."""
+    return df.astype(object).where(df.notna(), None)
+
+
+def write_postgis(
+    url: str,
     features: gpd.GeoDataFrame,
     runs: pd.DataFrame,
-    facilities: gpd.GeoDataFrame | None = None,
-    facility_changes: pd.DataFrame | None = None,
-) -> Path:
-    """Write a SpatiaLite database (GDAL SQLite driver, SPATIALITE=YES) with an R*Tree spatial index.
+    facilities: gpd.GeoDataFrame,
+    facility_changes: pd.DataFrame,
+) -> None:
+    """Create the schema if needed, then replace every run, polygon and facility row with these, in one transaction.
 
-    ``facilities`` (MultiPolygon outlines) and ``facility_changes`` (plain table; dict columns are stored as JSON text)
-    are optional extra layers.
+    Polygon ids are 1..n in the order of ``features``. ``READER_PASSWORD``, when set, becomes the password of the
+    read-only role ``s2cd_reader`` that the app connects with.
     """
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.unlink(missing_ok=True)
-    pyogrio.write_dataframe(
-        features,
-        path,
-        layer="change_features",
-        driver="SQLite",
-        dataset_options={"SPATIALITE": "YES"},
-        layer_options={"GEOMETRY_NAME": "geometry", "FID": "id", "SPATIAL_INDEX": "YES"},
-        geometry_type="MultiPolygon",
-    )
-    pyogrio.write_dataframe(runs, path, layer="change_runs", driver="SQLite", append=True)
-    if facilities is not None:
-        pyogrio.write_dataframe(
-            facilities,
-            path,
-            layer="facilities",
-            driver="SQLite",
-            append=True,
-            layer_options={"GEOMETRY_NAME": "geometry", "FID": "id", "SPATIAL_INDEX": "YES"},
-            geometry_type="MultiPolygon",
-        )
-    if facility_changes is not None:
-        table = facility_changes.assign(change_types=facility_changes.change_types.map(json.dumps))
-        pyogrio.write_dataframe(table, path, layer="facility_changes", driver="SQLite", append=True)
-    return path
-
-
-def write_postgis(url: str, features: gpd.GeoDataFrame, runs: pd.DataFrame) -> None:
-    """Create the schema if needed, then replace the rows of every run_id in ``runs``."""
     from sqlalchemy import create_engine, text
 
-    engine = create_engine(url)
-    with engine.begin() as conn:
-        conn.execute(text(SCHEMA_SQL.read_text()))
-        for _, r in runs.iterrows():
-            conn.execute(text("DELETE FROM change_runs WHERE run_id = :rid"), {"rid": r.run_id})  # cascades to features
-            conn.execute(
-                text(
-                    "INSERT INTO change_runs (run_id, method, date_before, date_after, params, summary) "
-                    "VALUES (:run_id, :method, :date_before, :date_after, CAST(:params AS jsonb), CAST(:summary AS jsonb))"
-                ),
-                r.to_dict(),
-            )
-        rows = features[FEATURE_COLUMNS + ["geometry"]].copy()
-        for c in rows.select_dtypes("floating").columns:
-            rows[c] = rows[c].astype(object).where(rows[c].notna(), None)  # NaN -> NULL (NaN would fail the CHECKs)
+    rows = features[FEATURE_COLUMNS + ["geometry"]].copy()
+    rows.insert(0, "id", range(1, len(rows) + 1))
+    for c in ("date_before", "date_after"):
+        rows[c] = pd.to_datetime(rows[c]).dt.date
+    for c in rows.columns.drop("geometry"):
+        rows[c] = _nulls(rows[c])
+    fac_changes = facility_changes.assign(
+        change_types=[json.dumps(t if isinstance(t, dict) else {}) for t in facility_changes.change_types]
+    )
+    fac_cols = ["facility_id", "changed_ha", "changed_share", "change_types", "summary"]
+    run_cols = ["run_id", "method", "date_before", "date_after", "params", "summary"]
+
+    with create_engine(url).begin() as conn:
+        for schema in SCHEMAS:
+            conn.exec_driver_sql(schema.read_text().replace("%", "%%"))
+        conn.execute(text("DELETE FROM change_runs"))  # cascades to change_features
+        conn.execute(
+            text(
+                "INSERT INTO change_runs (run_id, method, date_before, date_after, params, summary) VALUES "
+                "(:run_id, :method, :date_before, :date_after, CAST(:params AS jsonb), CAST(:summary AS jsonb))"
+            ),
+            runs[run_cols].to_dict("records"),
+        )
         rows.to_postgis("change_features", conn, if_exists="append", index=False)
+        conn.execute(
+            text("SELECT setval(pg_get_serial_sequence('change_features', 'id'), (SELECT max(id) FROM change_features))")
+        )
+        conn.execute(text("DELETE FROM facilities"))  # cascades to facility_changes
+        facilities[["facility_id", "name", "class", "cover", "area_ha", "geometry"]].to_postgis(
+            "facilities", conn, if_exists="append", index=False
+        )
+        conn.execute(
+            text(f"INSERT INTO facility_changes ({', '.join(fac_cols)}) VALUES ({', '.join(':' + c for c in fac_cols)})"),
+            _nulls(fac_changes[fac_cols]).to_dict("records"),
+        )
+        if password := os.environ.get("READER_PASSWORD"):
+            literal = conn.execute(text("SELECT quote_literal(:p)"), {"p": password}).scalar_one()
+            conn.exec_driver_sql(f"ALTER ROLE s2cd_reader PASSWORD {literal}".replace("%", "%%"))
+        else:
+            print("READER_PASSWORD not set: s2cd_reader password left unchanged", file=sys.stderr)
 
 
 def runs_table(rows: list[dict]) -> pd.DataFrame:

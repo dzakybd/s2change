@@ -465,97 +465,9 @@
    ]
   },
   {
-   "title": "Database and vectors",
-   "blurb": "The SpatiaLite file holds the same tables the live PostGIS database serves.",
+   "title": "Vectors",
+   "blurb": "The change polygons as GeoJSON. The full tables live in the PostGIS database (Database tab, with SQL dumps).",
    "items": [
-    {
-     "path": "data/change_detection.sqlite",
-     "title": "change_detection.sqlite",
-     "desc": "SpatiaLite: runs, change features, facility register and per-facility changes.",
-     "size": "11.2 MB",
-     "kind": "sqlite",
-     "tables": [
-      {
-       "name": "change_runs",
-       "rows": 2,
-       "columns": [
-        "ogc_fid",
-        "run_id",
-        "method",
-        "date_before",
-        "date_after",
-        "params",
-        "summary"
-       ]
-      },
-      {
-       "name": "change_features",
-       "rows": 1784,
-       "columns": [
-        "id",
-        "run_id",
-        "date_before",
-        "date_after",
-        "method",
-        "area_m2",
-        "perimeter_m",
-        "compactness",
-        "confidence",
-        "neglog10_p",
-        "strong_fraction",
-        "change_direction",
-        "in_disturbed_area",
-        "touches_aoi_edge",
-        "d_blue",
-        "d_green",
-        "d_red",
-        "d_brightness",
-        "brightness_before",
-        "brightness_after",
-        "zone",
-        "change_type",
-        "brief_category",
-        "explanation",
-        "facility_id",
-        "headline",
-        "location",
-        "evidence",
-        "what_to_check",
-        "description",
-        "disturbed_fraction",
-        "geometry"
-       ]
-      },
-      {
-       "name": "facilities",
-       "rows": 8,
-       "columns": [
-        "id",
-        "facility_id",
-        "name",
-        "class",
-        "cover",
-        "area_ha",
-        "geometry"
-       ]
-      },
-      {
-       "name": "facility_changes",
-       "rows": 8,
-       "columns": [
-        "ogc_fid",
-        "facility_id",
-        "name",
-        "class",
-        "area_ha",
-        "changed_ha",
-        "changed_share",
-        "change_types",
-        "summary"
-       ]
-      }
-     ]
-    },
     {
      "path": "docs/web/change_features.geojson",
      "title": "change_features.geojson",
@@ -830,7 +742,7 @@
      "path": "report.md",
      "title": "report.md",
      "desc": "The full write-up, as shown in the Report tab.",
-     "size": "50 KB",
+     "size": "51 KB",
      "kind": "report"
     }
    ]

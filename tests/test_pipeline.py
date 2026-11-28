@@ -47,7 +47,6 @@ def test_full_pipeline_on_real_inputs(tmp_path):
     if not (cfg.before / "B02.tif").exists():
         pytest.skip("real inputs not available")
     cfg.out_dir = tmp_path / "processed"
-    cfg.sqlite_path = tmp_path / "cd.sqlite"
     cfg.figures_dir = tmp_path / "figures"
 
     products = pipeline.run(cfg)
@@ -60,13 +59,11 @@ def test_full_pipeline_on_real_inputs(tmp_path):
         assert (cfg.out_dir / name).exists(), name
     assert json.loads((cfg.out_dir / "run_summary.json").read_text())["n_features"] == s["n_features"]
 
-    info = pyogrio.read_info(cfg.sqlite_path, layer="change_features")
-    assert info["geometry_type"] == "MultiPolygon" and info["crs"] == "EPSG:32735"
-    assert info["features"] == sum(s["n_features"].values())
-    runs = pyogrio.read_dataframe(cfg.sqlite_path, sql="SELECT run_id FROM change_runs", sql_dialect="SQLITE")
-    assert len(runs) == 2
+    gdf = pyogrio.read_dataframe(cfg.out_dir / "change_features.geojson")
+    assert len(gdf) == sum(s["n_features"].values())
+    assert set(gdf.run_id) == {f"20230812_20230902_{m}" for m in s["n_features"]}
 
     # Polygon areas agree with the raster mask (10 m pixels).
-    gdf = pyogrio.read_dataframe(cfg.sqlite_path, layer="change_features", where="method = 'robust_cva'")
-    assert gdf.area_m2.sum() / 1e4 == pytest.approx(s["changed_area_ha"]["robust_cva"], rel=1e-3)
+    ours = gdf[gdf.method == "robust_cva"]
+    assert ours.area_m2.sum() / 1e4 == pytest.approx(s["changed_area_ha"]["robust_cva"], rel=1e-3)
     shutil.rmtree(Path(cfg.out_dir))

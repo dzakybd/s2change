@@ -461,7 +461,7 @@ One Python package (`s2cd`) does the analysis. Everything else lets a reader che
 ```mermaid
 flowchart LR
   T["📥 GeoTIFFs, 2 dates<br/>+ 🛰️ STAC for provenance"] --> P["🐍 s2cd pipeline<br/>offline, writes files"]
-  P -->|app.publish| DB[("🗄️ PostGIS<br/>Supabase, read-only")]
+  P -->|writes results| DB[("🗄️ PostGIS<br/>Supabase")]
   DB --> A["⚡ FastAPI<br/>VPS: Caddy + PM2"]
   A --> G["🤖 Agent: deepagents<br/>+ ✨ Gemini 3.5 Flash"]
   B["🗺️ Viewer: map, report,<br/>database, chat"] <-->|HTTPS| A
@@ -471,7 +471,7 @@ flowchart LR
 |---|---|---|---|
 | 🐍 | Pipeline | Python 3.12, uv, numpy, scipy, rasterio, scikit-image, geopandas, shapely | Windowed GeoTIFF I/O, robust statistics, morphology, valid polygons in metres (EPSG:32735) |
 | 🛰️ | Provenance | pystac-client, Planetary Computer | Finds the true pass behind every pixel (optional extra) |
-| 🗄️ | Database | **PostGIS 16** with GiST indexes on Supabase; **SpatiaLite** file offline | The geospatial DB the brief asks for; the app reads through a `SELECT`-only role |
+| 🗄️ | Database | **PostGIS 16** with GiST indexes on Supabase; the pipeline writes to it directly | The geospatial DB the brief asks for; the app reads through a `SELECT`-only role |
 | ⚡ | API | FastAPI, uvicorn, slowapi, sqlglot | Typed endpoints, rate limits, SQL parsed and checked before it runs |
 | 🤖 | Agent | LangChain **deepagents** on **Gemini** | Answers questions about the results with typed tools only |
 | 🗺️ | Viewer | Vite, TypeScript, MapLibre GL, marked, Mermaid | Static bundle; this report is rendered from the same markdown |
@@ -560,7 +560,7 @@ erDiagram
 | `facilities` | The 8 named mine facilities, drawn on very-high-resolution imagery | *Where are the pits and dumps?* |
 | `facility_changes` | Change per facility, by type | *Which facility changed most?* |
 
-`change_features_wgs84` is a view in lon/lat for web maps. Example queries: [PostGIS](sql/queries_postgis.sql) · [SpatiaLite](sql/queries_spatialite.sql) · [explore it live](https://s2change.dzaky.ai.id/#/database).
+`change_features_wgs84` is a view in lon/lat for web maps. Example queries: [PostGIS](sql/queries_postgis.sql) · [explore it live](https://s2change.dzaky.ai.id/#/database).
 
 ## 🚧 8. Limitations and next steps
 
@@ -583,7 +583,7 @@ erDiagram
 |---|---|---|---|
 | 1 ✅ | Data preparation | B02–B04 loaded, CRS, transform and shape checked, stacked | [Section 1](#-1-the-data) · `src/s2cd/io.py` → `data/processed/sentinel2_*_stack.tif` |
 | 2 ✅ | Change detection | The provided example, unchanged, and a calibrated change vector analysis | [Section 3](#-3-the-method) · [Change intensity map](https://s2change.dzaky.ai.id/#/map?layer=intensity) |
-| 3 ✅ | Store in a geospatial DB | SpatiaLite file in the repo; PostGIS with spatial indexes, explorer, SQL dump, API | [Section 7](#-7-the-system-stack-agent-and-database) · `data/change_detection.sqlite` · [Database](https://s2change.dzaky.ai.id/#/database) |
+| 3 ✅ | Store in a geospatial DB | PostGIS with spatial indexes, written by the pipeline; explorer, SQL dump, API | [Section 7](#-7-the-system-stack-agent-and-database) · [Database](https://s2change.dzaky.ai.id/#/database) |
 | 4 ✅ | Visualise | Static figures here; interactive map with swipe, types and facilities | [Map](https://s2change.dzaky.ai.id/#/map) |
 | 5 ✅ | Interpret | Typed polygons with a sentence each, facility register, confounders | [Section 4](#-4-what-changed) · [Section 6](#-6-what-it-means) |
 

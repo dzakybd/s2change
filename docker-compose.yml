@@ -29,7 +29,7 @@ services:
       - ./data:/app/data
       - ./docs:/app/docs
       - ./configs:/app/configs
-    command: ["run", "--postgis"]
+    command: ["run"]
 
 volumes:
   pgdata:

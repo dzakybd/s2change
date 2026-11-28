@@ -1,5 +1,5 @@
 -- App layer on top of schema_postgis.sql: the facility register and a read-only role for the API and the analyst.
--- Idempotent. Run after schema_postgis.sql (`python -m app.publish` does both). The role password is set by publish.py.
+-- Idempotent. Run after schema_postgis.sql (`s2cd run` does both, see s2cd.db.write_postgis, and sets the role password).
 
 -- Facility register (configs/facility_register.yaml): analyst-defined regions, outlined from the imagery.
 CREATE TABLE IF NOT EXISTS facilities (

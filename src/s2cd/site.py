@@ -8,7 +8,7 @@ Writes, under docs/web/ (served at /web/ by the live site and by GitHub Pages):
   overlays, centred on the facility (before, and normalized after with the detected change outlined in yellow), shown
   in the report's facility table;
 * downloads.json and previews/*: the Downloads catalogue with each file's real size and a preview rendered from the file
-  (a quick-look image of every GeoTIFF and GeoJSON, the SpatiaLite tables, a copy of api.md);
+  (a quick-look image of every GeoTIFF and GeoJSON, a copy of api.md);
 * report/report.md and report/figures/*: report.md with its images copied (docs/figures, or any repo-relative path
   such as the logo in viewer/public/ and the facility thumbnails) and the links rewritten so the document renders from
   docs/web/report/; report/s2change-report.md is the downloadable copy, with images loaded from GitHub.
@@ -22,7 +22,6 @@ import json
 import math
 import re
 import shutil
-import sqlite3
 import sys
 from pathlib import Path
 
@@ -112,10 +111,9 @@ def thumbnails(out: Path = WEB / "facilities") -> dict[str, dict[str, str]]:
 
 PREVIEW_PX = 560  # long side of a preview image
 NO_DATA_RGB = (241, 243, 246)
-SPATIALITE_TABLES = ("change_runs", "change_features", "facilities", "facility_changes")
 
 # (group, blurb, [(repo path, description, preview kind)]). Preview kinds: rgb (B02/B03/B04 stack), magnitude (a
-# continuous change layer), binary (0/1/255), vector (GeoJSON), sqlite, markdown, report (the Report tab itself).
+# continuous change layer), binary (0/1/255), vector (GeoJSON), markdown, report (the Report tab itself).
 DOWNLOADS = [
     (
         "Change maps",
@@ -173,14 +171,9 @@ DOWNLOADS = [
         ],
     ),
     (
-        "Database and vectors",
-        "The SpatiaLite file holds the same tables the live PostGIS database serves.",
+        "Vectors",
+        "The change polygons as GeoJSON. The full tables live in the PostGIS database (Database tab, with SQL dumps).",
         [
-            (
-                "data/change_detection.sqlite",
-                "SpatiaLite: runs, change features, facility register and per-facility changes.",
-                "sqlite",
-            ),
             (
                 "docs/web/change_features.geojson",
                 "The change polygons with type, plain-language description, confidence and facility (web export).",
@@ -314,18 +307,6 @@ def _cell(v) -> str:
     return text if len(text) <= 90 else text[:88] + "…"
 
 
-def _sqlite_preview(path: Path) -> list[dict]:
-    with sqlite3.connect(path) as con:
-        return [
-            {
-                "name": t,
-                "rows": con.execute(f'SELECT count(*) FROM "{t}"').fetchone()[0],
-                "columns": [r[1] for r in con.execute(f'PRAGMA table_info("{t}")')],
-            }
-            for t in SPATIALITE_TABLES
-        ]
-
-
 def downloads(out: Path = WEB / "previews") -> list[dict]:
     """The Downloads tab's catalogue (downloads.json): each file with its real size and a preview (an image, a table
     listing or a copy of the document) rendered from the file itself."""
@@ -346,8 +327,6 @@ def downloads(out: Path = WEB / "previews") -> list[dict]:
             elif kind == "vector":
                 item["facts"], item["sample"] = _vector_preview(path, out / f"{slug}.webp")
                 item["image"] = f"previews/{slug}.webp"
-            elif kind == "sqlite":
-                item["tables"] = _sqlite_preview(path)
             elif kind == "markdown":
                 shutil.copyfile(path, out / path.name)
                 item["document"] = f"previews/{path.name}"

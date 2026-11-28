@@ -37,9 +37,8 @@ class Config:
         "data/processed/provenance"
     )  # `s2cd provenance` output; when it matches, its seams define the zones
     facility_register: Path = register.REGISTER
-    sqlite_path: Path = Path("data/change_detection.sqlite")
     figures_dir: Path = Path("docs/figures")
-    database_url: str | None = None  # postgresql+psycopg://... -> also write to PostGIS
+    database_url: str | None = None  # postgresql+psycopg://... -> write the results to this PostGIS
     bands: tuple[str, ...] = ("B02", "B03", "B04")
     rule: vectorize.BinaryRule = field(default_factory=vectorize.BinaryRule)
     noise: methods.NoiseRules = field(default_factory=methods.NoiseRules)
@@ -50,7 +49,7 @@ class Config:
         raw = yaml.safe_load(Path(path).read_text()) or {}
         rule = vectorize.BinaryRule(**raw.pop("rule", {}))
         noise = methods.NoiseRules(**raw.pop("noise", {}))
-        for k in ("before", "after", "aoi", "out_dir", "provenance_dir", "facility_register", "sqlite_path", "figures_dir"):
+        for k in ("before", "after", "aoi", "out_dir", "provenance_dir", "facility_register", "figures_dir"):
             if k in raw:
                 raw[k] = Path(raw[k])
         if "bands" in raw:
@@ -383,13 +382,14 @@ def run(cfg: Config) -> Products:
         )
     feats = gpd.GeoDataFrame(pd.concat(tables, ignore_index=True), crs=grid.crs)
     runs = db.runs_table(run_rows)
-    db.write_sqlite(cfg.sqlite_path, feats, runs, outlines, fac_changes)
     feats.to_crs(4326).to_file(
         out / "change_features.geojson", driver="GeoJSON", layer_options={"RFC7946": "YES", "COORDINATE_PRECISION": 6}
     )
     if cfg.database_url:
-        db.write_postgis(cfg.database_url, feats, runs)
-        log.info("Wrote %d features to PostGIS", len(feats))
+        db.write_postgis(cfg.database_url, feats, runs, outlines, fac_changes)
+        log.info("Wrote %d features and %d facilities to PostGIS", len(feats), len(outlines))
+    else:
+        log.info("DATABASE_URL not set: database step skipped (polygons are in change_features.geojson)")
 
     aoi = gpd.read_file(cfg.aoi).to_crs(grid.crs)
     summary["runtime_s"] = round(time.perf_counter() - t0, 1)

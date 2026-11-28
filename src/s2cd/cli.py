@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from dotenv import load_dotenv
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="Sentinel-2 change detection for open-pit mine monitoring.")
 
@@ -23,18 +24,14 @@ def _main(verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False) -> 
 @app.command()
 def run(
     config: Annotated[Path, typer.Option(help="YAML config (paths and thresholds).")] = Path("configs/default.yaml"),
-    postgis: Annotated[bool, typer.Option(help="Also write to PostGIS using $DATABASE_URL.")] = False,
     figures: Annotated[bool, typer.Option(help="Render the static figures and the web overlays.")] = True,
 ) -> None:
     """Run the full pipeline: stack -> detect -> vectorize -> store -> visualize."""
     from . import pipeline, viz
 
     cfg = pipeline.Config.from_yaml(config) if config.exists() else pipeline.Config()
-    if postgis:
-        cfg.database_url = os.environ.get("DATABASE_URL")
-        if not cfg.database_url:
-            typer.echo("--postgis needs DATABASE_URL, e.g. postgresql+psycopg://s2cd:s2cd@localhost:5432/s2cd", err=True)
-            raise typer.Exit(2)
+    load_dotenv()
+    cfg.database_url = os.environ.get("DATABASE_URL")
     products = pipeline.run(cfg)
     if figures:
         paths = viz.figures(products, cfg.figures_dir)

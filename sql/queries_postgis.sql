@@ -1,12 +1,10 @@
--- Example queries for the PostGIS database (schema: sql/schema_postgis.sql + sql/schema_app.sql, filled by `python -m app.publish`).
+-- Example queries for the PostGIS database (schema: sql/schema_postgis.sql + sql/schema_app.sql, filled by `s2cd run` with DATABASE_URL set).
 -- Tables: change_runs (one row per method run), change_features (one row per change polygon, EPSG:32735, metres),
 -- facilities and facility_changes (the facility register and the change inside each facility).
--- Same questions as sql/queries_spatialite.sql, PostGIS dialect. Every query is restricted to one run via the psql variable
+-- Every query is restricted to one run via the psql variable
 -- below; the app's database explorer (/api/db/examples) fills in the default run and shows each block as an example.
 --
---   psql "$DATABASE_URL" -f sql/queries_postgis.sql      (or: make query-postgis)
---
--- Queries 4 and 8 use the facility tables, which only `python -m app.publish` loads.
+--   psql "$DATABASE_URL" -f sql/queries_postgis.sql      (or: make query)
 --
 -- Block format (read by app/explorer.py): "-- N. Title", comment lines = description, SQL ending with ";".
 

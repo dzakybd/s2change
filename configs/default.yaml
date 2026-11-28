@@ -5,7 +5,6 @@ aoi: inputs/aoi.geojson
 out_dir: data/processed
 provenance_dir: data/processed/provenance   # `s2cd provenance` output; if it matches the dates, its seams define the zones
 facility_register: configs/facility_register.yaml
-sqlite_path: data/change_detection.sqlite
 figures_dir: docs/figures
 bands: [B02, B03, B04]
 
