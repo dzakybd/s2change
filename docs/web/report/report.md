@@ -82,48 +82,34 @@ Two methods run on the same images and are stored in the same database:
 - **The provided example, unchanged:** the colour distance between the dates, cut with one automatic threshold (Otsu 1979) (`change_map_baseline.tif`, `change_binary_baseline.tif`).
 - **This work: a calibrated change vector analysis** (Malila 1980). The question per pixel: *how far did its colour move, compared with how far colour moves on ground that did not change?* (`change_map.tif`, `change_binary.tif`)
 
-### 🪜 Six steps, and why each is needed
+### 🔬 Both methods side by side
+
+![Method overview: each date is two satellite passes; the provided example flags 111.4 km², mostly seams; this work splits the site into three zones, normalises each, scores change against measured noise and keeps 4.17 km² of change](figures/04_method_overview.png)
+
+*Both methods on the same input: source pass per pixel, the three zones, and each method's change mask. Editable source: [`docs/figures/04_method_overview.drawio`](https://github.com/dzakybd/s2change/blob/main/docs/figures/04_method_overview.drawio).*
+
+### 🪜 The six steps, with the equations
 
 ![Illustration of the six steps with made-up data: split into zones, match brightness per zone, measure normal noise, flag what noise rarely does, skip the seams, clean up](figures/16_method_explained.png)
 
-*An illustration with made-up data. The table below gives what each step does on the real data.*
-
-Each step was **switched off once** and the run repeated; "without it" is what changed:
-
-| Step | What it does | Without it | Verdict |
-|---|---|---|---|
-| 1️⃣ **Split into zones** | Uses the three pass pairs from section 2 and treats each on its own | One ruler for three different pairs: it finds <b class="bad">a third</b> as much real change (1.57 km², recall 0.17 → 0.06) | ✅ Needed |
-| 2️⃣ **Match brightness, per zone** | Fits the after image to the before image on ground that did not change, one line per zone and band (Schott et al. 1988; Canty & Nielsen 2008) | Haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>) | ✅ Needed |
-| 3️⃣ **Measure normal noise** | Learns how much colour flickers on unchanged ground, per zone and per brightness level | Bright mine ground looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km² | ✅ Needed |
-| 4️⃣ **Flag what noise rarely does** | Keeps a pixel only if noise would move it that far **1 time in 1,000** or less | — (this is the decision itself) | ✅ The core |
-| 5️⃣ **Skip the seams** | Ignores 90 m on each side of a seam (2.4 % of the site), where pixels mix two passes | 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b> | ✅ Needed |
-| 6️⃣ **Clean up** | Removes 1-pixel lines and specks, drops patches under 2,000 m² (20 pixels), fills small holes | Thousands of lone specks, see below | ✅ Needed |
-
-💡 **What "1 in 1,000" means.** On ground that did not change, colour still flickers a little between dates. Step 3 measures how much; step 4 sets the cut-off so that pure flicker passes it only **1 pixel in 1,000**. The site has 2.6 million pixels, so about *2,600 pixels* (0.26 km²) pass by chance, scattered as **lone specks**, while real change passes as **solid patches**. Checked on stable pixels held out from fitting: the real rate is <b class="good">0.09–0.11 %</b>, on target.
-
-🧹 **Why clean up, in numbers:**
-
-| After step | Changed area | Patches | Of which smaller than 2,000 m² |
-|---|---:|---:|---:|
-| 4️⃣ Flag (1 in 1,000) | 6.74 km² | 4,479 | 4,189 |
-| 5️⃣ Skip the seams | 5.93 km² | 4,258 | 3,989 |
-| 6️⃣ Clean up | <b class="good">4.17 km²</b> | <b class="good">223</b> | 0 |
-
-*Most patches are specks: chance hits and the edges of real change. Real change is what is left: 223 polygons.*
-
-Co-registration was checked per zone (8 windows): shifts are at most 0.05 px, so nothing is resampled. A full run takes about 14 s on a laptop.
-
-### 📐 Step by step, with the equations
-
-![Zones and brightness matching in four panels: each file is two passes; overlaying the two seams gives three zones; one brightness line is fitted per zone on stable ground; after matching, stable ground sits on the no-difference line and change stands out](figures/17_zones_normalization.svg)
-
-*Panels 1–2 are a sketch; panels 3–4 are real pixels of the blue band (`scripts/fig_zones_normalization.py`).*
+*The six steps in one picture, with made-up data. Below, each step on the real data: how it works, its equation, and what happened when it was switched off and the run repeated.*
 
 **0. Pixel values to reflectance.** The files store Level-2A numbers with an offset of 1,000. Each band $b$ becomes surface reflectance, the share of sunlight the ground reflects (0 to 1):
 
 $$
 \rho_b = \frac{DN_b - 1000}{10\,000}
 $$
+
+| | Whole site | Close-up: tailings dam wall |
+|---|---|---|
+| 📥 **Before** ("12 Aug") | <img src="figures/wide_01.jpg" width="300" alt="Before image, whole site"> | <img src="figures/close_01.jpg" width="300" alt="Before image, close-up"> |
+| 📥 **After, as delivered** ("2 Sep") | <img src="figures/wide_02.jpg" width="300" alt="After image as delivered, whole site"> | <img src="figures/close_02.jpg" width="300" alt="After image as delivered, close-up"> |
+
+*The two files in true colour. The after file looks brighter and hazier, partly because it holds other passes.*
+
+![Zones and brightness matching in four panels: each file is two passes; overlaying the two seams gives three zones; one brightness line is fitted per zone on stable ground; after matching, stable ground sits on the no-difference line and change stands out](figures/17_zones_normalization.svg)
+
+*Steps 1 and 2. Panels 1–2 are a sketch; panels 3–4 are real pixels of the blue band (`scripts/fig_zones_normalization.py`).*
 
 **1. Split into zones.** A zone is a group of pixels that share the same *pair* of satellite passes.
 
@@ -136,6 +122,14 @@ z(p) = \big(\,s_{\text{before}}(p),\; s_{\text{after}}(p)\,\big)
 $$
 
 Here $s(p)$ is the source pass of pixel $p$, and every distinct pair is one zone. Nothing is tuned in this step: the files decide the zones. A check without the catalogue, which finds the straight brightness steps in the data alone, finds the same boundaries: 99 % of the pixels of each zone it finds fall inside one pass-pair zone.
+
+| Whole site | Close-up: tailings dam wall |
+|---|---|
+| <img src="figures/wide_03.jpg" width="320" alt="Seam zones, whole site"> | <img src="figures/close_03.jpg" width="320" alt="Seam zones, close-up"> |
+
+*The 3 zones on the real data (tinted) and the seam strip between them.*
+
+❌ **Without it:** one ruler for three different pass pairs. It finds <b class="bad">a third</b> as much real change (1.57 km², recall 0.17 → 0.06).
 
 **2. Match brightness, one line per zone and band.** Inside one zone, both images come from one pass each, so the haze and sun difference between them is about the same everywhere in the zone. On ground that did not change, before and after then fall on a straight line (panel 3). The method fits that line and uses it to put the after image on the before image's scale. This is relative normalisation with pseudo-invariant (stable) pixels (Schott et al. 1988), fitted as in Canty & Nielsen (2008):
 
@@ -165,6 +159,14 @@ The fitted lines differ a lot between zones, which is why one line for the whole
 
 *A slope above 1 with a negative offset means the after file is hazier: haze adds light and flattens contrast, and the line stretches it back. The west zone, whose after pass is 2 Sep, needs the most.*
 
+| Whole site | Close-up: tailings dam wall |
+|---|---|
+| <img src="figures/wide_04.jpg" width="320" alt="After image normalised, whole site"> | <img src="figures/close_04.jpg" width="320" alt="After image normalised, close-up"> |
+
+*The after image matched to the before, zone by zone: the haze is gone, real change stays.*
+
+❌ **Without it:** haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>).
+
 **3. Measure normal noise.** After matching, the colour change of a pixel is a vector of three numbers, one per band:
 
 $$
@@ -173,6 +175,8 @@ $$
 $$
 
 On stable ground $\Delta$ is not exactly zero: sensor noise, tiny shifts and plant growth make it flicker, and bright ground flickers more than dark ground. So each zone $z$ is split into 6 brightness classes $k$ (equal-count classes of the before image's brightness), and in each class the flicker of stable pixels is summarised by its centre $\mu_{z,k}$ (the median) and its spread $\Sigma_{z,k}$ (the 3 × 3 covariance between bands). For this, the stable set is looser, dropping only pixels with $z_r > 4$, so the real tails of the flicker are kept.
+
+❌ **Without it:** one noise level per zone, whatever the brightness. Bright mine ground then looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km².
 
 **4. Flag what noise rarely does.** The score of a pixel is how far its change lies from normal flicker, measured in units of that flicker (the squared Mahalanobis distance):
 
@@ -187,30 +191,41 @@ $$
 \qquad \text{with } \alpha = 10^{-3}
 $$
 
-The rate is then checked on stable pixels held out from fitting. Where a class is off target, its cut-off is set to the measured 99.9th percentile of its held-out $d^2$ instead. The result is 0.09–0.11 %, on target.
+This textbook cut-off assumes the flicker is a perfect bell curve. Real flicker has more extreme values, so the rate is checked on stable pixels held out from fitting (30 % of them, in 32-pixel blocks). With the textbook cut-off, 0.36–1.2 % of them passed instead of 0.1 %, so each brightness class uses its own measured 99.9th percentile of held-out $d^2$ instead (19.9 to 33.0). The scores are rescaled so that 16.27 still marks the cut-off on the map. The result is 0.09–0.11 %, on target.
+
+💡 **What "1 in 1,000" means.** On ground that did not change, colour still flickers a little between dates. Step 3 measures how much; step 4 sets the cut-off so that pure flicker passes it only **1 pixel in 1,000**. The site has 2.6 million pixels, so about *2,600 pixels* (0.26 km²) pass by chance, scattered as **lone specks**, while real change passes as **solid patches**.
+
+| | Whole site | Close-up: tailings dam wall |
+|---|---|---|
+| **Score** $d^2$ | <img src="figures/wide_05.jpg" width="300" alt="Change intensity, whole site"> | <img src="figures/close_05.jpg" width="300" alt="Change intensity, close-up"> |
+| **Flagged** | <img src="figures/wide_06.jpg" width="300" alt="Raw threshold, whole site"> | <img src="figures/close_06.jpg" width="300" alt="Raw threshold, close-up"> |
+
+*Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.74 km² in 4,479 patches.*
 
 **5. Skip the seams.** Pixels within 90 m of a seam mix two passes and are not scored: $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
 
-**6. Clean up.** Patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
+❌ **Without it:** 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b>.
 
-### 🔬 On the real data
+**6. Clean up.** One-pixel lines and specks are removed, patches are kept only if they cover at least 0.2 ha (20 pixels of 100 m²), and holes smaller than that are filled.
 
-![Method overview: each date is two satellite passes; the provided example flags 111.4 km², mostly seams; this work splits the site into three zones, normalises each, scores change against measured noise and keeps 4.17 km² of change](figures/04_method_overview.png)
+❌ **Without it:** thousands of lone specks:
 
-*Both methods on the same input: source pass per pixel, the three zones, and each method's change mask. Editable source: [`docs/figures/04_method_overview.drawio`](https://github.com/dzakybd/s2change/blob/main/docs/figures/04_method_overview.drawio).*
+| After step | Changed area | Patches | Of which smaller than 2,000 m² |
+|---|---:|---:|---:|
+| 4️⃣ Flag (1 in 1,000) | 6.74 km² | 4,479 | 4,189 |
+| 5️⃣ Skip the seams | 5.93 km² | 4,258 | 3,989 |
+| 6️⃣ Clean up | <b class="good">4.17 km²</b> | <b class="good">223</b> | 0 |
 
-**Each step at the tailings dam wall (close-up) and over the whole site:**
+*Most patches are specks: chance hits and the edges of real change. Real change is what is left: 223 polygons.*
 
-| Step | Close-up | Whole site | What you see |
-|---|---|---|---|
-| 📥 **Before** | <img src="figures/close_01.jpg" width="200" alt="Before image, close-up"> | <img src="figures/wide_01.jpg" width="200" alt="Before image, whole site"> | The "12 Aug" file in true colour |
-| 📥 **After, as delivered** | <img src="figures/close_02.jpg" width="200" alt="After image as delivered, close-up"> | <img src="figures/wide_02.jpg" width="200" alt="After image as delivered, whole site"> | The "2 Sep" file: brighter and hazier, partly because it holds other passes |
-| 1️⃣ **Zones** | <img src="figures/close_03.jpg" width="200" alt="Seam zones, close-up"> | <img src="figures/wide_03.jpg" width="200" alt="Seam zones, whole site"> | The 3 zones (tinted) and the seam strip between them |
-| 2️⃣ **Matched** | <img src="figures/close_04.jpg" width="200" alt="After image normalised, close-up"> | <img src="figures/wide_04.jpg" width="200" alt="After image normalised, whole site"> | The after image matched to the before, zone by zone: haze gone, real change stays |
-| 3️⃣ **Change vs noise** | <img src="figures/close_05.jpg" width="200" alt="Change intensity, close-up"> | <img src="figures/wide_05.jpg" width="200" alt="Change intensity, whole site"> | How unusual each pixel's colour change is for its zone and brightness; brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)) |
-| 4️⃣ **Flagged** | <img src="figures/close_06.jpg" width="200" alt="Raw threshold, close-up"> | <img src="figures/wide_06.jpg" width="200" alt="Raw threshold, whole site"> | Pixels past the 1-in-1,000 cut-off: 6.74 km² in 4,479 patches |
-| 5️⃣6️⃣ **Seams skipped, cleaned** | <img src="figures/close_07.jpg" width="200" alt="Cleaned change mask, close-up"> | <img src="figures/wide_07.jpg" width="200" alt="Cleaned change mask, whole site"> | <b class="good">4.17 km² in 223 polygons</b> |
-| 📤 **Typed and explained** | <img src="figures/close_08.jpg" width="200" alt="Typed change polygons, close-up"> | <img src="figures/wide_08.jpg" width="200" alt="Typed change polygons, whole site"> | Each polygon gets a likely type from its colour change and facility, and one plain sentence. Here: **Tailings dam wall likely raised**, 0.39 km². *Check the dam-raise plan and inspect the embankment.* |
+| | Whole site | Close-up: tailings dam wall |
+|---|---|---|
+| **Seams skipped, cleaned** | <img src="figures/wide_07.jpg" width="300" alt="Cleaned change mask, whole site"> | <img src="figures/close_07.jpg" width="300" alt="Cleaned change mask, close-up"> |
+| 📤 **Typed and explained** | <img src="figures/wide_08.jpg" width="300" alt="Typed change polygons, whole site"> | <img src="figures/close_08.jpg" width="300" alt="Typed change polygons, close-up"> |
+
+*The result, <b class="good">4.17 km² in 223 polygons</b>. Each polygon then gets a likely type from its colour change and facility, and one plain sentence. Here: **Tailings dam wall likely raised**, 0.39 km², with the advice to check the dam-raise plan and inspect the embankment.*
+
+Co-registration was checked per zone (8 windows): shifts are at most 0.05 px, so nothing is resampled. A full run takes about 14 s on a laptop.
 
 ### 🎚️ Would other settings give a different answer?
 
