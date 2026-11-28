@@ -68,10 +68,9 @@ report-pdf: ## Print the Report tab to docs/web/report/s2change-report.pdf (star
 FIG_PY = uv run --with playwright python
 FIG_SCRIPTS = $(filter-out scripts/fig_common.py,$(wildcard scripts/fig_*.py))
 
-figures: ## Render every report figure (icons, step frames, flow, at-a-glance, scripts/fig_*.py) from the real outputs
+figures: ## Render every report figure (icons, step frames, at-a-glance, scripts/fig_*.py) from the real outputs
 	$(FIG_PY) scripts/fig_common.py
 	$(FIG_PY) scripts/step_frames.py
-	$(FIG_PY) scripts/flow_figure.py
 	$(FIG_PY) scripts/at_a_glance.py
 	@for f in $(FIG_SCRIPTS); do echo "$$f"; $(FIG_PY) $$f || exit 1; done
 

@@ -18,10 +18,6 @@ from datetime import date
 from pathlib import Path
 
 import numpy as np
-import shapely
-from pyproj import Transformer
-from shapely.geometry import shape
-from shapely.ops import transform
 
 from . import provenance as pv
 from . import rgb
@@ -36,12 +32,8 @@ CACHE = Path("data/cache/stac")
 
 @dataclass(frozen=True)
 class SceneRules:
-    max_tile_cloud: float = 10.0  # eo:cloud_cover of each item (%), tile-level metadata
-    min_aoi_coverage: float = 0.95  # share of the AOI covered by the date's items together
+    min_aoi_coverage: float = 0.95  # share of the reference's valid pixels the fetched scene must cover
     max_aoi_cloud: float = 0.05  # share of AOI pixels flagged by rgb.cloud_mask after fetching
-
-
-_TO_UTM = Transformer.from_crs(4326, 32735, always_xy=True).transform  # coverage ratios are computed in metres, not degrees
 
 
 def _aoi_geometry() -> dict:
@@ -60,32 +52,6 @@ def _dedupe(items: list) -> list:
         if key not in seen:
             seen.add(key)
             out.append(it)
-    return out
-
-
-def available_dates(start: date, end: date, rules: SceneRules = SceneRules()) -> list[dict]:
-    """Dates whose items cover the AOI with little cloud (metadata only; nothing is downloaded)."""
-    aoi = transform(_TO_UTM, shape(_aoi_geometry()))
-    items = [
-        i
-        for i in _dedupe(pv.search(pv.open_catalog(), _aoi_geometry(), start, end))
-        if i.properties.get("eo:cloud_cover", 100) <= rules.max_tile_cloud
-    ]
-    by_day: dict[str, list] = {}
-    for it in items:
-        by_day.setdefault(it.datetime.date().isoformat(), []).append(it)
-    out = []
-    for day, its in sorted(by_day.items()):
-        cover = transform(_TO_UTM, shapely.union_all([shape(i.geometry) for i in its])).intersection(aoi).area / aoi.area
-        if cover >= rules.min_aoi_coverage:
-            out.append(
-                {
-                    "date": day,
-                    "items": len(its),
-                    "tile_cloud_max": max(i.properties["eo:cloud_cover"] for i in its),
-                    "aoi_coverage": round(cover, 3),
-                }
-            )
     return out
 
 

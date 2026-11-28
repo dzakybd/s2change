@@ -109,7 +109,7 @@ def write_sqlite(
     return path
 
 
-def write_postgis(url: str, features: gpd.GeoDataFrame, runs: pd.DataFrame) -> int:
+def write_postgis(url: str, features: gpd.GeoDataFrame, runs: pd.DataFrame) -> None:
     """Create the schema if needed, then replace the rows of every run_id in ``runs``."""
     from sqlalchemy import create_engine, text
 
@@ -129,7 +129,6 @@ def write_postgis(url: str, features: gpd.GeoDataFrame, runs: pd.DataFrame) -> i
         for c in rows.select_dtypes("floating").columns:
             rows[c] = rows[c].astype(object).where(rows[c].notna(), None)  # NaN -> NULL (NaN would fail the CHECKs)
         rows.to_postgis("change_features", conn, if_exists="append", index=False)
-    return len(features)
 
 
 def runs_table(rows: list[dict]) -> pd.DataFrame:

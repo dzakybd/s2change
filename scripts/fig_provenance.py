@@ -10,16 +10,14 @@ uses the true acquisition dates from provenance_summary.json and the zone pairs 
 
 from __future__ import annotations
 
-import base64
-import io
 import json
 from datetime import date
 from pathlib import Path
 
 import numpy as np
 import rasterio
+from fig_common import render, uri
 from PIL import Image
-from playwright.sync_api import sync_playwright
 from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -68,9 +66,7 @@ def map_img(base: np.ndarray, src: np.ndarray, west_idx: int) -> tuple[str, list
     img = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).resize(
         (MAP_PX, round(h * MAP_PX / w)), Image.Resampling.LANCZOS
     )
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=90)
-    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode(), centres
+    return uri(img, quality=90), centres
 
 
 def zone_img(
@@ -99,9 +95,7 @@ def zone_img(
     img = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).resize(
         (MAP_PX // 2, round(h * MAP_PX / 2 / w)), Image.Resampling.LANCZOS
     )
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=90)
-    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode(), pos
+    return uri(img, quality=90), pos
 
 
 def timeline(summary: dict, pairs: list[tuple[str, str, float, str]]) -> str:
@@ -267,16 +261,7 @@ figure img {{ width: 100%; display: block; }}
 
 
 def main() -> None:
-    page_html = ROOT / "docs/figures/.provenance.html"
-    page_html.write_text(build())
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 1300, "height": 900}, device_scale_factor=1.25)
-        page.goto(page_html.as_uri(), wait_until="networkidle")
-        page.screenshot(path=str(OUT), full_page=True)
-        browser.close()
-    page_html.unlink()
-    print(f"{OUT}: {OUT.stat().st_size / 1e6:.1f} MB")
+    render(build(), OUT, width=1300)
 
 
 if __name__ == "__main__":

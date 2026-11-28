@@ -22,7 +22,6 @@ from rasterio.warp import Resampling, calculate_default_transform, reproject, tr
 from .io import Grid  # noqa: E402
 from .pipeline import Products  # noqa: E402
 
-DIRECTION_COLORS = {"brightening": "#f59e0b", "darkening": "#3b82f6", "spectral shift": "#a855f7"}
 TYPE_COLORS = {  # the viewer's legend (viewer/src/domain.ts CHANGE_TYPES), so figures, map and icons agree
     "tailings_deposition": "#fbbf24",
     "tailings_dam_raise": "#dc2626",
@@ -67,7 +66,7 @@ def _save(fig, path: Path) -> Path:
 
 def figures(p: Products, out_dir: Path) -> list[Path]:
     out_dir = Path(out_dir)
-    grid, ext = p.before.grid, _extent(p.before.grid)
+    ext = _extent(p.before.grid)
     paths = []
     aoi = p.aoi.boundary
 
@@ -76,104 +75,6 @@ def figures(p: Products, out_dir: Path) -> list[Path]:
         ax.set_xticks([])
         ax.set_yticks([])
         aoi.plot(ax=ax, color="white", lw=0.8, ls="--")
-
-    # 1. Inputs and normalization
-    fig, ax = plt.subplots(1, 3, figsize=(18, 6.4))
-    for a, img, t in [
-        (ax[0], p.refl_before, f"T1: {p.date_labels['before']}"),
-        (ax[1], p.refl_after, f"T2 as delivered: {p.date_labels['after']}"),
-        (ax[2], p.refl_after_norm, "T2 normalized to T1 per zone"),
-    ]:
-        a.imshow(rgb(img), extent=ext)
-        frame(a, t)
-    paths.append(_save(fig, out_dir / "01_inputs_and_normalization.png"))
-
-    # 2. Zone diagnostics: data-driven stripe detection, and the zones used (source-scene pairs when provenance exists)
-    s = p.stripes
-    fig, ax = plt.subplots(1, 2, figsize=(16, 6.4), gridspec_kw={"width_ratios": [1, 1.3]})
-    diff = p.refl_after[0] - p.refl_before[0]
-    im = ax[0].imshow(diff, cmap="RdBu_r", vmin=-0.02, vmax=0.08, extent=ext)
-    ys = np.array([0, grid.height])  # row edges, i.e. continuous pixel coordinates
-    t = np.deg2rad(s.angle_deg)
-    for i, b in enumerate(s.breakpoints):
-        xs = (b - ys * np.sin(t)) / np.cos(t)  # p = X cos t + Y sin t with continuous X, Y (pixel centres sit at +0.5)
-        ax[0].plot(
-            ext[0] + xs * grid.transform.a,
-            ext[3] + ys * grid.transform.e,
-            "k--",
-            lw=1,
-            label="data-driven boundary" if i == 0 else None,
-        )
-    handles = []
-    if p.zone_source == "provenance":
-        ax[0].contour(
-            p.zones, levels=np.arange(p.zones.max()) + 0.5, extent=ext, origin="upper", colors="#16a34a", linewidths=1.4
-        )
-        handles.append(plt.Line2D([], [], color="#16a34a", lw=1.4, label="source-scene boundary (zones used)"))
-    ax[0].set_xlim(ext[0], ext[1])
-    ax[0].set_ylim(ext[2], ext[3])
-    frame(ax[0], "Blue reflectance T2 - T1: detected stripe boundaries" + (" and source-scene seams" if handles else ""))
-    ax[0].legend(handles=[*ax[0].get_legend_handles_labels()[0], *handles], loc="lower left", fontsize=8)
-    fig.colorbar(im, ax=ax[0], shrink=0.7, label="reflectance difference")
-    if len(s.profile[0]):
-        ax[1].plot(s.profile[0], s.profile[1], lw=0.8, color="0.3", label="mean profile across stripes")
-        edges = [s.profile[0][0], *s.breakpoints, s.profile[0][-1]]
-        for i, off in enumerate(s.zone_offsets):
-            ax[1].hlines(off, edges[i], edges[i + 1], color="C3", lw=2, label="zone offset" if i == 0 else None)
-        for b in s.breakpoints:
-            ax[1].axvline(b, color="k", ls="--", lw=0.8)
-    ax[1].set_xlabel(f"position across stripes (px, normal angle {s.angle_deg:.1f} deg)")
-    ax[1].set_ylabel("blue T2 - T1 reflectance")
-    ax[1].legend()
-    ax[1].set_title(
-        f"data-driven: {len(s.zone_offsets)} zones, piecewise-constant fit explains {100 * s.explained_variance:.0f}% of variance"
-    )
-    paths.append(_save(fig, out_dir / "02_stripe_zones.png"))
-
-    # 4. Change polygons over T2
-    g = p.features["robust_cva"]
-    fig, ax = plt.subplots(figsize=(11, 11))
-    ax.imshow(rgb(p.refl_after_norm), extent=ext)
-    for d, c in DIRECTION_COLORS.items():
-        sub = g[g.change_direction == d]
-        if len(sub):
-            sub.plot(ax=ax, facecolor=c, edgecolor=c, alpha=0.55, lw=0.6)
-    frame(ax, f"Change polygons ({len(g)}), robust CVA: {p.date_labels['before']} -> {p.date_labels['after']}")
-    ax.legend(
-        handles=[Patch(color=c, label=d) for d, c in DIRECTION_COLORS.items()]
-        + [Patch(facecolor="none", edgecolor="white", ls="--", label="AOI")],
-        loc="lower right",
-    )
-    paths.append(_save(fig, out_dir / "04_change_polygons.png"))
-
-    # 5. Noise model: distribution of the statistic, and the realised false-alarm rate on held-out no-change pixels
-    cal = p.cva.calibration
-    fig, ax = plt.subplots(1, 2, figsize=(13, 5))
-    ax[0].hist(np.log10(np.clip(p.cva.d2[p.valid], 1e-3, None)), bins=200, color="0.4")
-    far = p.summary["noise_calibration"]["far"] if cal else 1e-3
-    v = p.summary["thresholds"]["cva_d2"]
-    ax[0].axvline(np.log10(v), color="C3", ls="--")
-    ax[0].text(np.log10(v), ax[0].get_ylim()[1] * 0.5, f" threshold (nominal {far:g})", color="C3", fontsize=9)
-    ax[0].set_xlabel("log10 d2 (all valid pixels)")
-    ax[0].set_yscale("log")
-    ax[0].set_title("Distribution of the change statistic")
-    if cal:
-        strata = [r for r in cal["strata"] if "realised_far_model" in r]
-        x = np.arange(len(strata))
-        for off, key, label, color in [
-            (-0.27, "realised_far_previous_design", "previous: one model per zone, 2.5-sigma PIFs", "0.65"),
-            (0.0, "realised_far_model", "brightness-aware model", "C0"),
-            (0.27, "realised_far_final", f"final ({cal['thresholds_source']}), cross-fitted", "C2"),
-        ]:
-            ax[1].bar(x + off, [r[key] for r in strata], width=0.26, label=label, color=color)
-        ax[1].axhline(cal["far"], color="k", ls="--", lw=1, label=f"nominal {cal['far']:g}")
-        ax[1].set_xticks(x, [f"{r['brightness_before_mean']:.2f}" for r in strata])
-        ax[1].set_yscale("log")
-        ax[1].set_xlabel("mean T1 brightness of the stratum (reflectance)")
-        ax[1].set_ylabel("realised exceedance of the nominal threshold")
-        ax[1].legend(fontsize=8)
-        ax[1].set_title("Realised vs nominal false-alarm rate on held-out no-change pixels")
-    paths.append(_save(fig, out_dir / "05_noise_model_qq.png"))
 
     # 9. Facility register: named outlines over true colour
     fig, ax = plt.subplots(figsize=(11, 11))

@@ -31,7 +31,6 @@ TYPE_LABELS = {
     "water_level_change": "Water level change",
 }
 TRANSITION_COLORS = {"bare ground": "#d97706", "bright surface (tailings, roofs, roads)": "#0891b2", "water": "#2563eb"}
-# Season-matched yearly comparisons (report.md section 2): Aug 2023 -> Aug 2024 / 2025 / 2026, km².
 
 
 def merc_y(lat: float) -> float:

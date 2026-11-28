@@ -29,9 +29,9 @@ FARS = (1e-2, 1e-3, 1e-4, 1e-5)  # nominal per-pixel false-alarm rate
 MMU_HA = (0.1, 0.2, 0.5, 1.0)
 
 
-def sweep(cfg: Config | None = None) -> pd.DataFrame:
+def sweep() -> pd.DataFrame:
     """Changed area and footprint shares over the FAR x MMU grid (the run itself goes to a temporary directory)."""
-    base = cfg or Config.from_yaml(Path("configs/default.yaml"))
+    base = Config.from_yaml(Path("configs/default.yaml"))
     with tempfile.TemporaryDirectory() as tmp:
         p = run(replace(base, out_dir=Path(tmp) / "processed", sqlite_path=Path(tmp) / "change_detection.sqlite"))
     grid = p.before.grid

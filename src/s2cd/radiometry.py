@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 from scipy import ndimage as ndi
@@ -77,7 +77,6 @@ class StripeZones:
     breakpoints: list[float]  # zone boundaries along p (pixels)
     zone_offsets: list[float]  # median after-minus-before reflectance per zone (diagnostic)
     explained_variance: float  # eta^2 of the 1-D profile model at the best angle
-    profile: tuple[np.ndarray, np.ndarray] = field(repr=False)  # (bin centres, bin means)
 
 
 def _block_median(img: np.ndarray, block: int) -> np.ndarray:
@@ -177,7 +176,7 @@ def detect_stripe_zones(
     H, W = valid.shape
     if eta2 < min_explained:
         zones = np.where(valid, 0, -1).astype(np.int16)
-        return StripeZones(zones, float(np.rad2deg(theta)), [], [float(np.nanmedian(diff))], eta2, (np.array([]), np.array([])))
+        return StripeZones(zones, float(np.rad2deg(theta)), [], [float(np.nanmedian(diff))], eta2)
 
     p = x * np.cos(theta) + y * np.sin(theta)
     centres, means, counts = _profile_stats(p, v, block)
@@ -191,7 +190,7 @@ def detect_stripe_zones(
     zones = np.digitize(p_full, breakpoints).astype(np.int16)
     zones[~valid] = -1
     offsets = [float(np.nanmedian(diff[zones == z])) for z in range(len(breakpoints) + 1)]
-    return StripeZones(zones, float(np.rad2deg(theta)), breakpoints, offsets, eta2, (centres, means))
+    return StripeZones(zones, float(np.rad2deg(theta)), breakpoints, offsets, eta2)
 
 
 @dataclass

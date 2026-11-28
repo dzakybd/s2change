@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs/figures/16_method_explained.png"
 
 INK, MUTED, FAINT = "#0f172a", "#475569", "#94a3b8"
-RED, GREY_CELL = "#dc2626", "#e2e8f0"
+RED = "#dc2626"
 BLUE, BLUE_T = "#2563eb", "#bfdbfe"
 ORANGE, ORANGE_T = "#ea580c", "#fed7aa"
 GREEN, GREEN_T = "#15803d", "#86efac"

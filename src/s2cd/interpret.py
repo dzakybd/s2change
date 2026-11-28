@@ -122,7 +122,6 @@ def pixel_evidence(
     after: np.ndarray,
     seam_dist: np.ndarray,
     seam_within_px: float,
-    water_reach_px: int = InterpretRules.water_reach_px,
 ) -> pd.DataFrame:
     """Per-polygon RGB means before/after, water flip share and seam share (rasterized on the image grid).
 
@@ -136,7 +135,7 @@ def pixel_evidence(
     wb, wa = rgb.water_mask(before), rgb.water_mask(after)
     # The RGB water rule also fires on dark wet vegetation on one date; a real level change moves the shore of a water body
     # that is water on both dates, so flips elsewhere are not called water-level changes.
-    near_water = ndi.binary_dilation(wb & wa, morphology.disk(water_reach_px))
+    near_water = ndi.binary_dilation(wb & wa, morphology.disk(InterpretRules.water_reach_px))
     ev = pd.DataFrame(
         {
             "gcc_before": _zonal(labels, n, rgb.gcc(before)),

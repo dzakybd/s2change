@@ -35,7 +35,7 @@ BLURB = {  # plain-language reading of each type, as in the report's table
     "water_level_change": "Pond and pit-lake edges moving",
     "other": "Seams, haze, small builds; 0.02 km² of land clearing",
 }
-ZOOM_HALF_PX = 140  # 2.8 km around the dam wall, as in the flow figure
+ZOOM_HALF_PX = 140  # 2.8 km around the dam wall, as in scripts/step_frames.py
 
 
 def path_d(geom, tf, x0=0, y0=0) -> str:

@@ -66,17 +66,11 @@ class Products:
     after: Scene
     valid: np.ndarray
     refl_before: np.ndarray
-    refl_after: np.ndarray
     refl_after_norm: np.ndarray
-    stripes: radiometry.StripeZones  # the data-driven detection (always run)
     zones: np.ndarray  # the zones actually used: source-scene pairs if provenance is available, else ``stripes.zones``
-    zone_source: str  # "provenance" or "data-driven"
     seam_dist: np.ndarray  # pixels to the nearest zone boundary
-    pif: np.ndarray
-    baseline_prob: np.ndarray
     baseline_binary: np.ndarray
     cva: methods.CvaResult
-    cva_binary: np.ndarray
     features: dict[str, gpd.GeoDataFrame]
     facilities: gpd.GeoDataFrame  # register outlines (MultiPolygon, EPSG:32735)
     facility_changes: pd.DataFrame  # one row per facility: changed ha, share, change types, summary
@@ -402,8 +396,8 @@ def run(cfg: Config) -> Products:
     (out / "run_summary.json").write_text(json.dumps(summary, indent=2, default=str))
     log.info("Changed area (ha): %s", summary["changed_area_ha"])
     return Products(
-        before=before, after=after, valid=valid, refl_before=r1, refl_after=r2, refl_after_norm=r2n, stripes=stripes,
-        zones=zones, zone_source=zone_info["source"], seam_dist=seam_dist, pif=pif, baseline_prob=base_prob,
-        baseline_binary=base_bin, cva=cva, cva_binary=cva_bin, features=features, facilities=outlines,
+        before=before, after=after, valid=valid, refl_before=r1, refl_after_norm=r2n,
+        zones=zones, seam_dist=seam_dist,
+        baseline_binary=base_bin, cva=cva, features=features, facilities=outlines,
         facility_changes=fac_changes, date_labels=date_labels, aoi=aoi, summary=summary,
     )  # fmt: skip
