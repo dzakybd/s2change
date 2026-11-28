@@ -47,7 +47,14 @@ export function listHtml(ds: Dataset, hidden: ReadonlySet<string>, ui: ListUi, s
     .join("");
   const more = rows.length > LIST_CAP ? `<button type="button" class="linkbtn" data-list="all">${ui.showAll ? `Show top ${LIST_CAP}` : `Show all ${fmtInt(rows.length)}`}</button>` : "";
   const noise = nNoise ? `<button type="button" class="linkbtn" data-list="noise">${ui.noise ? "Hide" : "Show"} ${fmtInt(nNoise)} likely-not-real</button>` : "";
-  return `<p class="lg-sub num">${fmtInt(rows.length)} ${rows.length === 1 ? "change" : "changes"} · ${fmtKm2(total)}. Largest first.</p>${
+  const all = ds.changes.features.filter((f) => !hidden.has(f.properties.change_type)).map((f) => f.properties);
+  const allHa = all.reduce((s, p) => s + ha(p.area_m2), 0);
+  // The report counts every polygon (223, 4.17 km²); the list hides the likely-not-real ones by default, so say both.
+  const sub =
+    !ui.noise && nNoise
+      ? `${fmtInt(rows.length)} likely real of ${fmtInt(all.length)} changes · ${fmtKm2(total)} of ${fmtKm2(allHa)}. Largest first.`
+      : `${fmtInt(rows.length)} ${rows.length === 1 ? "change" : "changes"} · ${fmtKm2(total)}. Largest first.`;
+  return `<p class="lg-sub num">${sub}</p>${
     rows.length ? `<ul class="ch-list">${items}</ul>` : '<p class="note">No changes to list.</p>'
   }${more || noise ? `<div class="ch-foot">${more}${noise}</div>` : ""}`;
 }

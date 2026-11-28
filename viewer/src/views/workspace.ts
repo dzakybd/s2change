@@ -165,7 +165,7 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
     /** The analysed pair, read-only: the Result menu is the only way to change it. */
     const renderChip = () => {
       q(el, ".cmp-v").textContent = `${ds.dates.before} → ${ds.dates.after}`;
-      q(el, ".cmp-n").textContent = ds.nominal ? "nominal dates (each a two-pass mosaic)" : "true acquisition dates (single passes)";
+      q(el, ".cmp-n").textContent = ds.nominal ? "labelled dates (each image stitched from two passes)" : "true acquisition dates (single passes)";
     };
 
     const renderLegend = () => {
@@ -218,8 +218,8 @@ export async function createWorkspace(ctx: AppContext): Promise<View> {
       ds.id === TRUE_PASSES_ID ? "true" : state.layer === "baseline" ? "original" : "mosaic";
     const resultItems = () => {
       const items: { id: ResultId; label: string; hint: string; disabled?: boolean; disabledReason?: string }[] = [
-        { id: "original", label: "Original, as is", hint: `The brief's Euclidean + Otsu method on the provided mosaics: ${km2(provided.summary?.["euclidean_baseline"])}, mostly pass seams and haze` },
-        { id: "mosaic", label: "Ours, mosaic passes", hint: `This method on the provided rasters, each a mosaic of two passes, normalised per pass: ${km2(provided.summary?.["robust_cva"])}` },
+        { id: "original", label: "Original, as is", hint: `The provided method on the supplied images: ${km2(provided.summary?.["euclidean_baseline"])}, mostly pass seams and haze` },
+        { id: "mosaic", label: "Ours, supplied images", hint: `This method on the supplied images (each stitched from two passes), brightness matched per zone: ${km2(provided.summary?.["robust_cva"])}` },
         {
           id: "true",
           label: "Ours, true passes",

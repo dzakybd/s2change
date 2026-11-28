@@ -106,7 +106,7 @@ export function legendHtml(def: LayerDef, ds: Dataset, hidden: ReadonlySet<strin
       .map((f) => `<li><button type="button" class="lg-row" data-fac="${esc(f.facility_id)}" title="${esc(FACILITY_CLASS_LABEL[f.class] ?? f.class)}">${facilityIcon(f.class, 20, facilityColor(f.facility_id))}<span>${esc(f.name)}</span><b class="num">${esc(f.facility_id)}</b><em class="num">${fmtKm2(f.changed_ha)}</em></button></li>`)
       .join("")}</ul><p class="note">Names, classes and rough boxes are drawn by an analyst on the 2023-08-12 image (not in the provided data). Each outline is computed from the provided bands: the bare or water ground inside its box.</p>`;
   } else {
-    body = `<p class="note">${esc(def.hint)}.${ds.nominal ? " The two dates are nominal: each is a mosaic of two Sentinel-2 scenes (07-01/07-04 and 08-25/09-02)." : ""} Outlines are the change polygons, coloured by type.</p>`;
+    body = `<p class="note">${esc(def.hint)}.${ds.nominal ? " The two dates are file labels: each image is stitched from two satellite passes (07-01/07-04 and 08-25/09-02)." : ""} Outlines are the change polygons, coloured by type.</p>`;
   }
   return `<button type="button" class="lg-head" aria-expanded="true"><b>${esc(title)}</b>${count ? `<span class="lg-count num">${count}</span>` : ""}${CHEVRON}</button><div class="lg-body">${body}</div>`;
 }

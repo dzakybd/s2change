@@ -128,7 +128,7 @@ DOWNLOADS = [
             ),
             (
                 "data/processed/change_binary_baseline.tif",
-                "The provided Euclidean-difference baseline, binarised the same way, for comparison.",
+                "The provided method's result (colour distance, automatic threshold), cleaned the same way.",
                 "binary",
             ),
         ],
@@ -137,10 +137,14 @@ DOWNLOADS = [
         "Sentinel-2 stacks",
         "B02, B03, B04 as delivered, plus the later date normalised to the earlier one.",
         [
-            ("data/processed/sentinel2_20230812_stack.tif", "Nominal 2023-08-12 (mosaic of 2023-07-01 and 07-04).", "rgb"),
+            (
+                "data/processed/sentinel2_20230812_stack.tif",
+                "Labelled 2023-08-12; stitched from the passes of 2023-07-01 and 07-04.",
+                "rgb",
+            ),
             (
                 "data/processed/sentinel2_20230902_stack.tif",
-                "Nominal 2023-09-02 (mosaic of 2023-08-25 and 09-02), as delivered.",
+                "Labelled 2023-09-02; stitched from the passes of 2023-08-25 and 09-02, as delivered.",
                 "rgb",
             ),
             (

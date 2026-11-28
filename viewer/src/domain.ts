@@ -26,7 +26,7 @@ export const CHANGE_TYPES: readonly ChangeTypeInfo[] = [
   { key: "land_clearing", label: "Land clearing", color: "#fb923c", blurb: "Vegetation removed", glyph: "M8 3.5 12 9H9.5l3.5 5H3l3.5-5H4zM8 14v6.5M14 20.5h7M16 17l5-5" },
   { key: "mine_expansion_clearing", label: "Mine expansion clearing", color: "#f0abfc", blurb: "Clearing at the mine edge", glyph: "M9.5 9.5h5v5h-5zM3.5 8.5v-5h5M15.5 3.5h5v5M20.5 15.5v5h-5M8.5 20.5h-5v-5" },
   { key: "unexplained", label: "Unexplained", color: "#94a3b8", blurb: "No rule matched", glyph: "M9 9.2a3 3 0 1 1 4.2 2.7c-.8.4-1.2 1-1.2 1.8V15M12 18.6v.4" },
-  { key: "noise_or_artifact", label: "Noise / artifact", color: "#64748b", blurb: "Likely mosaic seam, haze or shadow", glyph: "M3.5 7h4M10.5 7h10M3.5 12h9M15.5 12h5M3.5 17h5M11.5 17h9" },
+  { key: "noise_or_artifact", label: "Noise / artifact", color: "#64748b", blurb: "Likely a seam between passes, haze or shadow", glyph: "M3.5 7h4M10.5 7h10M3.5 12h9M15.5 12h5M3.5 17h5M11.5 17h9" },
 ];
 
 const TYPE_BY_KEY = new Map(CHANGE_TYPES.map((t) => [t.key, t]));

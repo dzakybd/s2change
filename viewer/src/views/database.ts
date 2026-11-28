@@ -173,7 +173,7 @@ export async function createDatabase(ctx: AppContext): Promise<View> {
       ].join("");
       const filter = state.filter ? `<span class="filter">Filtered: <b class="mono">${esc(state.filter.column)} = ${esc(state.filter.value)}</b><button type="button" class="linkish" data-clear>Clear</button></span>` : "";
       info.innerHTML = `<div class="ex-head"><div><h3 class="mono">${esc(t.table)}</h3><p>${esc(t.description)}</p></div>
-        <div class="ex-actions">${t.geometry ? '<button type="button" class="btn sm" data-map>Show this page on the map</button>' : ""}<a class="btn sm" href="${dbExportUrl(api, t.table)}" download>Download table (.sql)</a></div></div>
+        <div class="ex-actions">${t.geometry ? '<button type="button" class="btn sm" data-map>Show these rows on the map</button>' : ""}<a class="btn sm" href="${dbExportUrl(api, t.table)}" download>Download table (.sql)</a></div></div>
         <div class="ex-meta">${meta}</div>${filter}`;
     }
 

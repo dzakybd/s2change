@@ -109,7 +109,7 @@
     {
      "path": "data/processed/change_binary_baseline.tif",
      "title": "change_binary_baseline.tif",
-     "desc": "The provided Euclidean-difference baseline, binarised the same way, for comparison.",
+     "desc": "The provided method's result (colour distance, automatic threshold), cleaned the same way.",
      "size": "210 KB",
      "kind": "binary",
      "facts": [
@@ -149,7 +149,7 @@
     {
      "path": "data/processed/sentinel2_20230812_stack.tif",
      "title": "sentinel2_20230812_stack.tif",
-     "desc": "Nominal 2023-08-12 (mosaic of 2023-07-01 and 07-04).",
+     "desc": "Labelled 2023-08-12; stitched from the passes of 2023-07-01 and 07-04.",
      "size": "13.8 MB",
      "kind": "rgb",
      "facts": [
@@ -183,7 +183,7 @@
     {
      "path": "data/processed/sentinel2_20230902_stack.tif",
      "title": "sentinel2_20230902_stack.tif",
-     "desc": "Nominal 2023-09-02 (mosaic of 2023-08-25 and 09-02), as delivered.",
+     "desc": "Labelled 2023-09-02; stitched from the passes of 2023-08-25 and 09-02, as delivered.",
      "size": "13.2 MB",
      "kind": "rgb",
      "facts": [

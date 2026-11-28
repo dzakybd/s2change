@@ -28,7 +28,7 @@ export const LAYERS: readonly LayerDef[] = [
   { id: "sr", label: "Changes on 2.5 m Sentinel-2", hint: "The analysed dates sharpened 4x by SEN2SR: swipe between before and after. Fine detail is a model estimate, for viewing only", right: { sr_after: 1 }, left: { sr_before: 1 }, polygons: "fill", facilities: false, swipe: true, typed: true },
   { id: "types", label: "Changes on Sentinel-2", hint: "The analysed 10 m images: swipe between before and after", right: { after_normalized: 1 }, left: { before: 1 }, polygons: "fill", facilities: false, swipe: true, typed: true },
   { id: "intensity", label: "Change intensity", hint: "log10 of the robust distance d², before thresholding", right: { after_normalized: 0.55, change_intensity: 0.95 }, left: { before: 0.55 }, polygons: "outline", facilities: false, swipe: true },
-  { id: "baseline", label: "Provided baseline, the trap", hint: "What the brief's Euclidean + Otsu method calls change (red): mostly seams and haze", right: { after_normalized: 0.7 }, left: { before: 0.7 }, polygons: "outline", facilities: false, swipe: false, providedOnly: true, baseline: true },
+  { id: "baseline", label: "Provided baseline, the trap", hint: "What the provided method calls change (red): mostly seams between passes and haze", right: { after_normalized: 0.7 }, left: { before: 0.7 }, polygons: "outline", facilities: false, swipe: false, providedOnly: true, baseline: true },
   { id: "facilities", label: "Facility register", hint: "Mine facilities on the 2.5 m after image, with the area changed in each", right: { sr_after: 1 }, left: { sr_after: 1 }, polygons: "outline", facilities: true, swipe: false },
 ];
 
