@@ -17,7 +17,7 @@
 .prose h1 { font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem); letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 var(--s-5); color: var(--text); }
 .prose h2 { font-size: var(--fs-xl); letter-spacing: -0.025em; margin: var(--s-8) 0 var(--s-4); color: var(--text); scroll-margin-top: var(--s-5); }
 .prose h3 { font-size: var(--fs-lg); margin: var(--s-6) 0 var(--s-3); color: var(--text); scroll-margin-top: var(--s-5); }
-.prose h4 { font-size: var(--fs-md); margin: var(--s-5) 0 var(--s-2); color: var(--text); }
+.prose h4 { font-size: 1.25rem; letter-spacing: -0.015em; margin: var(--s-7) 0 var(--s-3); padding-top: var(--s-5); border-top: 1px solid var(--hair); color: var(--text); scroll-margin-top: var(--s-5); }
 .prose p { margin: 0 0 var(--s-4); color: var(--text-2); }
 .prose strong { color: var(--text); font-weight: 650; }
 .prose ul, .prose ol { margin: 0 0 var(--s-4); padding-left: 1.4em; }
@@ -89,6 +89,7 @@
   .prose h1 { font-size: 22pt; }
   .prose h2 { font-size: 15pt; margin-top: 18pt; break-after: avoid; }
   .prose h3 { font-size: 12.5pt; break-after: avoid; }
+  .prose h4 { font-size: 12pt; margin-top: 14pt; padding-top: 8pt; break-after: avoid; }
   .prose figure, .prose .mermaid-diagram, .prose .md-alert, .prose tr, .prose img { break-inside: avoid; }
   .prose .table-wrap { overflow: visible; box-shadow: none; border: 0.5pt solid #e2e8f0; }
   .prose a { color: #b4550c; }

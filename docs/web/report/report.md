@@ -104,7 +104,7 @@ Two methods run on the same images and are stored in the same database:
 
 Each step gives what it does in plain words, its equation and source, the result on the real images (whole site and a close-up of the tailings dam wall), and what happens without it (❌, measured by re-running without the step).
 
-#### 0. Pixel values to reflectance
+#### 0️⃣ Pixel values to reflectance
 
 The files store whole numbers ($DN$). ESA's rule turns each band $b$ into reflectance; images processed since January 2022 carry an offset of 1,000 ([ESA 2021](#ref-esa-2021)):
 
@@ -119,7 +119,7 @@ $$
 
 *The two files in true colour. The after file looks brighter and hazier, partly because it holds other passes.*
 
-#### 1. Split into zones
+#### 1️⃣ Split into zones
 
 A zone is a group of pixels that share the same *pair* of satellite passes.
 
@@ -147,7 +147,7 @@ Here $s(p)$ is the pass that pixel $p$ came from; each different pair is one zon
 
 ❌ **Without it:** one rule for three different pass pairs. It finds only <b class="bad">a third</b> as much real change (1.57 km², recall 0.17 → 0.06).
 
-#### 2. Match brightness, one line per zone and band
+#### 2️⃣ Match brightness, one line per zone and band
 
 Inside one zone, each image is one pass, so the haze and light difference between the dates is about the same across the zone, but different from zone to zone (figure below, A). On ground that did not change, the before and after brightness then lie on a straight line. That line converts the after image to the before image's brightness. This is called relative normalisation on stable ground ([Schott et al. 1988](#ref-schott-1988)), fitted as in [Canty & Nielsen (2008)](#ref-canty-2008):
 
@@ -194,7 +194,7 @@ The fitted lines differ a lot between zones, which is why one line for the whole
 
 ❌ **Without it:** haze and sun differences read as change, as in the provided method (<b class="bad">111 km²</b>).
 
-#### 3. Measure normal noise
+#### 3️⃣ Measure normal noise
 
 After matching, each pixel's colour change is three numbers, one per band: the change vector ([Malila 1980](#ref-malila-1980)):
 
@@ -211,7 +211,7 @@ On stable ground $\Delta$ is not exactly zero. Sensor noise, tiny shifts and gro
 
 ❌ **Without it:** one noise level per zone, whatever the brightness. Bright mine ground then looks "changed": <b class="bad">22×</b> too many false alarms (<b class="bad">66×</b> on the brightest ground), 13.2 km².
 
-#### 4. Flag what noise rarely does
+#### 4️⃣ Flag what noise rarely does
 
 Each pixel's score is how far its change lies from normal flicker, measured in units of that flicker, so a move in a band that flickers a lot counts less. This is the squared Mahalanobis distance ([Mahalanobis 1936](#ref-mahalanobis-1936)):
 
@@ -237,7 +237,7 @@ $$
 
 *Top: how unusual each pixel's colour change is for its zone and brightness, brighter = less likely noise ([on the map](https://s2change.dzaky.ai.id/#/map?layer=intensity)). Bottom: pixels past the cut-off, 6.74 km² in 4,479 patches.*
 
-#### 5. Skip the seams
+#### 5️⃣ Skip the seams
 
 Pixels within 90 m of a seam are not scored (our rule): $\operatorname{dist}(p, \text{seam}) \le 90\ \text{m}$.
 
@@ -251,7 +251,7 @@ Pixels within 90 m of a seam are not scored (our rule): $\operatorname{dist}(p, 
 
 ❌ **Without it:** 29 false polygons along the seams; precision <b class="bad">0.67 → 0.44</b>.
 
-#### 6. Clean up
+#### 6️⃣ Clean up
 
 Like most maps, this one has a smallest patch it shows, the *minimum mapping unit*: 0.2 ha (2,000 m², 20 pixels), our choice, tested in the next subsection. Thin lines and specks are removed, smaller patches dropped and smaller holes filled.
 
