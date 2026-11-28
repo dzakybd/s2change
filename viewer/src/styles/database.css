@@ -3,7 +3,7 @@
 .mono { font-family: var(--mono); }
 
 /* Connection card. */
-.conn { display: grid; gap: var(--s-3); margin-bottom: var(--s-5); }
+.conn { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); margin-bottom: var(--s-5); }
 .conn-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .conn-badges { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .pill.geo { color: var(--teal); background: rgb(13 148 136 / 0.08); box-shadow: 0 0 0 1px rgb(13 148 136 / 0.25); }

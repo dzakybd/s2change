@@ -204,9 +204,16 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 .skel-doc { display: grid; gap: var(--s-3); max-width: 640px; }
 .skel.s-title { width: 70%; height: 40px; border-radius: var(--r-md); margin-bottom: var(--s-3); }
 
+/* Touch: every small control gets at least a 44 x 44 px hit area. Compact pills keep their look and grow an invisible
+   box around them; controls in scrolling rows (which would clip that box) or stacked lists grow themselves. */
 @media (pointer: coarse) {
   .gh, .btn.sm, .chip, .action, .auth-btn { position: relative; }
-  .gh::after, .btn.sm::after, .chip::after, .action::after, .auth-btn::after { content: ""; position: absolute; inset: -6px -2px; }
+  .gh::after, .btn.sm::after, .chip::after, .action::after, .auth-btn::after {
+    content: ""; position: absolute; inset: min(0px, calc(50% - 22px)) min(0px, calc(50% - 22px));
+  }
+  :root :is(.ex-tab, .lg-head, .toc summary) { min-height: 44px; }
+  :root .tab { height: 44px; }
+  :root .toc a { padding-block: 12px; }
 }
 
 @media (max-width: 720px) {

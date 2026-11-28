@@ -195,8 +195,18 @@
 @media (hover: hover) and (pointer: fine) { .chat-rail:hover { background: rgb(15 23 42 / 0.05); color: var(--text); } }
 @media (max-width: 900px) { .ws-chat[data-collapsed="true"] { display: none; } }
 
+/* Between phone and desktop: the labelled tools would run into the two menus below about 970 px, and the swipe labels into
+   the legend below about 1044 px. */
+@media (min-width: 721px) and (max-width: 980px) {
+  .tool span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .tool { width: 36px; padding: 0; justify-content: center; }
+}
+@media (min-width: 721px) and (max-width: 1060px) { .swipe-label { bottom: 96px; } }
+
 @media (max-width: 720px) {
   .menu-btn { min-width: 0; }
+  .hud-row { flex-wrap: wrap; }
+  .hud-row > .menu { flex: 1 1 100%; }
   .hud-tl { right: calc(var(--s-3) + 52px); }
   .cmp-k, .cmp-n { display: none; }
   .cmp-chip { padding: 4px 4px 4px var(--s-3); }
@@ -206,6 +216,9 @@
   .tools { flex-direction: column; }
   .tool span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .tool { width: 36px; padding: 0; justify-content: center; }
+}
+@media (max-width: 720px) and (pointer: coarse) {
+  .tool { width: 44px; height: 44px; }
   .oblique-panel { position: absolute; right: 52px; top: 0; width: min(244px, calc(100vw - 80px)); }
   .hud-tr { width: auto; top: calc(var(--s-3) + 48px); max-height: none; }
   .hud-tr > .inspector { position: fixed; left: var(--s-2); right: var(--s-2); bottom: calc(var(--s-2) + env(safe-area-inset-bottom)); width: auto; max-height: 52%; z-index: 7; animation-name: sheet-in; }

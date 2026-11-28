@@ -66,7 +66,10 @@
   .toc ol { padding-bottom: var(--s-2); }
   .prose { font-size: 1rem; }
 }
-.prose td img[width] { display: inline-block; border-radius: 6px; vertical-align: middle; box-shadow: var(--ring); }
+.prose td img[width] { display: inline-block; border-radius: 6px; vertical-align: middle; box-shadow: var(--ring); max-width: 100%; height: auto; }
+/* Images with a fixed width attribute and long equations must never be wider than the screen. */
+.prose img[width] { max-width: 100%; height: auto; }
+.prose .katex-display { overflow-x: auto; overflow-y: hidden; padding-block: 2px; }
 
 /* Download bar: the two formats as real buttons, not chips. */
 .rp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-bottom: var(--s-5); padding: var(--s-3); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-1); }
